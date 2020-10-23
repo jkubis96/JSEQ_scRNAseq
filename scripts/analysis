@@ -1,0 +1,344 @@
+#!/bin/bash
+function choose_project {
+
+INFASTP=$(pwd)/projects/$project_name_mod*
+
+select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
+cd $d
+source config
+project_name_mode=$project_name_mode 
+EADS_LENGHT=$READS_LENGHT 
+species=$species 
+cell=$cell
+
+cd ..
+
+cd ..
+}
+
+function TRIMMING {
+
+echo Mapping Start
+
+
+RESULT=$(pwd)/projects/$project_name_mode/results/
+ADAPTERS=$(pwd)/requirements_file/Adapters.fa
+INFASTP=$(pwd)/projects/$project_name_mode/fast_data
+
+
+for i in $INFASTP/*.fastq.gz;
+do
+if       [[ $i == *"R1"* ]];
+then
+        R1=$i
+	R1_NAME=$(basename $i)
+elif
+        [[ $i == *"R2"* ]];
+then
+        R2=$i
+	R2_NAME=$(basename $i)
+else
+        echo 'Next step =>'
+fi
+done;
+
+cd $INFASTP
+
+fastp -i $R1 -I $R2 -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --html $RESULT/QC_RAPORT.html 
+
+gunzip R1_out.fastq.gz
+gunzip R2_out.fastq.gz
+
+
+
+cd ..
+cd ..
+cd ..
+}
+
+
+function STAR_MAPPING {
+
+
+RESULT=$(pwd)/projects/$project_name_mode/results/
+INFASTP=$(pwd)/projects/$project_name_mode/fast_data
+cpu=$(grep -c ^processor /proc/cpuinfo)
+cpu=$[$cpu-2]
+DIR=$(pwd)/projects/$project_name_mode/$species/index
+tmp=$(pwd)/projects/$project_name_mode/tmp/
+
+for i in $INFASTP/*.fastq;
+do
+if       [[ $i == *"R1"* ]];
+then
+        R1_map=$i
+        R1_NAME_map=$(basename $i)
+elif
+        [[ $i == *"R2"* ]];
+then
+        R2_map=$i
+        R2_NAME_map=$(basename $i)
+else
+        echo 'Next step =>'
+fi
+done;
+
+R2_FILE=$INFASTP'/'$R2_NAME_map
+
+
+STAR --outReadsUnmapped Fastx --outFilterMismatchNmax 10 --outFilterMismatchNoverLmax 0.3 --outFilterMismatchNoverReadLmax 1 --outFilterMatchNmin 0 --outFilterScoreMinOverLread 0.66 --outFilterMatchNminOverLread 0.66 --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outSAMtype BAM Unsorted --outFileNamePrefix $tmp --outStd Log  > $RESULT/Log.final.out 2>&1
+
+
+
+}
+
+function whitelist {
+
+
+INFASTP=$(pwd)/projects/$project_name_mode/fast_data
+tmp=$(pwd)/projects/$project_name_mode/tmp
+RESULT=$(pwd)/projects/$project_name_mode/results/
+
+
+for i in $INFASTP/*.fastq.gz;
+do
+if       [[ $i == *"R1"* ]];
+then
+        R1_out=$i
+        R1_NAME_out=$(basename $i)
+elif
+        [[ $i == *"R2"* ]];
+then
+        R2=$i
+        R2_NAME_out=$(basename $i)
+else
+        echo 'Next step =>'
+fi
+done;
+
+
+cd $(pwd)/projects/$project_name_mode/fast_data
+umi_tools whitelist --stdin $R1_NAME_out --bc-pattern='(?P<cell_1>.{12})(?P<umi_1>.{8})' --extract-method=regex --set-cell-number=$cell --plot-prefix=$RESULT/expect_whitelist --log2stderr > $tmp/whitelist.csv ;
+cat $tmp/whitelist.csv | cut -f 1 > $tmp/whitelist_barcodes.csv ;
+
+cd ..
+cd ..
+cd ..
+}
+
+function umi_extract {
+
+SCRIPTS_EXTRACT=$(pwd)/scripts
+python3 $SCRIPTS_EXTRACT/umi_extract.py $project_name_mode
+
+
+}
+
+function merge_reads {
+
+SCRIPTS_EXTRACT=$(pwd)/scripts/
+INFASTP=$(pwd)/projects/$project_name_mode/fast_data
+
+for i in $INFASTP/*.fastq.gz;
+do
+if       [[ $i == *"R1"* ]];
+then
+        R1_py=$i
+        R1_NAME_py=$(basename $i)
+elif
+        [[ $i == *"R2"* ]];
+then
+        R2_py=$i
+        R2_NAME_py=$(basename $i)
+else
+        echo 'Next step =>'
+fi
+done;
+
+
+R1_FILE=$INFASTP'/'$R1_NAME_py
+python3 $SCRIPTS_EXTRACT/merge_reads.py $R1_FILE $project_name_mode
+
+}
+
+
+function barcodes {
+
+
+SCRIPTS_EXTRACT=$(pwd)/scripts/
+
+python3 $SCRIPTS_EXTRACT/barcodes_aligment.py $project_name_mode
+
+}
+
+
+#ref fiile generate
+
+function create_ref {
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/picard/build/libs/picard.jar CreateSequenceDictionary \
+        REFERENCE=$(pwd)/genome/$species/genome.fa \
+        OUTPUT=$(pwd)/projects/$project_name_mode/tmp/genome.dict
+
+}
+
+function reduce_annotation_gtf {
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar ReduceGtf \
+        GTF=$(pwd)/genome/$species/correct.annotation.gtf \
+        OUTPUT=$(pwd)/projects/$project_name_mode/tmp/reduced_annotation.gtf \
+        SEQUENCE_DICTIONARY=$(pwd)/projects/$project_name_mode/tmp/genome.dict \
+        IGNORE_FUNC_TYPE=null \
+        ENHANCE_GTF=false
+
+}
+
+function create_ref_annotation {
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar ConvertToRefFlat \
+        ANNOTATIONS_FILE=$(pwd)/genome/$species/correct.annotation.gtf \
+        OUTPUT=$(pwd)/projects/$project_name_mode/tmp/correct.annotation.refFlat \
+        SEQUENCE_DICTIONARY=$(pwd)/projects/$project_name_mode/tmp/genome.dict
+
+}
+
+
+function dropSEQ {
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar TagReadWithGeneFunction \
+        INPUT=$(pwd)/projects/$project_name_mode/tmp/Map_barcodes.out.bam \
+        OUTPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged.bam \
+        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/correct.annotation.refFlat 
+
+}
+
+function final_exon {
+
+cpu=$(grep -c ^processor /proc/cpuinfo)
+cpu=$[$cpu-2]
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DetectBeadSubstitutionErrors \
+        I=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged.bam \
+        O=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged_error.bam \
+        OUTPUT_REPORT=$(pwd)/projects/$project_name_mode/tmp/beadSubstitutionReport.txt \
+        OUTPUT_SUMMARY=$(pwd)/projects/$project_name_mode/tmp/beadSubstitutionSummary.txt \
+        NUM_THREADS=$cpu
+
+}
+
+function completed_bam {
+
+CELL2=$[$cell*2]
+
+cpu=$(grep -c ^processor /proc/cpuinfo)
+cpu=$[$cpu-2]
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DetectBeadSynthesisErrors \
+        INPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged_error.bam \
+        OUTPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam \
+        OUTPUT_STATS=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats.txt \
+        SUMMARY=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats_summary.txt \
+        NUM_BARCODES=$CELL2 \
+        PRIMER_SEQUENCE=CCTACACGACGCTCTTCCGATCT \
+        NUM_THREADS=$cpu
+
+}
+
+
+function rna_intervals {
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar CreateIntervalsFiles \
+        REDUCED_GTF=$(pwd)/projects/$project_name_mode/tmp/reduced_annotation.gtf \
+        SEQUENCE_DICTIONARY=$(pwd)/projects/$project_name_mode/tmp/genome.dict \
+        O=$(pwd)/projects/$project_name_mode/tmp/ \
+        PREFIX='/annotation'
+
+}
+
+##EXPRESSION FILE AND STATS
+
+function umi_expression {
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DigitalExpression \
+        I=$(pwd)/projects/$project_name_mode/results/Completed.bam \
+        O=$(pwd)/projects/$project_name_mode/tmp/umi_expression.tsv \
+        EDIT_DISTANCE=1 \
+        OUTPUT_LONG_FORMAT=$(pwd)/projects/$project_name_mode/tmp/umi_expression.long \
+        STRAND_STRATEGY=SENSE\
+        OUTPUT_READS_INSTEAD=false\
+        LOCUS_FUNCTION_LIST={CODING,UTR}\
+        MIN_BC_READ_THRESHOLD=0\
+        CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/whitelist_barcodes.csv
+}
+
+##To check in future
+function read_expression {
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DigitalExpression \
+        I=$(pwd)/projects/$project_name_mode/results/Completed.bam \
+        O=$(pwd)/projects/$project_name_mode/tmp/read_expression.tsv \
+        EDIT_DISTANCE=1 \
+        OUTPUT_LONG_FORMAT=$(pwd)/projects/$project_name_mode/tmp/read_expression.long \
+        STRAND_STRATEGY=SENSE \
+        OUTPUT_READS_INSTEAD=true \
+        LOCUS_FUNCTION_LIST={CODING,UTR} \
+        MIN_BC_READ_THRESHOLD=0 \
+        CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/whitelist_barcodes.csv
+
+}
+
+function scRNAmetrics {
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
+        INPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam\
+        OUTPUT=$(pwd)/projects/$project_name_mode/tmp/scRNAmetrics.txt\
+        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/correct.annotation.refFlat \
+        CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/whitelist_barcodes.csv \
+        RIBOSOMAL_INTERVALS=$(pwd)/projects/$project_name_mode/tmp/annotation.rRNA.intervals
+        
+		
+}
+
+
+function metric_plot_R {
+
+SCRIPTS_EXTRACT=$(pwd)/scripts
+
+Rscript $SCRIPTS_EXTRACT/rna_metrics.R $project_name_mode
+
+}
+
+##The same, to check
+function convert_mtx_read {
+
+SCRIPTS_EXTRACT=$(pwd)/scripts
+
+python3 $SCRIPTS_EXTRACT/convert_mtx_read.py $project_name_mode
+
+}
+
+function convert_mtx_umi {
+
+SCRIPTS_EXTRACT=$(pwd)/scripts
+
+python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $project_name_mode
+
+}
+
+
+function seurat {
+
+SCRIPTS_EXTRACT=$(pwd)/scripts
+Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $project_name_mode $cell
+
+}

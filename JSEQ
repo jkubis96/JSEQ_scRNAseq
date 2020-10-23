@@ -1,0 +1,85 @@
+#!/bin/bash
+
+echo 'Welcome in JSEQ® scRNAseq pipeline which was prepared at Institute of Bioorganic Chemistry, Polish Academy of Sciences in Poznań'\
+
+echo 'This softwere was made for dropSEQ single cell technology [especially for Nadia Instrument - https://www.dolomite-bio.com/].'\
+
+echo 'All information and references you can check in the file Readme'\
+
+echo 'Author contact: jkubis@ibch.poznan.pl or jakub.kubis1996@gmail.com'\
+
+echo ''
+echo ''
+
+function start {
+
+echo 'Choose JSEQ function:'
+echo '-first installation [install]'
+echo '-download RefGenome (GENCODE) [genome]'
+echo '-creat new project [project]'
+echo '-start analysis [analysis]'
+echo ''
+echo 'Choose function:'
+echo ''
+	read s
+	s=$(echo $s | tr '[:upper:]' '[:lower:]')
+
+if [[ $s == 'install' ]]
+then
+        source=$(pwd)/setup/setup
+        cd $(pwd)/setup
+        source $source
+		python
+		r_base
+		java
+		SAMtools
+		fastp
+		DropSeq
+		picard
+        cd ..
+
+elif [[ $s == 'genome' ]]
+then
+        source=$(pwd)/scripts/genome_indexing
+		source $source
+		GENOME
+		
+elif [[ $s == 'project' ]]
+then
+        source=$(pwd)/scripts/projects
+		source $source
+		PROJECT
+		
+elif [[ $s == 'analysis' ]]
+then
+		source=$(pwd)/scripts
+		source $source/analysis
+		choose_project
+		TRIMMING
+		STAR_MAPPING
+		whitelist
+		umi_extract
+		merge_reads
+	    barcodes
+		create_ref
+		reduce_annotation_gtf
+		create_ref_annotation
+		dropSEQ
+		final_exon
+		completed_bam
+		rna_intervals
+		umi_expression
+		scRNAmetrics
+		metric_plot_R
+		convert_mtx_umi
+		seurat
+		
+		
+else
+        start
+fi
+
+
+}
+
+start

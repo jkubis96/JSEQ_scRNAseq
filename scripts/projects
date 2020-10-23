@@ -1,0 +1,136 @@
+#!/bin/bash
+
+function PROJECT {
+
+echo 'Create project for FastQ data [1] or prepared BAM data [2]:'
+read p 
+p=$(echo $p | tr '[:upper:]' '[:lower:]')
+
+if [[ $p == '2' ]]
+then
+
+	function PARAMETRS {
+echo 'Project name:' 
+echo ''
+		read project_name
+echo 'Enter operation paramets:'
+echo ''
+echo 'ReadsLenght:'
+echo ''
+        read READS_LENGHT
+echo 'Species [human/mice]:'
+echo ''
+        read species
+
+if [[ $READS_LENGHT -lt 300 ]] || [[ $READS_LENGHT -gt 0 ]] && [[ $species == 'human' ]] || [[ $species == 'mice' ]] 
+then
+
+echo 'Parametrs correct'
+echo ''
+else
+        PARAMETRS
+fi
+
+}
+
+PARAMETRS
+		
+		project_name_mod=$project_name'_bam'
+		mkdir -p projects/$project_name_mod
+		mkdir -p projects/$project_name_mod/tmp
+		mkdir -p projects/$project_name_mod/results
+		mkdir -p projects/$project_name_mod/bam_data
+		echo ''
+		echo 'Complete'
+		echo ''
+        echo 'Next step =>'
+		echo ''
+	
+	start
+	
+elif [[ $p == '1' ]]
+then
+
+function PARAMETRS {
+echo 'Project name:' 
+echo ''
+		read project_name
+echo 'Enter operation paramets:'
+echo ''
+echo 'ReadsLenght:'
+echo ''
+        read READS_LENGHT
+echo 'Species [human/mice]:'
+echo ''
+        read species
+echo 'Estimated celle amount:'
+echo ''
+	read cell
+
+if [[ $READS_LENGHT -lt 300 ]] || [[ $READS_LENGHT -gt 0 ]] && [[ $species == 'human' ]] || [[ $species == 'mice' ]] && [[ $cell -lt 1000000 ]] || [[ $cell -gt 0 ]];
+then
+
+echo 'Parametrs correct'
+echo ''
+else
+        PARAMETRS
+fi
+
+}
+
+PARAMETRS
+		
+		project_name_mod=$project_name'_fq'
+		mkdir -p projects/$project_name_mod
+		mkdir -p projects/$project_name_mod/tmp
+		mkdir -p projects/$project_name_mod/results
+		mkdir -p projects/$project_name_mod/fast_data
+		echo ''
+		echo 'Complete'
+		echo ''
+        echo 'Next step =>'
+		echo ''
+		
+		config=(project_name_mode=$project_name_mod READS_LENGHT=$READS_LENGHT species=$species cell=$cell)
+
+		echo $config > $(pwd)/projects/$project_name_mod/config
+		
+source=$(pwd)/scripts/genome_indexing
+		source $source
+		INDEXING
+		
+function checkfq {
+		echo ''
+		echo 'Put fastQ data into => projects/'$project_name_mod/'fast_data'
+		echo 'If you done it, push ENTER'
+		read enter
+		
+		fast=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
+	
+for i in $fast;
+do
+		r+=$i
+if      [[ $r == *"R1"* ]] || [[ $r == *"R2"* ]];
+then
+        echo ''
+		echo 'Project done'
+		echo 'You can go to next step'
+		echo ''
+		start
+else
+        echo 'FastQ data not found'
+		echo 'Put data'
+		checkfq
+fi
+done; 
+	
+		
+}
+
+checkfq
+else
+        PROJECT
+fi
+
+}
+
