@@ -9,9 +9,9 @@ echo ''
 read species
 species=$(echo $species | tr '[:upper:]' '[:lower:]')
 source=$(pwd)/scripts/merge_genome.py
-input_mice=$(pwd)/genome/$species/correct.annotation.mice.gtf
-input_human=$(pwd)/genome/$species/correct.annotation.human.gtf
-output_mix=$(pwd)/genome/$species/annotation.mix.gtf
+input_mice=$(pwd)/genome/$species/correct_annotation_mice.gtf
+input_human=$(pwd)/genome/$species/correct_annotation_human.gtf
+output_mix=$(pwd)/genome/$species/annotation_mix.gtf
 
 
 if [[ $species == 'human' ]]
@@ -22,7 +22,7 @@ then
         cd genome/$species
         wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_35/gencode.v35.chr_patch_hapl_scaff.annotation.gtf.gz -O annotation.gtf.gz
 	gunzip annotation.gtf.gz
-	cat annotation.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct.annotation.gtf
+	cat annotation.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct_annotation.gtf
 	rm annotation.gtf
 	wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_35/GRCh38.p13.genome.fa.gz -O genome.fa.gz
 	gunzip genome.fa.gz
@@ -39,7 +39,7 @@ then
 		
         wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.chr_patch_hapl_scaff.basic.annotation.gtf.gz -O annotation.gtf.gz
 	gunzip annotation.gtf.gz
-	cat annotation.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct.annotation.gtf
+	cat annotation.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct_annotation.gtf
 	rm annotation.gtf
 	wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/GRCm38.p6.genome.fa.gz -O genome.fa.gz
 	gunzip genome.fa.gz
@@ -54,29 +54,29 @@ then
 		mkdir -p genome/$species
         cd genome/$species
         
-		wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_35/gencode.v35.chr_patch_hapl_scaff.annotation.gtf.gz -O annotation.human.gtf.gz
-	gunzip annotation.human.gtf.gz
-	cat annotation.human.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct.annotation.human.gtf
-	rm annotation.human.gtf
-	wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_35/GRCh38.p13.genome.fa.gz -O genome.human.fa.gz
-	gunzip genome.human.fa.gz
+		wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_35/gencode.v35.chr_patch_hapl_scaff.annotation.gtf.gz -O annotation_human.gtf.gz
+	gunzip annotation_human.gtf.gz
+	cat annotation_human.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct_annotation_human.gtf
+	rm annotation_human.gtf
+	wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_35/GRCh38.p13.genome.fa.gz -O genome_human.fa.gz
+	gunzip genome_human.fa.gz
 	
-		wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.chr_patch_hapl_scaff.basic.annotation.gtf.gz -O annotation.mice.gtf.gz
-	gunzip annotation.mice.gtf.gz
-	cat annotation.mice.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct.annotation.mice.gtf
-	rm annotation.mice.gtf
-	wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/GRCm38.p6.genome.fa.gz -O genome.mice.fa.gz
-	gunzip genome.mice.fa.gz
+		wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.chr_patch_hapl_scaff.basic.annotation.gtf.gz -O annotation_mice.gtf.gz
+	gunzip annotation_mice.gtf.gz
+	cat annotation_mice.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct_annotation_mice.gtf
+	rm annotation_mice.gtf
+	wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/GRCm38.p6.genome.fa.gz -O genome_mice.fa.gz
+	gunzip genome_mice.fa.gz
 	
-	cat genome.human.fa genome.mice.fa > genome.mix.fa
+	cat genome_human.fa genome_mice.fa > genome_mix.fa
 	
 	
 	python3 $source $input_mice $input_human $output_mix
 	
-	rm correct.annotation.human.gtf
-	rm correct.annotation.mice.gtf
-	rm genome.human.fa
-	rm genome.mice.fa
+	rm correct_annotation_human.gtf
+	rm correct_annotation_mice.gtf
+	rm genome_human.fa
+	rm genome_mice.fa
 	cd ..
 	cd ..
 	

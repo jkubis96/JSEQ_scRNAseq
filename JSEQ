@@ -26,17 +26,19 @@ echo ''
 
 if [[ $s == 'install' ]]
 then
+		log_install=$(pwd)/projects/setup/InstallationFinal.log.out
+
         source=$(pwd)/setup/setup
         cd $(pwd)/setup
         source $source
-		permission
-		python
-		r_base
-		java
-		SAMtools
-		fastp
-		DropSeq
-		picard
+		permission 
+		python 
+		r_base 
+		java 
+		SAMtools 
+		fastp 
+		DropSeq 
+		picard 
         cd ..
 
 elif [[ $s == 'genome' ]]
@@ -60,57 +62,65 @@ then
 		function experiment_selection {
 		if [[ $species  == 'human' ]] || [[ $species  == 'mice' ]];
 then
+		#log_species=$(pwd)/projects/$project_name_mode/results/MappingFinal.log.out
+		#put log file 
+		
         source=$(pwd)/scripts
 		source $source/analysis_species
-		TRIMMING
-		#STAR_MAPPING
-		whitelist
-		umi_extract
-		merge_reads
-	    barcodes
-		create_ref
+		TRIMMING 
+		#STAR_MAPPING 
+		whitelist 
+		umi_extract 
+		merge_reads 
+	    barcodes 
+		create_ref 
 		reduce_annotation_gtf
-		create_ref_annotation
-		dropSEQ
-		final_exon
-		completed_bam
-		rna_intervals
-		umi_expression
-		scRNAmetrics
-		metric_plot
-		convert_mtx_umi
-		seurat
+		create_ref_annotation 
+		dropSEQ 
+		final_exon 
+		completed_bam 
+		rna_intervals 
+		umi_expression 
+		scRNAmetrics 
+		metric_plot 
+		convert_mtx_umi 
+		seurat 
 elif
 		[[ $species  == 'mix' ]];
 then
+		log_mix=$(pwd)/projects/$project_name_mode/results/MappingFinal.log.out
+		
         source=$(pwd)/scripts
 		source $source/analysis_mix
-		directory
-		TRIMMING
-		#STAR_MAPPING
-		whitelist
-		umi_extract
-		merge_reads
-	    barcodes
-		create_ref
-		reduce_annotation_gtf
-		create_ref_annotation
-		dropSEQ
-		final_exon
-		completed_bam
-		rna_intervals
-		filtr_mice
-		filtr_human
-		umi_expression_mice
-		umi_expression_human
-		scRNAmetrics_mice
-		scRNAmetrics_human
-		metric_plot_mice
-		metric_plot_human
-		convert_mtx_umi_mice
-		convert_mtx_umi_human
-		seurat_mice
-		seurat_human
+		#directory 
+		#TRIMMING 
+		#STAR_MAPPING 
+		#whitelist 
+		#umi_extract 
+		#merge_reads 
+	    #barcodes 
+		#create_ref 
+		reduce_annotation_gtf 
+		#create_ref_annotation 
+		#dropSEQ 
+		#final_exon 
+		#completed_bam 
+		#rna_intervals 
+		#filtr_mice 
+		#filtr_human 
+		#umi_expression_mice 
+		#umi_expression_human 
+		#scRNAmetrics_mice 
+		#scRNAmetrics_human 
+		#metric_plot_mice 
+		#metric_plot_human 
+		#convert_mtx_umi_mice 
+		#convert_mtx_umi_human 
+		#seurat_mice 
+		#seurat_human 
+		
+		
+		
 else
         
 		echo 'Experiment failed - check all data from project'

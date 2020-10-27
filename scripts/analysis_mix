@@ -178,7 +178,7 @@ function create_ref {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/picard/build/libs/picard.jar CreateSequenceDictionary \
-        REFERENCE=$(pwd)/genome/$species/genome.mix.fa \
+        REFERENCE=$(pwd)/genome/$species/genome_mix.fa \
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/genome.dict
 
 }
@@ -187,7 +187,7 @@ function reduce_annotation_gtf {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar ReduceGtf \
-        GTF=$(pwd)/genome/$species/annotation.mix.gtf \
+        GTF=$(pwd)/genome/$species/annotation_mix.gtf \
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/reduced_annotation.gtf \
         SEQUENCE_DICTIONARY=$(pwd)/projects/$project_name_mode/tmp/genome.dict \
         IGNORE_FUNC_TYPE=null \
@@ -199,8 +199,8 @@ function create_ref_annotation {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar ConvertToRefFlat \
-        ANNOTATIONS_FILE=$(pwd)/genome/$species/annotation.mix.gtf \
-        OUTPUT=$(pwd)/projects/$project_name_mode/tmp/annotation.mix.refFlat \
+        ANNOTATIONS_FILE=$(pwd)/genome/$species/annotation_mix.gtf \
+        OUTPUT=$(pwd)/projects/$project_name_mode/tmp/annotation_mix.refFlat \
         SEQUENCE_DICTIONARY=$(pwd)/projects/$project_name_mode/tmp/genome.dict
 
 }
@@ -212,7 +212,7 @@ SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar TagReadWithGeneFunction \
         INPUT=$(pwd)/projects/$project_name_mode/tmp/Map_barcodes.out.bam \
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged.bam \
-        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/annotation.mix.refFlat 
+        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/annotation_mix.refFlat 
 
 }
 
@@ -279,7 +279,7 @@ function filtr_human {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar FilterBam \
-        REF_SOFT_MATCHED_RETAINED='human|mice' \
+        REF_SOFT_MATCHED_RETAINED='human' \
         INPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam \
         OUTPUT=$(pwd)/projects/$project_name_mode/results/human_results/FiltredHuman.bam
 
@@ -309,7 +309,7 @@ SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
         INPUT=$(pwd)/projects/$project_name_mode/results/mice_results/FiltredMice.bam\
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/mice/scRNAmetrics.txt\
-        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/annotation.mix.refFlat \
+        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/annotation_mix.refFlat \
         CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/whitelist_barcodes.csv \
         RIBOSOMAL_INTERVALS=$(pwd)/projects/$project_name_mode/tmp/annotation.rRNA.intervals
         
@@ -373,7 +373,7 @@ SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
         INPUT=$(pwd)/projects/$project_name_mode/results/human_results/FiltredHuman.bam\
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/human/scRNAmetrics.txt\
-        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/annotation.mix.refFlat \
+        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/annotation_mix.refFlat \
         CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/whitelist_barcodes.csv \
         RIBOSOMAL_INTERVALS=$(pwd)/projects/$project_name_mode/tmp/annotation.rRNA.intervals
         

@@ -171,7 +171,7 @@ function reduce_annotation_gtf {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar ReduceGtf \
-        GTF=$(pwd)/genome/$species/correct.annotation.gtf \
+        GTF=$(pwd)/genome/$species/correct_annotation.gtf \
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/reduced_annotation.gtf \
         SEQUENCE_DICTIONARY=$(pwd)/projects/$project_name_mode/tmp/genome.dict \
         IGNORE_FUNC_TYPE=null \
@@ -183,8 +183,8 @@ function create_ref_annotation {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar ConvertToRefFlat \
-        ANNOTATIONS_FILE=$(pwd)/genome/$species/correct.annotation.gtf \
-        OUTPUT=$(pwd)/projects/$project_name_mode/tmp/correct.annotation.refFlat \
+        ANNOTATIONS_FILE=$(pwd)/genome/$species/correct_annotation.gtf \
+        OUTPUT=$(pwd)/projects/$project_name_mode/tmp/correct_annotation.refFlat \
         SEQUENCE_DICTIONARY=$(pwd)/projects/$project_name_mode/tmp/genome.dict
 
 }
@@ -196,7 +196,7 @@ SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar TagReadWithGeneFunction \
         INPUT=$(pwd)/projects/$project_name_mode/tmp/Map_barcodes.out.bam \
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged.bam \
-        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/correct.annotation.refFlat 
+        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/correct_annotation.refFlat 
 
 }
 
@@ -270,7 +270,7 @@ SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
         INPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam\
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/scRNAmetrics.txt\
-        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/correct.annotation.refFlat \
+        ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/correct_annotation.refFlat \
         CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/whitelist_barcodes.csv \
         RIBOSOMAL_INTERVALS=$(pwd)/projects/$project_name_mode/tmp/annotation.rRNA.intervals
         
