@@ -61,6 +61,9 @@ then
 	wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_35/GRCh38.p13.genome.fa.gz -O genome_human.fa.gz
 	gunzip genome_human.fa.gz
 	
+	sed -e 's/>/>human/g' genome_human.fa > renamed_genome_human.fa
+	
+	
 		wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.chr_patch_hapl_scaff.basic.annotation.gtf.gz -O annotation_mice.gtf.gz
 	gunzip annotation_mice.gtf.gz
 	cat annotation_mice.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct_annotation_mice.gtf
@@ -68,13 +71,18 @@ then
 	wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/GRCm38.p6.genome.fa.gz -O genome_mice.fa.gz
 	gunzip genome_mice.fa.gz
 	
-	cat genome_human.fa genome_mice.fa > genome_mix.fa
+	sed -e 's/>/>mice/g' genome_mice.fa > renamed_genome_mice.fa
+	
+	
+	cat renamed_genome_human.fa renamed_genome_mice.fa > genome_mix.fa
 	
 	
 	python3 $source $input_mice $input_human $output_mix
 	
 	rm correct_annotation_human.gtf
 	rm correct_annotation_mice.gtf
+	rm renamed_genome_human.gtf
+	rm renamed_genome_mice.gtf
 	rm genome_human.fa
 	rm genome_mice.fa
 	cd ..

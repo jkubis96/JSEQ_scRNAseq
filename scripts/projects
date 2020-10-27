@@ -1,5 +1,36 @@
 #!/bin/bash
 
+function checkfq {
+		echo ''
+		echo 'Put fastQ data into => projects/'$project_name_mod/'fast_data'
+		echo 'If you done it, push ENTER'
+		read enter
+		
+		fast=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
+	
+for i in $fast;
+do
+		r+=$i
+if      [[ $r == *"R1"* ]] || [[ $r == *"R2"* ]];
+then
+        echo ''
+		echo 'Project done'
+		echo 'Start genome indexing'
+		echo ''
+		source=$(pwd)/scripts/genome_indexing
+		source $source
+		INDEXING
+else
+        echo 'FastQ data not found'
+		echo 'Put data'
+		checkfq
+fi
+done; 
+	
+		
+}
+
+
 function PROJECT {
 
 echo 'Create project for FastQ data [1] or prepared BAM data [2]:'
@@ -96,40 +127,9 @@ PARAMETRS
 		echo READS_LENGHT=$READS_LENGHT >> $(pwd)/projects/$project_name_mod/config
 		echo species=$species >> $(pwd)/projects/$project_name_mod/config
 		echo cell=$cell >> $(pwd)/projects/$project_name_mod/config
-		
-source=$(pwd)/scripts/genome_indexing
-		source $source
-		#INDEXING
-		
-function checkfq {
-		echo ''
-		echo 'Put fastQ data into => projects/'$project_name_mod/'fast_data'
-		echo 'If you done it, push ENTER'
-		read enter
-		
-		fast=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
-	
-for i in $fast;
-do
-		r+=$i
-if      [[ $r == *"R1"* ]] || [[ $r == *"R2"* ]];
-then
-        echo ''
-		echo 'Project done'
-		echo 'You can go to next step'
-		echo ''
-		start
-else
-        echo 'FastQ data not found'
-		echo 'Put data'
-		checkfq
-fi
-done; 
-	
-		
-}
 
-checkfq
+		checkfq
+
 else
         PROJECT
 fi

@@ -26,7 +26,7 @@ echo ''
 
 if [[ $s == 'install' ]]
 then
-		log_install=$(pwd)/projects/setup/InstallationFinal.log.out
+		#log_install=$(pwd)/projects/setup/InstallationFinal.log.out
 
         source=$(pwd)/setup/setup
         cd $(pwd)/setup
@@ -88,7 +88,7 @@ then
 elif
 		[[ $species  == 'mix' ]];
 then
-		log_mix=$(pwd)/projects/$project_name_mode/results/MappingFinal.log.out
+		#log_mix=$(pwd)/projects/$project_name_mode/results/MappingFinal.log.out
 		
         source=$(pwd)/scripts
 		source $source/analysis_mix
@@ -98,24 +98,24 @@ then
 		#whitelist 
 		#umi_extract 
 		#merge_reads 
-	    #barcodes 
-		#create_ref 
-		reduce_annotation_gtf 
+	  #  barcodes 
+	#	create_ref 
+		#reduce_annotation_gtf 
 		#create_ref_annotation 
 		#dropSEQ 
-		#final_exon 
+		final_exon 
 		#completed_bam 
-		#rna_intervals 
+	#	rna_intervals 
 		#filtr_mice 
-		#filtr_human 
+	#	filtr_human 
 		#umi_expression_mice 
-		#umi_expression_human 
-		#scRNAmetrics_mice 
-		#scRNAmetrics_human 
-		#metric_plot_mice 
-		#metric_plot_human 
-		#convert_mtx_umi_mice 
-		#convert_mtx_umi_human 
+	#	umi_expression_human 
+	#	scRNAmetrics_mice 
+	#	scRNAmetrics_human 
+	#	metric_plot_mice 
+	#	metric_plot_human 
+	#	convert_mtx_umi_mice 
+	#	convert_mtx_umi_human 
 		#seurat_mice 
 		#seurat_human 
 		
