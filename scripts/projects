@@ -18,11 +18,11 @@ echo ''
 echo 'ReadsLenght:'
 echo ''
         read READS_LENGHT
-echo 'Species [human/mice]:'
+echo 'Species [human/mice/mix]:'
 echo ''
         read species
 
-if [[ $READS_LENGHT -lt 300 ]] || [[ $READS_LENGHT -gt 0 ]] && [[ $species == 'human' ]] || [[ $species == 'mice' ]] 
+if [[ $READS_LENGHT -lt 300 ]] && [[ $READS_LENGHT -gt 0 ]] && [[ $species == 'human' ]] || [[ $species == 'mice' ]] || [[ $species == 'mix' ]]
 then
 
 echo 'Parametrs correct'
@@ -60,14 +60,14 @@ echo ''
 echo 'ReadsLenght:'
 echo ''
         read READS_LENGHT
-echo 'Species [human/mice]:'
+echo 'Species [human/mice/mix]:'
 echo ''
         read species
 echo 'Estimated celle amount:'
 echo ''
 	read cell
 
-if [[ $READS_LENGHT -lt 300 ]] || [[ $READS_LENGHT -gt 0 ]] && [[ $species == 'human' ]] || [[ $species == 'mice' ]] && [[ $cell -lt 1000000 ]] || [[ $cell -gt 0 ]];
+if [[ $READS_LENGHT -lt 300 ]] || [[ $READS_LENGHT -gt 0 ]] && [[ $species == 'human' ]] || [[ $species == 'mice' ]] || [[ $species == 'mix' ]] && [[ $cell -lt 1000000 ]] || [[ $cell -gt 0 ]];
 then
 
 echo 'Parametrs correct'
@@ -91,13 +91,15 @@ PARAMETRS
         echo 'Next step =>'
 		echo ''
 		
-		config=(project_name_mode=$project_name_mod READS_LENGHT=$READS_LENGHT species=$species cell=$cell)
 
-		echo $config > $(pwd)/projects/$project_name_mod/config
+		echo project_name_mode=$project_name_mod > $(pwd)/projects/$project_name_mod/config
+		echo READS_LENGHT=$READS_LENGHT >> $(pwd)/projects/$project_name_mod/config
+		echo species=$species >> $(pwd)/projects/$project_name_mod/config
+		echo cell=$cell >> $(pwd)/projects/$project_name_mod/config
 		
 source=$(pwd)/scripts/genome_indexing
 		source $source
-		INDEXING
+		#INDEXING
 		
 function checkfq {
 		echo ''

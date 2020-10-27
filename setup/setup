@@ -1,11 +1,27 @@
 #!/bin/bash
 
+function permission {
+
+echo ''
+echo 'Write [sudo] to give installation permission'
+echo ''
+
+read permission_sudo
+
+$permission 
+
+}
+
+
 #python installation
 
 function python {
- sudo apt-get update
- sudo apt install python3.8
- sudo apt install python3-pip
+ apt-get update
+ apt install python3.8
+ apt install python3-pip
+ pip3 install pysam==0.16.0.1
+ pip3 install biopython==1.78
+ pip3 install umi_tools==1.0.1
 }
 
 
@@ -13,22 +29,22 @@ function python {
 
 function r_base {
 
-sudo apt-get update
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
-sudo add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
-sudo apt-get update
-sudo apt-get install r-base
-sudo apt-get upgrade
-sudo apt-get install curl
-sudo apt-get install openssl
-sudo apt-get install libcurl4-openssl-dev
-sudo apt-get install libhdf5-dev
-sudo apt-get install libhdf5-serial-dev
-sudo apt-get install h5utils
-sudo apt-get install hdf5-tools
-sudo apt-get install hdf5-helpers
-sudo apt-get install -y r-cran-httr
-sudo apt-get update
+#apt-get update
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
+apt-get update
+apt-get install r-base
+apt-get upgrade
+apt-get install curl
+apt-get install openssl
+apt-get install libcurl4-openssl-dev
+apt-get install libhdf5-dev
+apt-get install libhdf5-serial-dev
+apt-get install h5utils
+apt-get install hdf5-tools
+apt-get install hdf5-helpers
+apt-get install -y r-cran-httr
+apt-get update
 
 path=$(pwd)
 Rscript $path/r_req.R
@@ -40,8 +56,8 @@ Rscript $path/r_req.R
 
 function java {
 
-sudo apt-get update
-sudo apt install default-jdk
+#apt-get update
+apt install default-jdk
 
 }
 
@@ -49,7 +65,7 @@ sudo apt install default-jdk
 
 function SAMtools {
 
-sudo apt-get install -y samtools
+apt-get install -y samtools
 
 }
 
@@ -57,7 +73,7 @@ sudo apt-get install -y samtools
 
 function STAR {
 
-sudo apt-get update
+	#apt-get update
         git clone https://github.com/alexdobin/STAR.git
         cd STAR/source
         make STAR
@@ -74,7 +90,7 @@ git clone https://github.com/OpenGene/fastp.git
 
 cd fastp
 make
-sudo apt install fastp
+apt install fastp
 cd ..
 }
 
@@ -96,6 +112,8 @@ git clone https://github.com/broadinstitute/picard.git
 cd picard/
 ./gradlew shadowJar
 cd ..
+
+apt-get update
 }
 
 

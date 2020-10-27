@@ -1,20 +1,4 @@
 #!/bin/bash
-function choose_project {
-
-INFASTP=$(pwd)/projects/$project_name_mod*
-
-select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
-cd $d
-source config
-project_name_mode=$project_name_mode 
-EADS_LENGHT=$READS_LENGHT 
-species=$species 
-cell=$cell
-
-cd ..
-
-cd ..
-}
 
 function TRIMMING {
 
@@ -279,22 +263,6 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DigitalExpressio
         CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/whitelist_barcodes.csv
 }
 
-##To check in future
-function read_expression {
-
-SCRIPTS_EXTRACT=$(pwd)/setup
-java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DigitalExpression \
-        I=$(pwd)/projects/$project_name_mode/results/Completed.bam \
-        O=$(pwd)/projects/$project_name_mode/tmp/read_expression.tsv \
-        EDIT_DISTANCE=1 \
-        OUTPUT_LONG_FORMAT=$(pwd)/projects/$project_name_mode/tmp/read_expression.long \
-        STRAND_STRATEGY=SENSE \
-        OUTPUT_READS_INSTEAD=true \
-        LOCUS_FUNCTION_LIST={CODING,UTR} \
-        MIN_BC_READ_THRESHOLD=0 \
-        CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/whitelist_barcodes.csv
-
-}
 
 function scRNAmetrics {
 
@@ -310,35 +278,36 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar SingleCellRnaSeq
 }
 
 
-function metric_plot_R {
+function metric_plot {
+
+path_metric=$(pwd)/projects/$project_name_mode/tmp
+path_result=$(pwd)/projects/$project_name_mode/results
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
 
-Rscript $SCRIPTS_EXTRACT/rna_metrics.R $project_name_mode
+Rscript $SCRIPTS_EXTRACT/rna_metrics.R $path_metric $path_result
 
 }
 
-##The same, to check
-function convert_mtx_read {
 
-SCRIPTS_EXTRACT=$(pwd)/scripts
-
-python3 $SCRIPTS_EXTRACT/convert_mtx_read.py $project_name_mode
-
-}
 
 function convert_mtx_umi {
 
+path_convert=$(pwd)/projects/$project_name_mode/tmp
+
 SCRIPTS_EXTRACT=$(pwd)/scripts
 
-python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $project_name_mode
+python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $path_convert
 
 }
 
 
 function seurat {
 
+PATH_TMP=$(pwd)/projects/$project_name_mode/tmp
+PATH_RESULTS=$(pwd)/projects/$project_name_mode/results
+
 SCRIPTS_EXTRACT=$(pwd)/scripts
-Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $project_name_mode $cell
+Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $PATH_TMP $PATH_RESULTS $cell $project_name_mode
 
 }

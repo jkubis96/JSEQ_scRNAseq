@@ -9,7 +9,8 @@
 #install.packages('viridis')
 
 args <- commandArgs()
-project_name_mode <- args[6]
+path <- args[6]
+results <- args[7]
 
 library(tidyr)
 library(ggplot2)
@@ -22,7 +23,7 @@ debug_flag <- FALSE
 
 #### /debug
 
-metrics <- file.path(getwd(),'/projects/',project_name_mode,'/tmp/scRNAmetrics.txt')
+metrics <- file.path(path,'/scRNAmetrics.txt')
 
 mydata <- read.csv(file = metrics, header = T,
                    stringsAsFactors = F, skip = 6, sep = "\t")
@@ -83,10 +84,10 @@ p2 <- ggplot(mydata_long_pct, aes(x = `Cell Barcode`, y = fraction, fill = `Read
 # This allows to align the main plots so that we can relate both directly with the label from the bottom one.
 gp1 <- ggplotGrob(p1)
 gp2 <- ggplotGrob(p2)
-pdf(file = file.path(getwd(),'/projects/',project_name_mode,'/results/scRNAmetrics.pdf'), width = 16, height = 13)
+pdf(file = file.path(results,'/scRNAmetrics.pdf'), width = 16, height = 13)
 grid::grid.newpage()
 grid::grid.draw(rbind(gp1, gp2, size = "last"))
 dev.off()
 
-ggsave(filename = file.path(getwd(),'/projects/',project_name_mode,'/results/scRNAmetrics.jpeg'), dpi = 600)
+ggsave(filename = file.path(results,'/scRNAmetrics.jpeg'), dpi = 600)
 

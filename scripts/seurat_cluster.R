@@ -9,15 +9,17 @@ args <- commandArgs()
 
 print(args)
 
-project_name_mode <- args[6]
+path_tmp <- args[6]
+path_results <- args[7]
 
-cells_number <- args[7]
+cells_number <- args[8]
 cells_number <- as.numeric(cells_number)
 
-UMI_PATH <- file.path(getwd(), 'projects',project_name_mode,'tmp/seurat_umi/')
-OUTPUT <- file.path(getwd(),'projects',project_name_mode,'results/')
 
+UMI_PATH <- file.path(path_tmp,'/seurat_umi/')
+OUTPUT <- file.path(path_results)
 
+project_name_mode <- args[9]
 
 #Load data about project
 

@@ -7,20 +7,20 @@ import subprocess
 import sys
 
 cwd = os.getcwd()
-project_name_mode=sys.argv[1]
+path=sys.argv[1]
 
 
 barcodes = {}
 features = {}
 
-os.mkdir(cwd + '/projects/' + project_name_mode + '/tmp/seurat_umi')
+os.mkdir(path + '/seurat_umi')
 
-out_barcodes = cwd + '/projects/' + project_name_mode + '/tmp/seurat_umi/barcodes.tsv'
-out_features = cwd + '/projects/' + project_name_mode + '/tmp/seurat_umi/genes.tsv'
-mtx = cwd + '/projects/' + project_name_mode + '/tmp/seurat_umi/matrix.mtx'
-temp_mtx = cwd + '/projects/' + project_name_mode + '/tmp/temp_umi.mtx'
-header_mtx = cwd + '/projects/' + project_name_mode + '/tmp/header.mtx'
-expression = cwd + '/projects/' + project_name_mode + '/tmp/umi_expression.long'
+out_barcodes = path + '/seurat_umi/barcodes.tsv'
+out_features = path + '/seurat_umi/genes.tsv'
+mtx = path + '/seurat_umi/matrix.mtx'
+temp_mtx = path + '/temp_umi.mtx'
+header_mtx = path + '/header.mtx'
+expression = path + '/umi_expression.long'
 n_lines = 0
 barcode_index = 1
 feature_index = 1

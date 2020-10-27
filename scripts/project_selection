@@ -1,0 +1,19 @@
+#!/bin/bash
+
+function select_project {
+
+INFASTP=$(pwd)/projects/$project_name_mod*
+
+select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
+cd $d
+source config
+project_name_mode=$project_name_mode 
+READS_LENGHT=$READS_LENGHT 
+species=$species 
+cell=$cell
+
+cd ..
+
+cd ..
+
+}
