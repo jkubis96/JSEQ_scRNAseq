@@ -48,7 +48,7 @@ RESULT=$(pwd)/projects/$project_name_mode/results/
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
 cpu=$(grep -c ^processor /proc/cpuinfo)
 cpu=$[$cpu-2]
-DIR=$(pwd)/projects/$project_name_mode/$species/index
+DIR=$(pwd)/genome/$species/index/$READS_LENGHT 
 tmp=$(pwd)/projects/$project_name_mode/tmp/
 
 for i in $INFASTP/*.fastq;

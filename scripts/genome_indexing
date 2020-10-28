@@ -97,22 +97,25 @@ fi
 
 function INDEXING {
 
+index_files=$(pwd)/genome/$species/index/*
 
-
-if [[ $species == 'human' ]]
+for i in $index_files
+do
+if [[ $i != *$READS_LENGHT* ]]
 then
 
 echo ''
 echo 'Start indexing'
 echo ''
 
-mkdir -p projects/$project_name_mod/$species/index
+mkdir -p genome/$species/index/$READS_LENGHT 
 cpu=$(grep -c ^processor /proc/cpuinfo)
 cpu=$cpu-2
-DIR=$(pwd)/projects/$project_name_mod/$species/index
+DIR=$(pwd)/genome/$species/index/$READS_LENGHT 
 GENOME=$(pwd)/genome/$species
+lenght=$READS_LENGHT-1
 
-STAR --runThreadN $cpu  --runMode genomeGenerate --genomeDir $DIR  --genomeFastaFiles $GENOME/*.fa  --sjdbGTFfile $GENOME/*.gtf --sjdbOverhang $READS_LENGHT 
+STAR --runThreadN $cpu  --runMode genomeGenerate --genomeDir $DIR  --genomeFastaFiles $GENOME/*.fa  --sjdbGTFfile $GENOME/*.gtf --sjdbOverhang $lenght
 
 echo ''
 echo 'Done'
@@ -120,52 +123,16 @@ echo ''
 
 start
 
-elif [[ $species == 'mice' ]]
-then
-
+elif [[ $i == *$READS_LENGHT* ]]
+then	
+	
 echo ''
-echo 'Start indexing'
-echo ''
-
-mkdir -p projects/$project_name_mod/$species/index
-cpu=$(grep -c ^processor /proc/cpuinfo)
-cpu=$cpu-2
-DIR=$(pwd)/projects/$project_name_mod/$species/index
-GENOME=$(pwd)/genome/$species
-
-
-STAR --runThreadN $cpu  --runMode genomeGenerate --genomeDir $DIR  --genomeFastaFiles $GENOME/*.fa  --sjdbGTFfile $GENOME/*.gtf --sjdbOverhang $READS_LENGHT 
-
-echo ''
-echo 'Done'
+echo 'Index' $lenght 'for' $species 'already exist'
 echo ''
 
-start
-
-elif [[ $species == 'mix' ]]
-then
-
-echo ''
-echo 'Start indexing'
-echo ''
-
-mkdir -p projects/$project_name_mod/$species/index
-cpu=$(grep -c ^processor /proc/cpuinfo)
-cpu=$cpu-2
-DIR=$(pwd)/projects/$project_name_mod/$species/index
-GENOME=$(pwd)/genome/$species
-
-
-STAR --runThreadN $cpu  --runMode genomeGenerate --genomeDir $DIR  --genomeFastaFiles $GENOME/*.fa  --sjdbGTFfile $GENOME/*.gtf --sjdbOverhang $READS_LENGHT 
-
-echo ''
-echo 'Done'
-echo ''
-
-start
 
 fi
-
+done;
 }
 
 
