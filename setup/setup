@@ -42,14 +42,16 @@ $permission_sudo apt-get install libhdf5-serial-dev
 $permission_sudo apt-get install h5utils
 $permission_sudo apt-get install hdf5-tools
 $permission_sudo apt-get install hdf5-helpers
+$permission_sudo apt-get install r-cran-patchwork
 $permission_sudo apt-get install -y r-cran-httr
 $permission_sudo apt-get install -y r-cran-leiden
 $permission_sudo apt-get install -y r-cran-igraph
+$permission_sudo apt-get install -y r-cran-viridis
+$permission_sudo apt-get install -y r-cran-seurat
+
 
 $permission_sudo apt-get update
 
-path=$(pwd)
-Rscript $path/r_req.R
 
 }
 

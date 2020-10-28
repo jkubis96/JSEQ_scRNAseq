@@ -20,6 +20,7 @@ then
 		source=$(pwd)/scripts/genome_indexing
 		source $source
 		INDEXING
+		
 else
         echo 'FastQ data not found'
 		echo 'Put data'

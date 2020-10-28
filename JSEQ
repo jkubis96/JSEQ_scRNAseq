@@ -68,7 +68,7 @@ then
         source=$(pwd)/scripts
 		source $source/analysis_species
 		TRIMMING 
-		#STAR_MAPPING 
+		STAR_MAPPING 
 		whitelist 
 		umi_extract 
 		merge_reads 
@@ -92,32 +92,32 @@ then
 		
         source=$(pwd)/scripts
 		source $source/analysis_mix
-		#directory 
-		#TRIMMING 
-		#STAR_MAPPING 
-		#whitelist 
-		#umi_extract 
-		#merge_reads 
-	  #  barcodes 
-	#	create_ref 
-		#reduce_annotation_gtf 
-		#create_ref_annotation 
-		#dropSEQ 
+		directory 
+		TRIMMING 
+		STAR_MAPPING 
+		whitelist 
+		umi_extract 
+		merge_reads 
+	    barcodes 
+		create_ref 
+		reduce_annotation_gtf 
+		create_ref_annotation 
+		dropSEQ 
 		final_exon 
-		#completed_bam 
-	#	rna_intervals 
-		#filtr_mice 
-	#	filtr_human 
-		#umi_expression_mice 
-	#	umi_expression_human 
-	#	scRNAmetrics_mice 
-	#	scRNAmetrics_human 
-	#	metric_plot_mice 
-	#	metric_plot_human 
-	#	convert_mtx_umi_mice 
-	#	convert_mtx_umi_human 
-		#seurat_mice 
-		#seurat_human 
+		completed_bam 
+		rna_intervals 
+		filtr_mice 
+		filtr_human 
+		umi_expression_mice 
+		umi_expression_human 
+		scRNAmetrics_mice 
+		scRNAmetrics_human 
+		metric_plot_mice 
+		metric_plot_human 
+		convert_mtx_umi_mice 
+		convert_mtx_umi_human 
+		seurat_mice 
+		seurat_human 
 		
 		
 		

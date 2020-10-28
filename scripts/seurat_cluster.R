@@ -197,7 +197,7 @@ top5 <- data.frame(new_claster$cluster, new_claster$gene)
 colnames(top5) <- c('cluster','gene')
 
 
-top5$gene <- c("GAD1"  ,   "LGALS1"   ,  "S100A4"    , "ACTBP2"  ,   "AP002982.1", "C1QBP","HMGN1"  ,    "CKB"     ,   "NOL7"    ,   "GAL"     ,   "RPL26"    ,  "TXNDC17"  , "PWP1"  ,     "MT-ND2"   ,  "AURKA"    )
+#top5$gene <- c("GAD1"  ,   "LGALS1"   ,  "S100A4"    , "ACTBP2"  ,   "AP002982.1", "C1QBP","HMGN1"  ,    "CKB"     ,   "NOL7"    ,   "GAL"     ,   "RPL26"    ,  "TXNDC17"  , "PWP1"  ,     "MT-ND2"   ,  "AURKA"    )
 
 
 ##Paterning via markers

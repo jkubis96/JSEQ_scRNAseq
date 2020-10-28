@@ -81,8 +81,8 @@ then
 	
 	rm correct_annotation_human.gtf
 	rm correct_annotation_mice.gtf
-	rm renamed_genome_human.gtf
-	rm renamed_genome_mice.gtf
+	rm renamed_genome_human.fa
+	rm renamed_genome_mice.fa
 	rm genome_human.fa
 	rm genome_mice.fa
 	cd ..
@@ -139,6 +139,30 @@ STAR --runThreadN $cpu  --runMode genomeGenerate --genomeDir $DIR  --genomeFasta
 echo ''
 echo 'Done'
 echo ''
+
+start
+
+elif [[ $species == 'mix' ]]
+then
+
+echo ''
+echo 'Start indexing'
+echo ''
+
+mkdir -p projects/$project_name_mod/$species/index
+cpu=$(grep -c ^processor /proc/cpuinfo)
+cpu=$cpu-2
+DIR=$(pwd)/projects/$project_name_mod/$species/index
+GENOME=$(pwd)/genome/$species
+
+
+STAR --runThreadN $cpu  --runMode genomeGenerate --genomeDir $DIR  --genomeFastaFiles $GENOME/*.fa  --sjdbGTFfile $GENOME/*.gtf --sjdbOverhang $READS_LENGHT 
+
+echo ''
+echo 'Done'
+echo ''
+
+start
 
 fi
 
