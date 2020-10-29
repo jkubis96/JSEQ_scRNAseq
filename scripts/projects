@@ -11,7 +11,9 @@ function checkfq {
 for i in $fast;
 do
 		r+=$i
-if      [[ $r == *"R1"* ]] || [[ $r == *"R2"* ]];
+done;
+
+if      [[ $r == *"R1"* ]] && [[ $r == *"R2"* ]];
 then
         echo ''
 		echo 'Project done'
@@ -26,25 +28,49 @@ else
 		echo 'Put data'
 		checkfq
 fi
-done; 
+ 
 	
 		
 }
 
-
-function PROJECT {
-
-echo 'Create project for FastQ data [1] or prepared BAM data [2]:'
-read p 
-p=$(echo $p | tr '[:upper:]' '[:lower:]')
-
-if [[ $p == '2' ]]
+function checkseurat {
+		echo ''
+		echo 'Put genes name data as genes.tsv into => projects/'$project_name_mod/'seurat_data'
+		echo 'Put barcodes data as barcodes.tsv into => projects/'$project_name_mod/'seurat_data'
+		echo 'Put count matrix data as matrix.mtx into => projects/'$project_name_mod/'seurat_data'
+		echo 'If you done it, push ENTER'
+		read enter
+		
+		fast=$(pwd)/projects/$project_name_mod/seurat_data/*
+	
+for i in $fast;
+do
+		r+=$i
+done; 		
+		
+if      [[ $r == *"matrix"* ]] && [[ $r == *"genes"* ]] && [[ $r == *"barcodes"* ]];
 then
+        echo ''
+		echo 'Project done'
+		echo 'Start Seurat analysis'
+		echo ''
+		
+		
+else
+        echo 'Expression data not found'
+		echo 'Put data'
+		checkseurat
+fi
 
-	function PARAMETRS {
+	
+		
+}
+
+function PARAMETRS_fq {
 echo 'Project name:' 
 echo ''
 		read project_name
+		project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
 echo 'Enter operation paramets:'
 echo ''
 echo 'ReadsLenght:'
@@ -53,64 +79,90 @@ echo ''
 echo 'Species [human/mice/mix]:'
 echo ''
         read species
+		species=$(echo $species | tr '[:upper:]' '[:lower:]')
+echo 'Estimated number of cells'
+echo ''
+	read cell
 
-if [[ $READS_LENGHT -lt 300 ]] && [[ $READS_LENGHT -gt 0 ]] && [[ $species == 'human' ]] || [[ $species == 'mice' ]] || [[ $species == 'mix' ]]
+if [[ $READS_LENGHT -lt 300 ]] && [[ $READS_LENGHT -gt 0 ]] && [[ $species == 'human' ]] || [[ $species == 'mice' ]] || [[ $species == 'mix' ]] && [[ $cell -lt 1000000 ]] && [[ $cell -gt 0 ]];
 then
 
 echo 'Parametrs correct'
 echo ''
 else
-        PARAMETRS
+        echo ''
+		echo 'Wrong parametrs'
+		echo 'Write right parametrs'
+		echo ''
+		PARAMETRS_fq
+		
 fi
 
 }
 
-PARAMETRS
+function PARAMETRS_se {
+echo 'Project name:' 
+echo ''
+		read project_name
+		project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
+echo 'Enter operation paramets:'
+echo ''
+
+echo 'Species [human/mice/mix]:'
+echo ''
+        read species
+		species=$(echo $species | tr '[:upper:]' '[:lower:]')
+echo 'Estimated number of cells'
+echo ''
+	read cell
+
+if [[ $species == 'human' ]] || [[ $species == 'mice' ]] || [[ $species == 'mix' ]] && [[ $cell -lt 1000000 ]] && [[ $cell -gt 0 ]];
+then
+
+echo 'Parametrs correct'
+echo ''
+else
+        echo ''
+		echo 'Wrong parametrs'
+		echo 'Write right parametrs'
+		echo ''
+		PARAMETRS_se
 		
-		project_name_mod=$project_name'_bam'
+fi
+
+}
+
+function PROJECT {
+
+echo 'Create project for FastQ data [1] or expression data (for SeuratObject) [2]:'
+read p 
+p=$(echo $p | tr '[:upper:]' '[:lower:]')
+
+if [[ $p == '2' ]]
+then
+		PARAMETRS_se
+		
+		project_name_mod=$project_name'_seurat'
 		mkdir -p projects/$project_name_mod
-		mkdir -p projects/$project_name_mod/tmp
 		mkdir -p projects/$project_name_mod/results
-		mkdir -p projects/$project_name_mod/bam_data
+		mkdir -p projects/$project_name_mod/seurat_data
 		echo ''
 		echo 'Complete'
 		echo ''
         echo 'Next step =>'
 		echo ''
 	
-	start
+		echo project_name_mode=$project_name_mod > $(pwd)/projects/$project_name_mod/config
+		echo READS_LENGHT=$READS_LENGHT >> $(pwd)/projects/$project_name_mod/config
+		echo species=$species >> $(pwd)/projects/$project_name_mod/config
+		echo cell=$cell >> $(pwd)/projects/$project_name_mod/config
+		
+		checkseurat
 	
 elif [[ $p == '1' ]]
 then
 
-function PARAMETRS {
-echo 'Project name:' 
-echo ''
-		read project_name
-echo 'Enter operation paramets:'
-echo ''
-echo 'ReadsLenght:'
-echo ''
-        read READS_LENGHT
-echo 'Species [human/mice/mix]:'
-echo ''
-        read species
-echo 'Estimated celle amount:'
-echo ''
-	read cell
-
-if [[ $READS_LENGHT -lt 300 ]] || [[ $READS_LENGHT -gt 0 ]] && [[ $species == 'human' ]] || [[ $species == 'mice' ]] || [[ $species == 'mix' ]] && [[ $cell -lt 1000000 ]] || [[ $cell -gt 0 ]];
-then
-
-echo 'Parametrs correct'
-echo ''
-else
-        PARAMETRS
-fi
-
-}
-
-PARAMETRS
+		PARAMETRS_fq
 		
 		project_name_mod=$project_name'_fq'
 		mkdir -p projects/$project_name_mod

@@ -356,9 +356,9 @@ function umi_expression_human {
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DigitalExpression \
         I=$(pwd)/projects/$project_name_mode/results/human_results/FiltredHuman.bam \
-        O=$(pwd)/projects/$project_name_mode/tmp/umi_expression.tsv \
+        O=$(pwd)/projects/$project_name_mode/tmp/human/umi_expression.tsv \
         EDIT_DISTANCE=1 \
-        OUTPUT_LONG_FORMAT=$(pwd)/projects/$project_name_mode/tmp/umi_expression.long \
+        OUTPUT_LONG_FORMAT=$(pwd)/projects/$project_name_mode/tmp/human/umi_expression.long \
         STRAND_STRATEGY=SENSE\
         OUTPUT_READS_INSTEAD=false\
         LOCUS_FUNCTION_LIST={CODING,UTR}\
