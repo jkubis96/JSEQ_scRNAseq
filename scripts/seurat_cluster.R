@@ -16,26 +16,21 @@ cells_number <- args[8]
 cells_number <- as.numeric(cells_number)
 
 
-UMI_PATH <- file.path(path_tmp,'/seurat_umi/')
+UMI_PATH <- file.path(path_tmp,'seurat_umi/')
 OUTPUT <- file.path(path_results)
 
 project_name_mode <- args[9]
 
-#Load data about project
+species <- args[10]
 
-# {
-#   input <- c('sample1', '270', '75', 'batch1')
-#   design <- data.frame(input, stringsAsFactors = T)
-#   t <- t(as.matrix(design))
-#   design <- as.data.frame(t)
-#   colnames(design) <- c('samples','expected_cells','read_length','batch')
-#   rownames(design) <- NULL
-# }
-# 
+scripts_path <- args[11]
 
+#for mix species analysis >
+path_mutual_results <- args[12]
+# <
 
 { 
-# Load the UMI raw dataset
+# Load the raw dataset by UMI
 UMI_raw <- Read10X(UMI_PATH, gene.column = 1)
 
 
@@ -52,19 +47,21 @@ UMI@meta.data <- UMI@meta.data %>%
   rename(nCounts = nCount_RNA) %>% 
   rename(nGenes = nFeature_RNA)
 
-jpeg(file.path(OUTPUT, "/counts~genes.jpeg") , units="in", width=15, height=10, res=300)
+saveRDS(UMI, file = file.path(OUTPUT, "Seurat_object_input.rds"))
+
+jpeg(file.path(OUTPUT, "counts~genes.jpeg") , units="in", width=15, height=10, res=300)
 UC_plot <- VlnPlot(UMI, features = c("nGenes", "nCounts"), ncol = 2)
 UC_plot
 dev.off()
 
-jpeg(file.path(OUTPUT, "/Ribo~Mito.jpeg") , units="in", width=15, height=10, res=300)
+jpeg(file.path(OUTPUT, "Ribo~Mito.jpeg") , units="in", width=15, height=10, res=300)
 MR_plot <- VlnPlot(UMI, features = c("RiboPercent", "MitoPercent"), ncol = 2)
 MR_plot
 dev.off()
 
 ###############################################################################
 
-jpeg(file.path(OUTPUT, "/counts~genes_QC.jpeg") , units="in", width=15, height=10, res=300)
+jpeg(file.path(OUTPUT, "counts~genes_QC.jpeg") , units="in", width=15, height=10, res=300)
 CG_plot <- FeatureScatter(UMI, feature1 = "nCounts", feature2 = "nGenes")
 CG_plot
 dev.off()
@@ -103,7 +100,7 @@ DQC <- ggplot()+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
   labs(color='Droplet content') 
 
-ggsave(DQC, filename = file.path(OUTPUT,'/DropletQC.jpeg'), width = 10, height = 7, dpi = 600)
+ggsave(DQC, filename = file.path(OUTPUT,'DropletQC.jpeg'), width = 10, height = 7, dpi = 600)
 
 MQC <- ggplot()+
   geom_point(QC_UMI, mapping = aes(x = MitoPercent, y = MitoPercent , color = Mito_Status))+
@@ -112,7 +109,7 @@ MQC <- ggplot()+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
   labs(color='% Content treshold') 
 
-ggsave(MQC, filename = file.path(OUTPUT,'/MitoQC.jpeg'), width = 10, height = 7, dpi = 600)
+ggsave(MQC, filename = file.path(OUTPUT,'MitoQC.jpeg'), width = 10, height = 7, dpi = 600)
 
 RQC <- ggplot()+
   geom_point(QC_UMI, mapping = aes(x = RiboPercent, y = RiboPercent, color = Ribo_Status))+
@@ -121,7 +118,7 @@ RQC <- ggplot()+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
   labs(color='% Content treshold') 
 
-ggsave(RQC, filename = file.path(OUTPUT,'/RiboQC.jpeg'),  width = 10, height = 7, dpi = 600)
+ggsave(RQC, filename = file.path(OUTPUT,'RiboQC.jpeg'),  width = 10, height = 7, dpi = 600)
 
 ####################################################################################
 UMI <- NormalizeData(UMI, normalization.method = "LogNormalize", scale.factor = 10000)
@@ -134,7 +131,7 @@ top10 <- head(VariableFeatures(UMI), 10)
 
 plot1 <- VariableFeaturePlot(UMI)
 
-jpeg(file.path(OUTPUT, "/variable_genes.jpeg") , units="in", width=10, height=7, res=300)
+jpeg(file.path(OUTPUT, "variable_genes.jpeg") , units="in", width=10, height=7, res=300)
 plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
 plot2
 dev.off()
@@ -150,12 +147,12 @@ UMI <- RunPCA(UMI, features = VariableFeatures(object = UMI))
 print(UMI[["pca"]], dims = 1:5, nfeatures = 5)
 
 
-jpeg(file.path(OUTPUT, "/PCA_DimPlot.jpeg") , units="in", width=10, height=7, res=300)
+jpeg(file.path(OUTPUT, "PCA_DimPlot.jpeg") , units="in", width=10, height=7, res=300)
 DimPlot(UMI, reduction = "pca")
 dev.off()
 
-jpeg(file.path(OUTPUT, "/PCA_heatmap.jpeg") , units="in", width=10, height=7, res=300)
-DimHeatmap(UMI, dims = 1, cells = cells_number, balanced = TRUE)
+jpeg(file.path(OUTPUT, "PCA_heatmap.jpeg") , units="in", width=10, height=7, res=300)
+DimHeatmap(UMI, dims = 1:15, cells = cells_number, balanced = TRUE)
 dev.off()
 
 
@@ -163,10 +160,13 @@ dev.off()
 UMI <- JackStraw(UMI, num.replicate = 100)
 UMI <- ScoreJackStraw(UMI, dims = 1:20)
 
-jpeg(file.path(OUTPUT, "/JackStrawPlot.jpeg") , units="in", width=10, height=7, res=300)
+jpeg(file.path(OUTPUT, "JackStrawPlot.jpeg") , units="in", width=10, height=7, res=300)
 JackStrawPlot(UMI, dims = 1:15)
 dev.off()
 
+jpeg(file.path(OUTPUT, "Elbow.jpeg") , units="in", width=10, height=7, res=300)
+ElbowPlot(UMI)
+dev.off()
 
 UMI <- FindNeighbors(UMI, dims = 1:10)
 UMI <- FindClusters(UMI, resolution = 0.5)
@@ -177,7 +177,7 @@ head(Idents(UMI), 5)
 
 UMI <- RunUMAP(UMI, dims = 1:10)
 
-jpeg(file.path(OUTPUT, "/UMAP.jpeg") , units="in", width=10, height=7, res=300)
+jpeg(file.path(OUTPUT, "UMAP.jpeg") , units="in", width=10, height=7, res=300)
 DimPlot(UMI, reduction = "umap")
 dev.off()
 
@@ -256,6 +256,25 @@ new.cluster.ids <- top5$cell
 names(new.cluster.ids) <- levels(UMI)
 UMI <- RenameIdents(UMI, new.cluster.ids)
 
-jpeg(file.path(OUTPUT, "/UMAP_with_DE_gene.jpeg") , units="in", width=10, height=7, res=300)
+jpeg(file.path(OUTPUT, "UMAP_with_DE_gene.jpeg") , units="in", width=10, height=7, res=300)
 DimPlot(UMI, reduction = "umap", label = TRUE, pt.size = 0.5) + NoLegend()
 dev.off()
+
+
+saveRDS(UMI, file = file.path(OUTPUT, "Seurat_object_output.rds"))
+
+#########################################################################################
+
+if (species %in% c('human','mice')) {
+  rmarkdown::render(input = file.path(scripts_path, 'raport_species.Rmd'), 
+                    output_format = 'html_document', output_dir = OUTPUT, 
+                    output_file = 'Raport')
+} else if (species == 'mix') {
+  rmarkdown::render(input = file.path(scripts_path, 'raport_mix.Rmd'), 
+                    output_format = 'html_document', output_dir = path_mutual_results, 
+                    output_file = 'Raport')
+} else {
+  quit()
+  n
+}
+

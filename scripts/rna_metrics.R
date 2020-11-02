@@ -58,9 +58,7 @@ mydata_long$`Read Overlap` <- factor(mydata_long$`Read Overlap`,
 p1 <- ggplot(mydata_long, aes(x = `Cell Barcode`, y = count, fill = `Read Overlap`)) +
   geom_bar(stat = "identity") +
   theme(axis.text.x = element_text(angle = 90, hjust = 0), legend.position = "none")
-p1 <- p1 + labs(title = paste(nrow(mydata),
-                              "selected barcodes for"
-                              ),
+p1 <- p1 + labs(title = "The content of individual parts of genetic elements",
                 x = "Barcodes", y = "Bases")
 p1 <- p1 + theme(axis.title.x = element_blank(),
                  axis.text.x = element_blank(),

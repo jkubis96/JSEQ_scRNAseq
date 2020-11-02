@@ -343,11 +343,11 @@ python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $path_convert_mice
 
 function seurat_mice {
 
-PATH_TMP=$(pwd)/projects/$project_name_mode/tmp/mice
-PATH_RESULTS=$(pwd)/projects/$project_name_mode/results/mice_results
+PATH_TMP_MICE=$(pwd)/projects/$project_name_mode/tmp/mice
+PATH_RESULTS_MICE=$(pwd)/projects/$project_name_mode/results/mice_results
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
-Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $PATH_TMP $PATH_RESULTS $cell $project_name_mode
+Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $PATH_TMP_MICE $PATH_RESULTS_MICE $cell $project_name_mode
 
 }
 
@@ -407,10 +407,13 @@ python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $path_convert_human
 
 function seurat_human {
 
-PATH_TMP=$(pwd)/projects/$project_name_mode/tmp/human
-PATH_RESULTS=$(pwd)/projects/$project_name_mode/results/human_results
+PATH_TMP_HUMAN=$(pwd)/projects/$project_name_mode/tmp/human
+PATH_RESULTS_HUMAN=$(pwd)/projects/$project_name_mode/results/human_results
+PATH_RESULTS=$(pwd)/projects/$project_name_mode/results
+PATH_SCRIPTS=$(pwd)/scripts
+PATH_TMP=$(pwd)/projects/$project_name_mode/tmp
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
-Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $PATH_TMP $PATH_RESULTS $cell $project_name_mode
+Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $PATH_TMP_HUMAN $PATH_RESULTS_HUMAN $cell $project_name_mode $species $PATH_SCRIPTS $PATH_RESULTS $PATH_RESULTS_MICE $PATH_TMP
 
 }

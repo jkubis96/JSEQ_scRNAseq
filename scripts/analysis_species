@@ -306,8 +306,9 @@ function seurat {
 
 PATH_TMP=$(pwd)/projects/$project_name_mode/tmp
 PATH_RESULTS=$(pwd)/projects/$project_name_mode/results
+PATH_SCRIPTS=$(pwd)/scripts
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
-Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $PATH_TMP $PATH_RESULTS $cell $project_name_mode
+Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $PATH_TMP $PATH_RESULTS $cell $project_name_mode $species $PATH_SCRIPTS
 
 }
