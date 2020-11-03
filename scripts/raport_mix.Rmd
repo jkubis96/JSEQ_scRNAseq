@@ -50,7 +50,9 @@ path_mice <- file.path(args[13])
 UMI_human <- readRDS(file = file.path(OUTPUT, "Seurat_object_input.rds"))
 UMI_mice <- readRDS(file = file.path(path_mice, "Seurat_object_input.rds"))
 
-metrics <- file.path(path_tmp, 'scRNAmetrics.txt')
+metrics_humna <- file.path(path_tmp, 'human/scRNAmetrics.txt')
+metrics_mice <- file.path(path_tmp, 'mice/scRNAmetrics.txt')
+
 chceck_fq <- grepl("_fq", metrics)
 ```
 
@@ -58,21 +60,69 @@ chceck_fq <- grepl("_fq", metrics)
 
 # Single Cell analysis for `r species` species
 
+
+\
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+if (chceck_fq == TRUE){
+cat('Knee plot with threshold for detected unique barcodes and set number of cells for both species ##')
+}
+```
+
+\
+
+```{r pressure, echo=FALSE, out.width = '70%', fig.align="center"}
+
+if (chceck_fq == TRUE){
+  
+knitr::include_graphics(file.path(path_mix,'expect_whitelist_cell_barcode_counts.png'), dpi = 300)
+  
+}
+``` 
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+if (chceck_fq == TRUE){
+  
+cat('The number of cells is provided by the user estimation. To check that number provided number of cells is correct you can look at knee plot, which shows distugushe between estimated number of cells via user (in this case ',cells_number,'cells) and detected unique barcodes. When the values are very different you can change number of cells and conduct analysis from the begining but before you do this, you have to create new project with right settings')
+
+}
+```
+
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 if (chceck_fq == TRUE){
-cat('Mutual data set for mixed species analysis was splitted to separate analysis and clustering cell type for right species.')
+cat('*In the case of subsequent analyzes mutual data set for mixed species analysis was splitted to separate analysis and clustering cell type for right species.')
 }
 ```
 
+\
+
+
+# Human cells analysis
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+if (chceck_fq == TRUE){
+  
+cat('The following plots show content of genetics elements for mice cells.')
+
+}
+
+```
 
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
 if (chceck_fq == TRUE){
-mydata <- read.csv(file = metrics, header = T,
+mydata <- read.csv(file = metrics_human, header = T,
                    stringsAsFactors = F, skip = 6, sep = "\t")
 mydata <- mydata[order(mydata$PF_ALIGNED_BASES, decreasing = T), ]
 mydata_pct <- mydata[, c("READ_GROUP",
@@ -142,41 +192,9 @@ p2
 }
 ```
 
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-if (chceck_fq == TRUE){
-cat('Knee plot with threshold for detected unique barcodes and set number of cells ##')
-}
-```
 
 \
 
-```{r pressure, echo=FALSE, out.width = '70%', fig.align="center"}
-
-if (chceck_fq == TRUE){
-  
-knitr::include_graphics(file.path(path_mix,'expect_whitelist_cell_barcode_counts.png'), dpi = 300)
-  
-}
-``` 
-
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
-
-if (chceck_fq == TRUE){
-  
-cat('The above plots show content of genetics elements for',cells_number,'cells. The number of cells is provided by the user estimation. To check that number provided number of cells is correct you can look at knee plot, which shows distugushe between estimated number of cells via user and detected uniwue barcodes. When the values are very different you can change number of cells and conduct analysis from the begining but before you do this, you have to create new project with right settings')
-
-}
-```
-
-
-\
-
-
-# Human cells analysis
 ## Number of genes and counts for human
 
 \
@@ -536,6 +554,97 @@ print(cells)
 
 
 # Mice cells analysis
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+if (chceck_fq == TRUE){
+  
+cat('The following plots show content of genetics elements for mice cells.')
+
+}
+```
+
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+if (chceck_fq == TRUE){
+mydata <- read.csv(file = metrics_mice, header = T,
+                   stringsAsFactors = F, skip = 6, sep = "\t")
+mydata <- mydata[order(mydata$PF_ALIGNED_BASES, decreasing = T), ]
+mydata_pct <- mydata[, c("READ_GROUP",
+                         "PCT_INTERGENIC_BASES",
+                         "PCT_UTR_BASES",
+                         "PCT_RIBOSOMAL_BASES",
+                         "PCT_INTRONIC_BASES",
+                         "PCT_CODING_BASES")
+                     ]
+colnames(mydata_pct) = c('Cell Barcode', 'Intergenic', 'UTR', 'Ribosomial', 'Intronic', 'Coding')
+
+mydata <- mydata[, c("READ_GROUP",
+                     "INTERGENIC_BASES",
+                     "UTR_BASES",
+                     "RIBOSOMAL_BASES",
+                     "INTRONIC_BASES",
+                     "CODING_BASES")
+                 ]
+colnames(mydata) = c('Cell Barcode', 'Intergenic', 'UTR', 'Ribosomial', 'Intronic', 'Coding')
+
+# converting into long format for ploting
+mydata_long <- mydata %>% gather("Read Overlap", count, -"Cell Barcode")
+
+# Keep the original order of the barcodes using factor and levels.
+mydata_long$`Cell Barcode` <- factor(mydata_long$`Cell Barcode`,
+                                 levels = factor(unique(mydata_long$`Cell Barcode`)))
+mydata_long$`Read Overlap` <- factor(mydata_long$`Read Overlap`,
+                                   levels = unique(mydata_long$`Read Overlap`))
+
+p1 <- ggplot(mydata_long, aes(x = `Cell Barcode`, y = count, fill = `Read Overlap`)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0), legend.position = "none")
+p1 <- p1 + labs(title = "The content of individual parts of genetic elements",
+                x = "Barcodes", y = "Bases")
+p1 <- p1 + theme(axis.title.x = element_blank(),
+                 axis.text.x = element_blank(),
+                 axis.ticks.x = element_blank())
+p1 <- p1 + scale_y_continuous(labels = scales::scientific)
+p1 <- p1 + scale_fill_viridis(discrete = TRUE, option = "viridis")
+
+
+mydata_long_pct <- mydata_pct %>% gather("Read Overlap", fraction, -"Cell Barcode")
+# Keep the original order of the barcodes using factor and levels.
+mydata_long_pct$`Cell Barcode` <- factor(mydata_long_pct$`Cell Barcode`,
+                                     levels = factor(unique(mydata_long_pct$`Cell Barcode`)))
+mydata_long_pct$`Read Overlap` <- factor(mydata_long_pct$`Read Overlap`,
+                                       levels = unique(mydata_long_pct$`Read Overlap`))
+
+p2 <- ggplot(mydata_long_pct, aes(x = `Cell Barcode`, y = fraction, fill = `Read Overlap`)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0, size=8, vjust = 0.05), legend.position = "bottom") +
+  labs(x = "Barcodes", y = "%Bases") +
+  scale_y_continuous(labels = scales::percent) + scale_fill_viridis(discrete = TRUE, option = "viridis")
+
+
+p1
+
+}
+```
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+if (chceck_fq == TRUE) {
+p2
+}
+```
+
+
+\
+
 ## Number of genes and counts in analysis
 
 \
