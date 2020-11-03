@@ -382,7 +382,7 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar SingleCellRnaSeq
 }
 
 
-function metric_plot_R_human {
+function metric_plot_human {
 
 path_metric_human=$(pwd)/projects/$project_name_mode/tmp/human
 path_result_human=$(pwd)/projects/$project_name_mode/results/human_results

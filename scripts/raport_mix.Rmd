@@ -27,7 +27,7 @@ library(tidyr)
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 args <- commandArgs()
 
-species <- NULL
+species <- FALSE
 
 path_tmp <- args[14]
 path_results <- args[7]
@@ -50,10 +50,10 @@ path_mice <- file.path(args[13])
 UMI_human <- readRDS(file = file.path(OUTPUT, "Seurat_object_input.rds"))
 UMI_mice <- readRDS(file = file.path(path_mice, "Seurat_object_input.rds"))
 
-metrics_humna <- file.path(path_tmp, 'human/scRNAmetrics.txt')
+metrics_human <- file.path(path_tmp, 'human/scRNAmetrics.txt')
 metrics_mice <- file.path(path_tmp, 'mice/scRNAmetrics.txt')
 
-chceck_fq <- grepl("_fq", metrics)
+chceck_fq <- grepl("_fq", metrics_human)
 ```
 
 \

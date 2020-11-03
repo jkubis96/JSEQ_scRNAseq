@@ -27,6 +27,7 @@ library(tidyr)
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 args <- commandArgs()
 
+species <- FALSE
 
 path_tmp <- args[6]
 path_results <- args[7]

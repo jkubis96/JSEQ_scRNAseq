@@ -7,7 +7,7 @@ library(ggplot2)
 
 args <- commandArgs()
 
-species <- NULL
+species <- FALSE
 
 print(args)
 
