@@ -303,6 +303,7 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DigitalExpressio
 }
 
 
+
 function scRNAmetrics_mice {
 
 SCRIPTS_EXTRACT=$(pwd)/setup

@@ -519,6 +519,6 @@ print(cells)
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
 if (chceck_fq == TRUE){
-cat('ou can also run analysis manually. In this project in ',path_results,' directory was saved SeuratObject in two forms: before analysis (Seurat_object_input.Rds) and after analysis (Seurat_object_output.Rds). Read one in to R (preferable IDE RStudio) and run your own analysis with parameters suitable for you.')
+cat('You can also run analysis manually. In this project in ',path_results,' directory was saved SeuratObject in two forms: before analysis (Seurat_object_input.Rds) and after analysis (Seurat_object_output.Rds). Read one in to R (preferable IDE RStudio) and run your own analysis with parameters suitable for you.')
 }
 ```

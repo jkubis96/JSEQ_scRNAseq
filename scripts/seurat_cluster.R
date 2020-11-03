@@ -7,6 +7,8 @@ library(ggplot2)
 
 args <- commandArgs()
 
+species <- NULL
+
 print(args)
 
 path_tmp <- args[6]
@@ -262,6 +264,14 @@ dev.off()
 
 
 saveRDS(UMI, file = file.path(OUTPUT, "Seurat_object_output.rds"))
+
+#Create Expression Matrix
+
+saveRDS(UMI, file = file.path(OUTPUT, "Seurat_object_output.rds"))
+AE <- AverageExpression(UMI)
+AE <- as.matrix(AE[[1]])
+
+write.csv(AE, file = file.path(OUTPUT, "expression_matrix.csv"))
 
 #########################################################################################
 
