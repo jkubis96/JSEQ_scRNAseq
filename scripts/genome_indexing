@@ -127,9 +127,12 @@ elif [[ $i == *$READS_LENGHT* ]]
 then	
 	
 echo ''
-echo 'Index' $lenght 'for' $species 'already exist'
+echo 'Index' $READS_LENGHT 'for' $species 'already exist'
 echo ''
 
+jseq=$(pwd)/JSEQ
+source jseq
+start
 
 fi
 done;
