@@ -31,6 +31,7 @@ scripts_path <- args[11]
 path_mutual_results <- args[12]
 # <
 
+print(UMI_PATH)
 { 
 # Load the raw dataset by UMI
 UMI_raw <- Read10X(UMI_PATH, gene.column = 1)

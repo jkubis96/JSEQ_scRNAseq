@@ -119,7 +119,6 @@ p1
 }
 ```
 
-\
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
@@ -134,7 +133,7 @@ cat('Knee plot with threshold for detected unique barcodes and set number of cel
 }
 ```
 
-\
+
 
 ```{r pressure, echo=FALSE, out.width = '70%', fig.align="center"}
 
@@ -156,8 +155,7 @@ cat('The above plots show content of genetics elements for',cells_number,'cells.
 }
 ```
 
-\
-\
+
 
 ## Number of genes and counts in analysis
 
@@ -221,9 +219,10 @@ QC_UMI$Ribo_Status[QC_UMI$RiboPercent > 0] <- '> 0 %'
 
 \
 
+\
+
 ## Quality Control for content of Droplets
 
-\
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
@@ -512,14 +511,12 @@ print(cells)
 ```
 \
 \
-\
-\
 
 ### Manualy analysis
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
-if (chceck_fq == TRUE){
+
 cat('You can also run analysis manually. In this project in ',path_results,' directory was saved SeuratObject in two forms: before analysis (Seurat_object_input.Rds) and after analysis (Seurat_object_output.Rds). Read one in to R (preferable IDE RStudio) and run your own analysis with parameters suitable for you.')
-}
+
 ```

@@ -1,8 +1,51 @@
 #!/bin/bash
 
-function select_project {
+function select_analysis {
 
-INFASTP=$(pwd)/projects/$project_name_mod*
+echo 'Analyse data for FastQ project [1]  Seurat project [2]:'
+read p 
+p=$(echo $p | tr '[:upper:]' '[:lower:]')
+
+if [[ $p == '2' ]]
+then
+
+	select_project_seurat		
+	
+elif [[ $p == '1' ]]
+then
+
+
+	select_project_fastq
+
+else
+       select_analysis
+fi
+
+}
+
+
+function select_project_seurat {
+
+INFASTP=$(pwd)/projects/$project_name_mod/*seurat*
+
+select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
+cd $d
+source config
+project_name_mode=$project_name_mode 
+READS_LENGHT=$READS_LENGHT 
+species=$species 
+cell=$cell
+
+cd ..
+
+cd ..
+
+}
+
+
+function select_project_fastq {
+
+INFASTP=$(pwd)/projects/$project_name_mod/*fq*
 
 select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
 cd $d

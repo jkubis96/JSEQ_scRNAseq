@@ -1,4 +1,31 @@
 #!/bin/bash
+function merge_fq {
+
+
+fq=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
+for i in $fq;
+do
+if      [[ $i == *"R1"* ]];
+then
+		r1+=$(basename $i)' '
+elif 	[[ $i == *"R2"* ]];
+then
+		r2+=$(basename $i)' '
+fi
+done;
+
+cd projects/$project_name_mod/fast_data
+echo $r1
+cat $r1 > input_R1.fastq.gz
+cat $r2 > input_R2.fastq.gz
+rm $r1 $r2
+
+cd ..
+cd ..
+cd ..
+
+}
+
 
 function checkfq {
 		echo ''
@@ -17,6 +44,10 @@ if      [[ $r == *"R1"* ]] && [[ $r == *"R2"* ]];
 then
         echo ''
 		echo 'Project done'
+		echo ''
+		echo 'Merge fastq file for Read1 and Read2 - if more than one'
+		echo ''
+		merge_fq
 		echo 'Start genome indexing'
 		echo ''
 		source=$(pwd)/scripts/genome_indexing
@@ -27,6 +58,7 @@ else
         echo 'FastQ data not found'
 		echo 'Put data'
 		checkfq
+		
 fi
  
 	
@@ -35,13 +67,13 @@ fi
 
 function checkseurat {
 		echo ''
-		echo 'Put genes name data as genes.tsv into => projects/'$project_name_mod/'seurat_data'
-		echo 'Put barcodes data as barcodes.tsv into => projects/'$project_name_mod/'seurat_data'
-		echo 'Put count matrix data as matrix.mtx into => projects/'$project_name_mod/'seurat_data'
+		echo 'Put genes name data as genes.tsv into => projects/'$project_name_mod/'seurat_umi'
+		echo 'Put barcodes data as barcodes.tsv into => projects/'$project_name_mod/'seurat_umi'
+		echo 'Put count matrix data as matrix.mtx into => projects/'$project_name_mod/'seurat_umi'
 		echo 'If you done it, push ENTER'
 		read enter
 		
-		fast=$(pwd)/projects/$project_name_mod/seurat_data/*
+		fast=$(pwd)/projects/$project_name_mod/seurat_umi/*
 	
 for i in $fast;
 do
@@ -54,6 +86,10 @@ then
 		echo 'Project done'
 		echo 'Start Seurat analysis'
 		echo ''
+		
+	jseq=$(pwd)/JSEQ
+	source jseq
+	start
 		
 		
 else
@@ -84,7 +120,7 @@ echo 'Estimated number of cells'
 echo ''
 	read cell
 
-if [[ $READS_LENGHT -lt 300 ]] && [[ $READS_LENGHT -gt 0 ]] && [[ $species == 'human' ]] || [[ $species == 'mice' ]] || [[ $species == 'mix' ]] && [[ $cell -lt 1000000 ]] && [[ $cell -gt 0 ]];
+if [[ $READS_LENGHT -lt 300 && $READS_LENGHT -gt 0 ]] && [[ $species == 'human' || $species == 'mice' || $species == 'mix' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]];
 then
 
 echo 'Parametrs correct'
@@ -116,7 +152,7 @@ echo 'Estimated number of cells'
 echo ''
 	read cell
 
-if [[ $species == 'human' ]] || [[ $species == 'mice' ]] || [[ $species == 'mix' ]] && [[ $cell -lt 1000000 ]] && [[ $cell -gt 0 ]];
+if [[ $species == 'human' || $species == 'mice' || $species == 'mix' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]];
 then
 
 echo 'Parametrs correct'
@@ -142,10 +178,10 @@ if [[ $p == '2' ]]
 then
 		PARAMETRS_se
 		
-		project_name_mod=$project_name'_seurat'
+		project_name_mod=$(date +'%d-%m-%Y')'_'$project_name'_seurat'
 		mkdir -p projects/$project_name_mod
 		mkdir -p projects/$project_name_mod/results
-		mkdir -p projects/$project_name_mod/seurat_data
+		mkdir -p projects/$project_name_mod/seurat_umi
 		echo ''
 		echo 'Complete'
 		echo ''
@@ -153,7 +189,6 @@ then
 		echo ''
 	
 		echo project_name_mode=$project_name_mod > $(pwd)/projects/$project_name_mod/config
-		echo READS_LENGHT=$READS_LENGHT >> $(pwd)/projects/$project_name_mod/config
 		echo species=$species >> $(pwd)/projects/$project_name_mod/config
 		echo cell=$cell >> $(pwd)/projects/$project_name_mod/config
 		
@@ -164,7 +199,7 @@ then
 
 		PARAMETRS_fq
 		
-		project_name_mod=$project_name'_fq'
+		project_name_mod=$(date +'%d-%m-%Y')'_'$project_name'_fq'
 		mkdir -p projects/$project_name_mod
 		mkdir -p projects/$project_name_mod/tmp
 		mkdir -p projects/$project_name_mod/results

@@ -60,9 +60,6 @@ chceck_fq <- grepl("_fq", metrics_human)
 
 # Single Cell analysis for `r species` species
 
-
-\
-
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -71,7 +68,7 @@ cat('Knee plot with threshold for detected unique barcodes and set number of cel
 }
 ```
 
-\
+
 
 ```{r pressure, echo=FALSE, out.width = '70%', fig.align="center"}
 
@@ -82,7 +79,7 @@ knitr::include_graphics(file.path(path_mix,'expect_whitelist_cell_barcode_counts
 }
 ``` 
 
-\
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
@@ -93,7 +90,7 @@ cat('The number of cells is provided by the user estimation. To check that numbe
 }
 ```
 
-\
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 if (chceck_fq == TRUE){
@@ -218,7 +215,7 @@ FeatureScatter(UMI_human, feature1 = "nCounts", feature2 = "nGenes")
 \
 \
 
-## Percent of ribosomal and mitochondrial genes [%]
+### Percent of ribosomal and mitochondrial genes [%]
 
 
 \
@@ -257,9 +254,10 @@ QC_UMI$Ribo_Status[QC_UMI$RiboPercent > 0] <- '> 0 %'
 
 \
 
+\
+
 ## Quality Control for content of Droplets
 
-\
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
@@ -323,6 +321,7 @@ ggplot()+
 
 ## Selection of highly variable genes
 ### Top10
+
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -550,8 +549,6 @@ print(cells)
 \
 \
 \
-\
-
 
 # Mice cells analysis
 
@@ -668,7 +665,7 @@ FeatureScatter(UMI_mice, feature1 = "nCounts", feature2 = "nGenes")
 \
 \
 
-## Percent of ribosomal and mitochondrial genes [%]
+### Percent of ribosomal and mitochondrial genes [%]
 
 
 \
@@ -996,8 +993,7 @@ colnames(cells) <- c('cluster','cell')
 print(cells)
 
 ```
-\
-\
+
 \
 \
 
@@ -1005,8 +1001,8 @@ print(cells)
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
-if (chceck_fq == TRUE){
+
 cat('You can also run analysis manually. In this project in',path_mix,'directory for mice and human was saved SeuratObject in two forms: before analysis (Seurat_object_input.Rds) and after analysis (Seurat_object_output.Rds). Read one in to R (preferable IDE RStudio) and run your own analysis with parameters suitable for you.')
-}
+
 ```
 
