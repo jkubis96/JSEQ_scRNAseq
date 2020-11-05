@@ -1,0 +1,14 @@
+#!/bin/bash
+
+function seurat_start {
+echo 'Start seurat analysis'
+
+seurat_data=$(pwd)/projects/$project_name_mode/
+seurat_out=$(pwd)/projects/$project_name_mode/results
+PATH_SCRIPTS=$(pwd)/scripts
+
+
+SCRIPTS_EXTRACT=$(pwd)/scripts
+Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $seurat_data $seurat_out $cell $project_name_mode $species $PATH_SCRIPTS 
+
+}
