@@ -25,17 +25,24 @@ project_name_mode <- args[9]
 
 species <- args[10]
 
-scripts_path <- args[11]
+markers <- args[11]
+
+source(file.path(getwd(), 'scripts/functions.R'))
+
+print(getwd())
 
 #for mix species analysis >
 path_mutual_results <- args[12]
 # <
+
 
 print(UMI_PATH)
 { 
 # Load the raw dataset by UMI
 UMI_raw <- Read10X(UMI_PATH, gene.column = 1)
 
+#Load markers
+markers <- readxl::read_excel(file.path(markers))
 
 # Initialize the Seurat object for UMI
 UMI <- CreateSeuratObject(counts = UMI_raw, project = project_name_mode, min.cells = 1, min.features = 1)
@@ -204,55 +211,18 @@ colnames(top5) <- c('cluster','gene')
 
 
 ##Paterning via markers
-{
-
-all_unique <- function(data, range, value_check_1){
-  eval(parse(text= paste0(data,'<<- aggregate(',data,range,' ,list(',
-                          data,'$',value_check_1,'),FUN=list)')))
-
-}
 
 all_unique('top5','[1:2]','cluster')
 
 top5$cluster <- top5$Group.1
-top5 <- top5[,-1]
-
-cell <- c()
-
-for (i in top5$gene) {
-  if ('GAD1' %in% i) {
-    cell <<- c(cell, 'Inh')
-  }else if ('SLC17A7' %in% i) {
-    cell <<- c(cell, 'Exc')
-  }else if ('SLC1A3' %in% i) {
-    cell <<- c(cell, 'Non-neuronal')
-  } else 
-    cell <<- c(cell, 'Non')
-}    
-
-dv <- c()
-
-for (i in top5$gene) {
-  if (c('EMX1', 'TBR1', 'TBR2') %in% i) {
-    dv <<- c(dv, 'Dorsal')
-  }else if ('SLC17A7' %in% i) {
-    dv <<- c(dv, 'Ventral')
-  } else 
-    dv <<- c(dv, '')
-}
-
-top5$cell <- cell
-
- for (i in 1:length(top5$cluster)) {
-   top5$cell[i] <- paste(top5$cell[i], top5$gene[[i]][1], top5$gene[[i]][2])
-}
+top5 <- top5[,-1] 
 
 
-top5$cell <- paste(top5$cell, dv)
+markers_patterning(top5, markers)
 
+top5 <- top
 
-}
-
+rm(top)
 
 new.cluster.ids <- top5$cell
 
@@ -277,11 +247,11 @@ write.csv(AE, file = file.path(OUTPUT, "expression_matrix.csv"))
 #########################################################################################
 
 if (species %in% c('human','mice')) {
-  rmarkdown::render(input = file.path(scripts_path, 'raport_species.Rmd'), 
+  rmarkdown::render(input = file.path(getwd(), 'scripts/raport_species.Rmd'), 
                     output_format = 'html_document', output_dir = OUTPUT, 
                     output_file = 'Raport')
 } else if (species == 'mix') {
-  rmarkdown::render(input = file.path(scripts_path, 'raport_mix.Rmd'), 
+  rmarkdown::render(input = file.path(getwd(), 'scripts/raport_mix.Rmd'), 
                     output_format = 'html_document', output_dir = path_mutual_results, 
                     output_file = 'Raport')
 } else {

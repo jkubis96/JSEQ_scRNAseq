@@ -48,6 +48,7 @@ $permission_sudo apt-get install -y r-cran-leiden
 $permission_sudo apt-get install -y r-cran-igraph
 $permission_sudo apt-get install -y r-cran-viridis
 $permission_sudo apt-get install -y r-cran-seurat
+$permission_sudo apt-get install -y r-cran-readxl
 
 
 $permission_sudo apt-get update

@@ -26,7 +26,7 @@ fi
 
 function select_project_seurat {
 
-INFASTP=$(pwd)/projects/$project_name_mod/*seurat*
+INFASTP=$(pwd)/projects/*'seurat'*
 
 select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
 cd $d
@@ -45,7 +45,7 @@ cd ..
 
 function select_project_fastq {
 
-INFASTP=$(pwd)/projects/$project_name_mod/*fq*
+INFASTP=$(pwd)/projects/*'fq'*
 
 select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
 cd $d

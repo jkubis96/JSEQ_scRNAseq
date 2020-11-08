@@ -15,6 +15,8 @@ library(grid)
 library(knitr)
 library(viridis)
 library(tidyr)
+
+
 ```
 
 \
@@ -42,6 +44,14 @@ OUTPUT <- file.path(path_results)
 project_name_mode <- args[9]
 
 species <- args[10]
+
+
+markers <- args[11]
+
+source(file.path(getwd(), 'functions.R'))
+
+#Load markers
+markers <- readxl::read_excel(file.path(markers))
 
 UMI <- readRDS(file = file.path(OUTPUT, "Seurat_object_input.rds"))
 
@@ -133,7 +143,7 @@ cat('Knee plot with threshold for detected unique barcodes and set number of cel
 }
 ```
 
-
+\
 
 ```{r pressure, echo=FALSE, out.width = '70%', fig.align="center"}
 
@@ -155,7 +165,7 @@ cat('The above plots show content of genetics elements for',cells_number,'cells.
 }
 ```
 
-
+\
 
 ## Number of genes and counts in analysis
 
@@ -431,54 +441,19 @@ colnames(top5) <- c('cluster','gene')
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 
-{
 
-all_unique <- function(data, range, value_check_1){
-  eval(parse(text= paste0(data,'<<- aggregate(',data,range,' ,list(',
-                          data,'$',value_check_1,'),FUN=list)')))
-
-}
 
 all_unique('top5','[1:2]','cluster')
 
 top5$cluster <- top5$Group.1
-top5 <- top5[,-1]
-
-cell <- c()
-
-for (i in top5$gene) {
-  if ('GAD1' %in% i) {
-    cell <<- c(cell, 'Inh')
-  }else if ('SLC17A7' %in% i) {
-    cell <<- c(cell, 'Exc')
-  }else if ('SLC1A3' %in% i) {
-    cell <<- c(cell, 'Non-neuronal')
-  } else 
-    cell <<- c(cell, 'Non')
-}    
-
-dv <- c()
-
-for (i in top5$gene) {
-  if (c('EMX1', 'TBR1', 'TBR2') %in% i) {
-    dv <<- c(dv, 'Dorsal')
-  }else if ('SLC17A7' %in% i) {
-    dv <<- c(dv, 'Ventral')
-  } else 
-    dv <<- c(dv, '')
-}
-
-top5$cell <- cell
-
- for (i in 1:length(top5$cluster)) {
-   top5$cell[i] <- paste(top5$cell[i], top5$gene[[i]][1], top5$gene[[i]][2])
-}
+top5 <- top5[,-1] 
 
 
-top5$cell <- paste(top5$cell, dv)
+markers_patterning(top5, markers)
 
+top5 <- top
 
-}
+rm(top)
 
 
 new.cluster.ids <- top5$cell
