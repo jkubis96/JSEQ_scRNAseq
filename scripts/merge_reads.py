@@ -8,15 +8,14 @@ import sys
 import os
 
 cwd = os.getcwd()
-#R1_FILE = cwd + '/FastaData/DW_DropSeq2_200_S4_L001_R1_001.fastq.gz'
 R1_FILE=sys.argv[1]
 project_name_mode=sys.argv[2]
 
-#This function fills in a dict with readids
-#and their corresponding cell and umi barcodes until it finds
-#a specific read id
 
 discard_secondary_alignements = True
+
+save = pysam.set_verbosity(0)	
+
 
 barcodes_struct = {
 	'BC_start':0,
@@ -27,7 +26,6 @@ barcodes_struct = {
 
 def parse_barcodes(fastq_parser, query_name, read_barcodes, barcodes_struct):
 	for fastq_R1 in fastq_parser:
-		# Some sequencers give a /1 and /2 to R1 and R2 read ids respectively. This attempts to solve the issue #69.
 		if '/' in fastq_R1.id:
 			R1_id = fastq_R1.id[:fastq_R1.id.find("/")]
 		else:
@@ -39,12 +37,16 @@ def parse_barcodes(fastq_parser, query_name, read_barcodes, barcodes_struct):
 		if (R1_id == query_name):
 			return(fastq_parser,read_barcodes)
 	return(fastq_parser,read_barcodes)
-	
+    
+
+
 infile_bam = pysam.AlignmentFile(cwd + '/projects/' + project_name_mode + '/tmp/Aligned.out.bam', "rb")
+pysam.set_verbosity(save)
 
 fastq_parser = SeqIO.parse(gzip.open(R1_FILE, "rt"), "fastq")
 
 outfile = pysam.AlignmentFile(cwd + '/projects/' + project_name_mode + '/tmp/R1_joined_map.out.bam', "wb", template=infile_bam)
+pysam.set_verbosity(save)
 
 read_barcodes = defaultdict(lambda :{'XC':'','XM':''})
 

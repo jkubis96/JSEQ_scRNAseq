@@ -1,12 +1,13 @@
 #!/bin/bash
 
-echo 'Welcome in JSEQ® scRNAseq pipeline which was prepared at Institute of Bioorganic Chemistry, Polish Academy of Sciences in Poznań'\
+echo 'Welcome in JSEQ® scRNAseq pipeline which was prepared at Institute of Bioorganic Chemistry, Polish Academy of Sciences in Poznań'
 
-echo 'This softwere was made for dropSEQ single cell technology [especially for Nadia Instrument - https://www.dolomite-bio.com/].'\
+echo 'This softwere was made for dropSEQ single cell technology [especially for Nadia Instrument - https://www.dolomite-bio.com/].'
+echo 'Lots of solutions are based on DropSeqPip and others pipelines'
 
-echo 'All information and references you can check in the file Readme'\
+echo 'All information and references you can check in the file Manual'
 
-echo 'Author contact: jkubis@ibch.poznan.pl or jakub.kubis1996@gmail.com'\
+echo 'Author contact: jkubis@ibch.poznan.pl or jakub.kubis1996@gmail.com'
 
 echo ''
 echo ''
@@ -47,9 +48,11 @@ then
 		echo $(date) 'picard installing...'
 		picard >> $log 2>&1
         cd ..
+		echo ''
 		echo "Installing completed. Before run JSEQ check install.log file in setup directory for some errors."
 		echo $"If you have trouble with installing any parts of pipeline, you can try\ninstall missing files or libraries manually [instruction in JSEQ manual] or contact us"
-
+		echo ''
+		
 elif [[ $s == 'genome' ]]
 then
         source=$(pwd)/scripts/genome_indexing
@@ -75,38 +78,43 @@ then
 		
         source=$(pwd)/scripts
 		source $source/analysis_species
+		echo ''
+		echo 'Process start...'
+		echo ''
 		echo $(date) 'Trimming adapters and Quality Controle of Reads'
 		TRIMMING > $log 2>&1
 		echo $(date) 'Start mapping pocess'
-		#STAR_MAPPING >> $log 2>&1
+		STAR_MAPPING >> $log 2>&1
 		echo $(date) 'Create whitelist'
 		whitelist >> $log 2>&1
 		echo $(date) 'UMI and barcode extraction'
 		umi_extract >> $log 2>&1
 		merge_reads >> $log 2>&1
-	    barcodes >> $log 2>&1
+		barcodes >> $log 2>&1
 		echo $(date) 'Create genome reference file'
-		#create_ref >> $log 2>&1
-		#reduce_annotation_gtf >> $log 2>&1
-		#create_ref_annotation >> $log 2>&1
+		create_ref >> $log 2>&1
+		reduce_annotation_gtf >> $log 2>&1
+		create_ref_annotation >> $log 2>&1
 		echo $(date) 'Mapping reads to exonic regions'
-		#dropSEQ >> $log 2>&1
+		dropSEQ >> $log 2>&1
 		echo $(date) 'Detecting and repairing substitution errors in cell barcodes'
-		#final_exon >> $log 2>&1
-		echo $(date) 'Detecting and repairing barcode indel synthesis errors'
-		#completed_bam >> $log 2>&1
+		final_exon >> $log 2>&1
+		echo $(date) 'Detecting and repairing barcode index synthesis errors'
+		completed_bam >> $log 2>&1
 		echo $(date) 'Generating a number of intervals'
-		#rna_intervals >> $log 2>&1
+		rna_intervals >> $log 2>&1
 		echo $(date) 'Creating list of count'
-		#umi_expression >> $log 2>&1
+		umi_expression >> $log 2>&1
 		echo $(date) 'Createing metrics of genes parts content'
-		#scRNAmetrics >> $log 2>&1
-		#metric_plot >> $log 2>&1
+		scRNAmetrics >> $log 2>&1
+		metric_plot >> $log 2>&1
 		echo $(date) 'Creating matrix of count'
-		#convert_mtx_umi >> $log 2>&1
+		convert_mtx_umi >> $log 2>&1
 		echo $(date) 'Counts analysis and creating report'
-		#seurat >> $log 2>&1
+		seurat >> $log 2>&1
+		echo ''
 		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
+		echo ''
 		
 elif
 		[[ $d  == *'_fq'* ]] && [[ $species  == 'mix' ]];
@@ -115,6 +123,9 @@ then
 		
         source=$(pwd)/scripts
 		source $source/analysis_mix
+		echo ''
+		echo 'Process start...'
+		echo ''
 		echo $(date) 'Trimming adapters and Quality Controle of Reads'
 		directory >> $log 2>&1
 		TRIMMING >> $log 2>&1
@@ -134,7 +145,7 @@ then
 		dropSEQ >> $log 2>&1
 		echo $(date) 'Detecting and repairing substitution errors in cell barcodes'
 		final_exon >> $log 2>&1
-		echo $(date) 'Detecting and repairing barcode indel synthesis errors'
+		echo $(date) 'Detecting and repairing barcode index synthesis errors'
 		completed_bam >> $log 2>&1
 		echo $(date) 'Generating a number of intervals'
 		rna_intervals >> $log 2>&1
@@ -155,8 +166,9 @@ then
 		echo $(date) 'Counts analysis and creating REPORT'		
 		seurat_mice >> $log 2>&1
 		seurat_human >> $log 2>&1
+		echo ''
 		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
-		
+		echo ''
 		
 elif	[[ $species  == 'human' && $d  == *'_seurat'* ]] || [[ $species  == 'mice' && $d  == *'_seurat'* ]] || [[ $species  == 'mix' && $d  == *'_seurat'* ]]
 then
@@ -165,12 +177,16 @@ then
 		
 		source=$(pwd)/scripts
 		source $source/seurat_analysis
+		echo ''
+		echo 'Process start...'
+		echo ''
 		echo 'Counts analysis and creating REPORT'	
 		seurat_start >> $log 2>&1
 		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
 else
-        
+        echo ''
 		echo 'Experiment failed - check all data from project'
+		echo ''
 		start
 fi
 }

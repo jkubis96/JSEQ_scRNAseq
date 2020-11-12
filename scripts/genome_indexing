@@ -97,6 +97,9 @@ fi
 
 function INDEXING {
 
+echo ''
+echo $(date) 'Genome indexing start...'
+echo ''
 index_files=$(pwd)/genome/$species/index/*
 
 for i in $index_files
@@ -118,7 +121,8 @@ lenght=$READS_LENGHT-1
 STAR --runThreadN $cpu  --runMode genomeGenerate --genomeDir $DIR  --genomeFastaFiles $GENOME/*.fa  --sjdbGTFfile $GENOME/*.gtf --sjdbOverhang $lenght
 
 echo ''
-echo 'Done'
+echo $(date) 'Genome indexing done'
+echo 'You can run analysis'
 echo ''
 
 start
@@ -128,6 +132,7 @@ then
 	
 echo ''
 echo 'Index' $READS_LENGHT 'for' $species 'already exist'
+echo 'You can run analysis'
 echo ''
 
 jseq=$(pwd)/JSEQ

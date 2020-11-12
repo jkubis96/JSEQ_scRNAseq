@@ -40,7 +40,6 @@ with open(cwd + '/projects/' + project_name_mode + '/tmp/whitelist.csv') as whit
 			mapping[1][barcode]['lanes'] = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0}
 		barcode_ext_ref.update(extended_ref.split(','))
 
-# Save mapping and references to reuse later.
 save_obj(obj=mapping, name=cwd + '/projects/' + project_name_mode + '/tmp/barcode_mapping')
 save_obj(obj=barcode_ref,name=cwd + '/projects/' + project_name_mode +'/tmp/barcode_ref')
 save_obj(obj=barcode_ext_ref,name=cwd + '/projects/' + project_name_mode +'/tmp/barcode_ext_ref')

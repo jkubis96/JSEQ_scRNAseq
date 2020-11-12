@@ -1,7 +1,3 @@
-#Converts the long format given by the dropseqtools v2.0.0 into the sparse mtx format.
-#Output provides features, cell barcodes and counts in seperate files.
-# Can handle one or multiple samples at a time
-
 import os
 import subprocess
 import sys

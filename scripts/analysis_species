@@ -30,9 +30,10 @@ cd $INFASTP
 
 fastp -i $R1 -I $R2 -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --html $RESULT/QC_RAPORT.html 
 
-gunzip R1_out.fastq.gz
-gunzip R2_out.fastq.gz
+gunzip -k R1_out.fastq.gz
+gunzip -k R2_out.fastq.gz
 
+rm $R1 $R2
 
 
 cd ..
@@ -134,8 +135,6 @@ elif
 then
         R2_py=$i
         R2_NAME_py=$(basename $i)
-else
-        echo 'Next step =>'
 fi
 done;
 
