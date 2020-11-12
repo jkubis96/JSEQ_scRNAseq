@@ -26,20 +26,29 @@ echo ''
 
 if [[ $s == 'install' ]]
 then
-		#log_install=$(pwd)/projects/setup/InstallationFinal.log.out
+		log_install=$(pwd)/projects/setup/install.log.out
 
         source=$(pwd)/setup/setup
         cd $(pwd)/setup
         source $source
 		permission 
-		python 
-		r_base 
-		java 
-		SAMtools 
-		fastp 
-		DropSeq 
-		picard 
+		echo $(date) 'Python installing and libraries...'
+		python >> $log 2>&1
+		echo $(date) 'R installing and libraries...'
+		r_base >> $log 2>&1
+		echo $(date) 'JAVA installing...'
+		java >> $log 2>&1
+		echo $(date) 'SAMtools installing...'
+		SAMtools >> $log 2>&1
+		echo $(date) 'fastp installing and libraries...'
+		fastp >> $log 2>&1
+		echo $(date) 'dropSEQtools installing...'
+		DropSeq >> $log 2>&1
+		echo $(date) 'picard installing...'
+		picard >> $log 2>&1
         cd ..
+		echo "Installing completed. Before run JSEQ check install.log file in setup directory for some errors."
+		echo $"If you have trouble with installing any parts of pipeline, you can try\ninstall missing files or libraries manually [instruction in JSEQ manual] or contact us"
 
 elif [[ $s == 'genome' ]]
 then
@@ -57,70 +66,108 @@ elif [[ $s == 'analysis' ]]
 then
 		source=$(pwd)/scripts
 		source $source/project_selection
-		select_project
+		select_analysis
 		
 		function experiment_selection {
-		if [[ $species  == 'human' ]] || [[ $species  == 'mice' ]];
+		if [[ $d  == *'fq'* && $species  == 'human' ]] || [[ $d  == *'fq'* && $species  == 'mice' ]];
 then
-		#log_species=$(pwd)/projects/$project_name_mode/results/MappingFinal.log.out
-		#put log file 
+		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
         source=$(pwd)/scripts
 		source $source/analysis_species
-		TRIMMING 
-		STAR_MAPPING 
-		whitelist 
-		umi_extract 
-		merge_reads 
-	    barcodes 
-		create_ref 
-		reduce_annotation_gtf
-		create_ref_annotation 
-		dropSEQ 
-		final_exon 
-		completed_bam 
-		rna_intervals 
-		umi_expression 
-		scRNAmetrics 
-		metric_plot 
-		convert_mtx_umi 
-		seurat 
+		echo $(date) 'Trimming adapters and Quality Controle of Reads'
+		TRIMMING > $log 2>&1
+		echo $(date) 'Start mapping pocess'
+		#STAR_MAPPING >> $log 2>&1
+		echo $(date) 'Create whitelist'
+		whitelist >> $log 2>&1
+		echo $(date) 'UMI and barcode extraction'
+		umi_extract >> $log 2>&1
+		merge_reads >> $log 2>&1
+	    barcodes >> $log 2>&1
+		echo $(date) 'Create genome reference file'
+		#create_ref >> $log 2>&1
+		#reduce_annotation_gtf >> $log 2>&1
+		#create_ref_annotation >> $log 2>&1
+		echo $(date) 'Mapping reads to exonic regions'
+		#dropSEQ >> $log 2>&1
+		echo $(date) 'Detecting and repairing substitution errors in cell barcodes'
+		#final_exon >> $log 2>&1
+		echo $(date) 'Detecting and repairing barcode indel synthesis errors'
+		#completed_bam >> $log 2>&1
+		echo $(date) 'Generating a number of intervals'
+		#rna_intervals >> $log 2>&1
+		echo $(date) 'Creating list of count'
+		#umi_expression >> $log 2>&1
+		echo $(date) 'Createing metrics of genes parts content'
+		#scRNAmetrics >> $log 2>&1
+		#metric_plot >> $log 2>&1
+		echo $(date) 'Creating matrix of count'
+		#convert_mtx_umi >> $log 2>&1
+		echo $(date) 'Counts analysis and creating report'
+		#seurat >> $log 2>&1
+		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
+		
 elif
-		[[ $species  == 'mix' ]];
+		[[ $d  == *'_fq'* ]] && [[ $species  == 'mix' ]];
 then
-		#log_mix=$(pwd)/projects/$project_name_mode/results/MappingFinal.log.out
+		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
         source=$(pwd)/scripts
 		source $source/analysis_mix
-		directory 
-		TRIMMING 
-		STAR_MAPPING 
-		whitelist 
-		umi_extract 
-		merge_reads 
-	    barcodes 
-		create_ref 
-		reduce_annotation_gtf 
-		create_ref_annotation 
-		dropSEQ 
-		final_exon 
-		completed_bam 
-		rna_intervals 
-		filtr_mice 
-		filtr_human 
-		umi_expression_mice 
-		umi_expression_human 
-		scRNAmetrics_mice 
-		scRNAmetrics_human 
-		metric_plot_mice 
-		metric_plot_human 
-		convert_mtx_umi_mice 
-		convert_mtx_umi_human 
-		seurat_mice 
-		seurat_human 
+		echo $(date) 'Trimming adapters and Quality Controle of Reads'
+		directory >> $log 2>&1
+		TRIMMING >> $log 2>&1
+		echo $(date) 'Start mapping pocess'
+		STAR_MAPPING >> $log 2>&1
+		echo $(date) 'Create whitelist'
+		whitelist >> $log 2>&1
+		echo $(date) 'UMI and barcode extraction'
+		umi_extract >> $log 2>&1
+		merge_reads >> $log 2>&1
+	    barcodes >> $log 2>&1
+		echo $(date) 'Create genome reference file'
+		create_ref >> $log 2>&1
+		reduce_annotation_gtf >> $log 2>&1
+		create_ref_annotation >> $log 2>&1
+		echo $(date) 'Mapping reads to exonic regions'
+		dropSEQ >> $log 2>&1
+		echo $(date) 'Detecting and repairing substitution errors in cell barcodes'
+		final_exon >> $log 2>&1
+		echo $(date) 'Detecting and repairing barcode indel synthesis errors'
+		completed_bam >> $log 2>&1
+		echo $(date) 'Generating a number of intervals'
+		rna_intervals >> $log 2>&1
+		echo $(date) 'Dividing combined scingle cell data to mice and human experiments analysis'
+		filtr_mice >> $log 2>&1
+		filtr_human >> $log 2>&1
+		echo $(date) 'Creating list of count'
+		umi_expression_mice >> $log 2>&1
+		umi_expression_human >> $log 2>&1
+		echo $(date) 'Createing metrics of genes parts content'
+		scRNAmetrics_mice >> $log 2>&1
+		scRNAmetrics_human >> $log 2>&1
+		metric_plot_mice >> $log 2>&1
+		metric_plot_human >> $log 2>&1
+		echo $(date) 'Creating matrix of count'
+		convert_mtx_umi_mice >> $log 2>&1
+		convert_mtx_umi_human >> $log 2>&1
+		echo $(date) 'Counts analysis and creating REPORT'		
+		seurat_mice >> $log 2>&1
+		seurat_human >> $log 2>&1
+		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
 		
 		
+elif	[[ $species  == 'human' && $d  == *'_seurat'* ]] || [[ $species  == 'mice' && $d  == *'_seurat'* ]] || [[ $species  == 'mix' && $d  == *'_seurat'* ]]
+then
+
+		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
+		source=$(pwd)/scripts
+		source $source/seurat_analysis
+		echo 'Counts analysis and creating REPORT'	
+		seurat_start >> $log 2>&1
+		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
 else
         
 		echo 'Experiment failed - check all data from project'
