@@ -27,9 +27,11 @@ species <- args[10]
 
 markers <- args[11]
 
-source(file.path(getwd(), 'scripts/functions.R'))
+functions <- file.path(getwd(), 'scripts/functions.R')
 
-print(getwd())
+source(functions)
+
+print(functions)
 
 #for mix species analysis >
 path_mutual_results <- args[12]
@@ -42,7 +44,9 @@ print(UMI_PATH)
 UMI_raw <- Read10X(UMI_PATH, gene.column = 1)
 
 #Load markers
-markers <- readxl::read_excel(file.path(markers))
+
+markers_population <- readxl::read_xlsx(path = file.path(markers), sheet = 2)
+markers_cells <- readxl::read_xlsx(path = file.path(markers), sheet = 1)
 
 # Initialize the Seurat object for UMI
 UMI <- CreateSeuratObject(counts = UMI_raw, project = project_name_mode, min.cells = 1, min.features = 1)
@@ -200,7 +204,7 @@ head(cluster1.markers, n = 5)
 
 # find markers for every cluster compared to all remaining cells, report only the positive ones
 UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
-new_claster <- UMI.markers %>% group_by(cluster) %>% top_n(n = 5, wt = avg_logFC)
+new_claster <- UMI.markers %>% group_by(cluster) %>% top_n(n = 20, wt = avg_logFC)
 
 
 top5 <- data.frame(new_claster$cluster, new_claster$gene)
@@ -218,7 +222,7 @@ top5$cluster <- top5$Group.1
 top5 <- top5[,-1] 
 
 
-markers_patterning(top5, markers)
+markers_patterning(top5, markers_population)
 
 top5 <- top
 
@@ -238,12 +242,25 @@ saveRDS(UMI, file = file.path(OUTPUT, "Seurat_object_output.rds"))
 
 #Create Expression Matrix
 
-saveRDS(UMI, file = file.path(OUTPUT, "Seurat_object_output.rds"))
+#Expression matrix for cell clusters
+
 AE <- AverageExpression(UMI)
 AE <- as.matrix(AE[[1]])
 
-write.csv(AE, file = file.path(OUTPUT, "expression_matrix.csv"))
+write.table(AE, file = file.path(OUTPUT, "expression_matrix_cells_population.csv"))
 
+#Expression matrix
+
+cell_names(UMI, markers_cells)
+
+
+
+write.table(expression_matrix_cells, file = file.path(OUTPUT, "expression_matrix_cells.csv"))
+
+
+#save seurat output file
+
+saveRDS(UMI, file = file.path(OUTPUT, "Seurat_object_output.rds"))
 #########################################################################################
 
 if (species %in% c('human','mice')) {

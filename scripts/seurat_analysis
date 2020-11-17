@@ -1,9 +1,9 @@
 #!/bin/bash
 
 function seurat_start {
-echo 'Start seurat analysis'
+echo $(date) 'Start seurat analysis'
 
-seurat_data=$(pwd)/projects/$project_name_mode/
+seurat_data=$(pwd)/projects/$project_name_mode
 seurat_out=$(pwd)/projects/$project_name_mode/results
 PATH_MARKERS=$(pwd)/requirements_file/markers.xlsx
 

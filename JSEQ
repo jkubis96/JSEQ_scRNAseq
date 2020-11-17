@@ -180,7 +180,7 @@ then
 		echo ''
 		echo 'Process start...'
 		echo ''
-		echo 'Counts analysis and creating REPORT'	
+		echo $(date) 'Counts analysis and creating REPORT'	
 		seurat_start >> $log 2>&1
 		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
 else
