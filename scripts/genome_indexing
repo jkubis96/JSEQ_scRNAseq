@@ -93,18 +93,35 @@ fi
 
 }
 
+function index_file {
 
+index_files=$(pwd)/genome/$species/index/*
+
+
+for i in $index_files
+do
+r=$(basename $i)
+if [[ $r == $READS_LENGHT ]]
+then
+
+check_index=$READS_LENGHT
+
+
+fi
+done
+
+}
 
 function INDEXING {
+
+index_file
 
 echo ''
 echo $(date) 'Genome indexing start...'
 echo ''
-index_files=$(pwd)/genome/$species/index/*
 
-for i in $index_files
-do
-if [[ $i != *$READS_LENGHT* ]]
+
+if [[ $check_index != $READS_LENGHT ]]
 then
 
 echo ''
@@ -127,7 +144,7 @@ echo ''
 
 start
 
-elif [[ $i == *$READS_LENGHT* ]]
+elif [[ $check_index == $READS_LENGHT ]]
 then	
 	
 echo ''
@@ -140,7 +157,7 @@ source jseq
 start
 
 fi
-done;
+
 }
 
 

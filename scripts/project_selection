@@ -31,6 +31,7 @@ INFASTP=$(pwd)/projects/*'seurat'*
 select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
 cd $d
 source config
+project_name=$project_name
 project_name_mode=$project_name_mode 
 READS_LENGHT=$READS_LENGHT 
 species=$species 
@@ -50,6 +51,7 @@ INFASTP=$(pwd)/projects/*'fq'*
 select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
 cd $d
 source config
+project_name=$project_name
 project_name_mode=$project_name_mode 
 READS_LENGHT=$READS_LENGHT 
 species=$species 

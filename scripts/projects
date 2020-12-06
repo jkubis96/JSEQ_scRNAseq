@@ -65,12 +65,12 @@ fi
 
 function checkseurat_1 {
 		echo ''
-		echo 'Put count genes matrix into => projects/'$project_name_mod/'seurat_umi'
+		echo 'Put count genes matrix into => projects/'$project_name_mod/'sc_data'
 		echo 'Available matrix format .csv | .tsv | .txt'
 		echo 'If you done it, push ENTER'
 		read enter
 		
-		fast=$(pwd)/projects/$project_name_mod/seurat_umi/*
+		fast=$(pwd)/projects/$project_name_mod/sc_data/*
 	
 for i in $fast;
 do
@@ -79,15 +79,17 @@ done;
 		
 if      [[ $r == *".tsv"* ]]
 then
-        echo ''
-		echo 'Data converted'
-		echo 'Project done'
-		echo 'Start SingleCell analysis'
-		echo ''
+
+        echo $(date) 'Data converting'
 		
 	format=tsv
 	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/seurat_umi/ $(basename $r)
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
+	
+		echo ''
+		echo 'Project done'
+		echo 'Start SingleCell analysis'
+		echo ''
 	
 	jseq=$(pwd)/JSEQ
 	source jseq
@@ -95,15 +97,16 @@ then
 	
 elif     [[ $r == *".csv"* ]] 
 then
-        echo ''
-		echo 'Data converted'
-		echo 'Project done'
-		echo 'Start SingleCell analysis'
-		echo ''
+        echo $(date) 'Data converting'
 	
 	format=csv
 	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/seurat_umi/ $(basename $r)
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
+	
+		echo ''
+		echo 'Project done'
+		echo 'Start SingleCell analysis'
+		echo ''
 	
 	jseq=$(pwd)/JSEQ
 	source jseq
@@ -111,15 +114,17 @@ then
 	
 elif    [[ $r == *".txt"* ]]
 then
-        echo ''
-		echo 'Data converted'
-		echo 'Project done'
-		echo 'Start SingleCell analysis'
-		echo ''
+        
+		echo $(date) 'Data converting'
 		
 	format=txt
 	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/seurat_umi/ $(basename $r)
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
+		
+		echo ''
+		echo 'Project done'
+		echo 'Start SingleCell analysis'
+		echo ''
 	
 	jseq=$(pwd)/JSEQ
 	source jseq
@@ -138,12 +143,12 @@ fi
 
 function checkseurat_2 {
 		echo ''
-		echo 'Put normalized expression genes matrix into => projects/'$project_name_mod/'seurat_umi'
+		echo 'Put normalized expression genes matrix into => projects/'$project_name_mod/'sc_data'
 		echo 'Available matrix format .csv | .tsv | .txt'
 		echo 'If you done it, push ENTER'
 		read enter
 		
-		fast=$(pwd)/projects/$project_name_mod/seurat_umi/*
+		fast=$(pwd)/projects/$project_name_mod/sc_data/*
 	
 for i in $fast;
 do
@@ -152,48 +157,54 @@ done;
 		
 if      [[ $r == *".tsv"* ]]
 then
-        echo ''
-		echo 'Data converted'
+
+       echo $(date) 'Data converting'
+		
+	format=tsv
+	converter=$(pwd)/scripts/converter.R
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
+	
+		echo ''
 		echo 'Project done'
 		echo 'Start SingleCell analysis'
 		echo ''
 		
-	format=tsv
-	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/seurat_umi/ $(basename $r)
-	
 	jseq=$(pwd)/JSEQ
 	source jseq
 	start
 	
 elif     [[ $r == *".csv"* ]] 
 then
-        echo ''
-		echo 'Data converted'
-		echo 'Project done'
-		echo 'Start SingleCell analysis'
-		echo ''
+
+        echo $(date) 'Data converting'
 	
 	format=csv
 	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/seurat_umi/ $(basename $r)
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
 	
+		echo ''
+		echo 'Project done'
+		echo 'Start SingleCell analysis'
+		echo ''
+		
 	jseq=$(pwd)/JSEQ
 	source jseq
 	start
 	
 elif    [[ $r == *".txt"* ]]
 then
-        echo ''
-		echo 'Data converted'
+
+       echo $(date) 'Data converting'
+		
+	format=txt
+	converter=$(pwd)/scripts/converter.R
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
+	
+		echo ''
 		echo 'Project done'
 		echo 'Start SingleCell analysis'
 		echo ''
 		
-	format=txt
-	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/seurat_umi/ $(basename $r)
-	
 	jseq=$(pwd)/JSEQ
 	source jseq
 	start
@@ -211,13 +222,13 @@ fi
 
 function checkseurat_3 {
 		echo ''
-		echo 'Put genes name data as genes.tsv into => projects/'$project_name_mod/'seurat_umi'
-		echo 'Put barcodes data as barcodes.tsv into => projects/'$project_name_mod/'seurat_umi'
-		echo 'Put count matrix data as matrix.mtx into => projects/'$project_name_mod/'seurat_umi'
+		echo 'Put genes name data as genes.tsv into => projects/'$project_name_mod/'sc_data'
+		echo 'Put barcodes data as barcodes.tsv into => projects/'$project_name_mod/'sc_data'
+		echo 'Put count matrix data as matrix.mtx into => projects/'$project_name_mod/'sc_data'
 		echo 'If you done it, push ENTER'
 		read enter
 		
-		fast=$(pwd)/projects/$project_name_mod/seurat_umi/*
+		fast=$(pwd)/projects/$project_name_mod/sc_data/*
 	
 for i in $fast;
 do
@@ -287,7 +298,7 @@ echo ''
 echo 'Enter operation paramets:'
 echo ''
 
-echo 'Species [human/mice/mix]:'
+echo 'Species [human/mice]:'
 echo ''
         read species
 		species=$(echo $species | tr '[:upper:]' '[:lower:]')
@@ -298,7 +309,7 @@ echo 'Data format: count_matrix [1] | normalized_expression [2] | separate genes
 echo ''
 	read data
 
-if [[ $species == 'human' || $species == 'mice' || $species == 'mix' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]] && [[ $data == '1' || $data == '2' || $data == '3' ]];
+if [[ $species == 'human' || $species == 'mice' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]] && [[ $data == '1' || $data == '2' || $data == '3' ]];
 then
 
 echo 'Parametrs correct'
@@ -341,7 +352,7 @@ then
 		project_name_mod=$(date +'%d-%m-%Y')'_'$project_name'_seurat'
 		mkdir -p projects/$project_name_mod
 		mkdir -p projects/$project_name_mod/results
-		mkdir -p projects/$project_name_mod/seurat_umi
+		mkdir -p projects/$project_name_mod/sc_data
 		echo ''
 		echo 'Complete'
 		echo ''
@@ -349,7 +360,7 @@ then
 		echo ''
 		
 		echo project_name=$project_name > $(pwd)/projects/$project_name_mod/config
-		echo project_name_mode=$project_name_mod > $(pwd)/projects/$project_name_mod/config
+		echo project_name_mode=$project_name_mod >> $(pwd)/projects/$project_name_mod/config
 		echo species=$species >> $(pwd)/projects/$project_name_mod/config
 		echo cell=$cell >> $(pwd)/projects/$project_name_mod/config
 		echo data=$data >> $(pwd)/projects/$project_name_mod/config

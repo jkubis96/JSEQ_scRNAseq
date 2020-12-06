@@ -1,18 +1,9 @@
-#install.packages('ggplot2')
-
-#install.packages('tidyr')
-
-#install.packages('gridExtra')
- 
-#install.packages('grid')
-
-#install.packages('viridis')
 
 args <- commandArgs()
 path <- args[6]
 results <- args[7]
 
-library(tidyr)
+library(tidyverse)
 library(ggplot2)
 library(gridExtra)
 library(grid)

@@ -3,11 +3,10 @@
 function seurat_start {
 echo $(date) 'Start seurat analysis'
 
-seurat_data=$(pwd)/projects/$project_name_mode
-seurat_out=$(pwd)/projects/$project_name_mode/results
-PATH_MARKERS=$(pwd)/requirements_file/markers.xlsx
+PATH_PROJECT=$(pwd)/projects/$project_name_mode
+MARKERS=$(pwd)/requirements_file/markers.xlsx
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
-Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $seurat_data $seurat_out $cell $project_name_mode $species $PATH_MARKERS
+Rscript $SCRIPTS_EXTRACT/seurat_cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data
 
 }

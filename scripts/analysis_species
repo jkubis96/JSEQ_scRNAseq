@@ -221,6 +221,9 @@ CELL2=$[$cell*2]
 cpu=$(grep -c ^processor /proc/cpuinfo)
 cpu=$[$cpu-2]
 
+source $(pwd)/requirements_file/smart_primer
+smart=$smart
+
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DetectBeadSynthesisErrors \
         INPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged_error.bam \
@@ -228,7 +231,7 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DetectBeadSynthe
         OUTPUT_STATS=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats.txt \
         SUMMARY=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats_summary.txt \
         NUM_BARCODES=$CELL2 \
-        PRIMER_SEQUENCE=CCTACACGACGCTCTTCCGATCT \
+        PRIMER_SEQUENCE=$smart \
         NUM_THREADS=$cpu
 
 }
@@ -292,22 +295,23 @@ Rscript $SCRIPTS_EXTRACT/rna_metrics.R $path_metric $path_result
 
 function convert_mtx_umi {
 
-path_convert=$(pwd)/projects/$project_name_mode/tmp
+path_convert=$(pwd)/projects/$project_name_mode/sc_data
+path_tmp_mtx=$(pwd)/projects/$project_name_mode/tmp
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
 
-python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $path_convert
+python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $path_convert $path_tmp_mtx
 
 }
 
 
 function seurat {
 
-PATH_TMP=$(pwd)/projects/$project_name_mode/tmp
-PATH_RESULTS=$(pwd)/projects/$project_name_mode/results
-PATH_MARKERS=$(pwd)/requirements_file/markers.xlsx
+PATH_PROJECT=$(pwd)/projects/$project_name_mode
+MARKERS=$(pwd)/requirements_file/markers.xlsx
+data=3
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
-Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $PATH_TMP $PATH_RESULTS $cell $project_name_mode $species $PATH_MARKERS
+Rscript $SCRIPTS_EXTRACT/seurat_cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data
 
 }

@@ -1,6 +1,6 @@
 library(Matrix)
 
-#convert gene count matric to seurat obj
+#convert gene count matrix to seurat obj
 
 args <- commandArgs()
 

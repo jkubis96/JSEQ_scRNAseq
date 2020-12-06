@@ -3,8 +3,8 @@
 function directory {
 
 cd $(pwd)/projects/$project_name_mode/results
-mkdir mice_results
-mkdir human_results
+mkdir mice
+mkdir human
 cd ..
 cd tmp
 mkdir mice
@@ -238,6 +238,9 @@ CELL2=$[$cell*2]
 cpu=$(grep -c ^processor /proc/cpuinfo)
 cpu=$[$cpu-2]
 
+source $(pwd)/requirements_file/smart_primer
+smart=$smart
+
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DetectBeadSynthesisErrors \
         INPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged_error.bam \
@@ -245,7 +248,7 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DetectBeadSynthe
         OUTPUT_STATS=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats.txt \
         SUMMARY=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats_summary.txt \
         NUM_BARCODES=$CELL2 \
-        PRIMER_SEQUENCE=CCTACACGACGCTCTTCCGATCT \
+        PRIMER_SEQUENCE=$smart \
         NUM_THREADS=$cpu
 
 }
@@ -271,7 +274,7 @@ SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar FilterBam \
         REF_SOFT_MATCHED_RETAINED='mice' \
         INPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam \
-        OUTPUT=$(pwd)/projects/$project_name_mode/results/mice_results/FiltredMice.bam
+        OUTPUT=$(pwd)/projects/$project_name_mode/results/mice/FiltredMice.bam
 
 }
 
@@ -281,7 +284,7 @@ SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar FilterBam \
         REF_SOFT_MATCHED_RETAINED='human' \
         INPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam \
-        OUTPUT=$(pwd)/projects/$project_name_mode/results/human_results/FiltredHuman.bam
+        OUTPUT=$(pwd)/projects/$project_name_mode/results/human/FiltredHuman.bam
 
 }
 
@@ -291,7 +294,7 @@ function umi_expression_mice {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DigitalExpression \
-        I=$(pwd)/projects/$project_name_mode/results/mice_results/FiltredMice.bam \
+        I=$(pwd)/projects/$project_name_mode/results/mice/FiltredMice.bam \
         O=$(pwd)/projects/$project_name_mode/tmp/mice/umi_expression.tsv \
         EDIT_DISTANCE=1 \
         OUTPUT_LONG_FORMAT=$(pwd)/projects/$project_name_mode/tmp/mice/umi_expression.long \
@@ -308,7 +311,7 @@ function scRNAmetrics_mice {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
-        INPUT=$(pwd)/projects/$project_name_mode/results/mice_results/FiltredMice.bam\
+        INPUT=$(pwd)/projects/$project_name_mode/results/mice/FiltredMice.bam\
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/mice/scRNAmetrics.txt\
         ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/annotation_mix.refFlat \
         CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/whitelist_barcodes.csv \
@@ -321,7 +324,7 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar SingleCellRnaSeq
 function metric_plot_mice {
 
 path_metric_mice=$(pwd)/projects/$project_name_mode/tmp/mice
-path_result_mice=$(pwd)/projects/$project_name_mode/results/mice_results
+path_result_mice=$(pwd)/projects/$project_name_mode/results/mice
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
 
@@ -332,32 +335,21 @@ Rscript $SCRIPTS_EXTRACT/rna_metrics.R $path_metric_mice $path_result_mice
 
 function convert_mtx_umi_mice {
 
-path_convert_mice=$(pwd)/projects/$project_name_mode/tmp/mice
-
+path_convert_mice=$(pwd)/projects/$project_name_mode/mice_sc_data
+path_tmp_mtx=$(pwd)/projects/$project_name_mode/tmp/mice
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
 
-python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $path_convert_mice
+python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $path_convert_mice $path_tmp_mtx
 
 }
 
-
-function seurat_mice {
-
-PATH_TMP_MICE=$(pwd)/projects/$project_name_mode/tmp/mice
-PATH_RESULTS_MICE=$(pwd)/projects/$project_name_mode/results/mice_results
-PATH_MARKERS=$(pwd)/requirements_file/markers.xlsx
-
-SCRIPTS_EXTRACT=$(pwd)/scripts
-Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $PATH_TMP_MICE $PATH_RESULTS_MICE $cell $project_name_mode $species $PATH_MARKERS
-
-}
 
 function umi_expression_human {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DigitalExpression \
-        I=$(pwd)/projects/$project_name_mode/results/human_results/FiltredHuman.bam \
+        I=$(pwd)/projects/$project_name_mode/results/human/FiltredHuman.bam \
         O=$(pwd)/projects/$project_name_mode/tmp/human/umi_expression.tsv \
         EDIT_DISTANCE=1 \
         OUTPUT_LONG_FORMAT=$(pwd)/projects/$project_name_mode/tmp/human/umi_expression.long \
@@ -373,7 +365,7 @@ function scRNAmetrics_human {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
 java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
-        INPUT=$(pwd)/projects/$project_name_mode/results/human_results/FiltredHuman.bam\
+        INPUT=$(pwd)/projects/$project_name_mode/results/human/FiltredHuman.bam\
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/human/scRNAmetrics.txt\
         ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/annotation_mix.refFlat \
         CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/whitelist_barcodes.csv \
@@ -386,7 +378,7 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar SingleCellRnaSeq
 function metric_plot_human {
 
 path_metric_human=$(pwd)/projects/$project_name_mode/tmp/human
-path_result_human=$(pwd)/projects/$project_name_mode/results/human_results
+path_result_human=$(pwd)/projects/$project_name_mode/results/human
 
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
@@ -398,26 +390,23 @@ Rscript $SCRIPTS_EXTRACT/rna_metrics.R $path_metric_human $path_result_human
 
 function convert_mtx_umi_human {
 
-path_convert_human=$(pwd)/projects/$project_name_mode/tmp/human
+path_convert_human=$(pwd)/projects/$project_name_mode/human_sc_data
+path_tmp_mtx=$(pwd)/projects/$project_name_mode/tmp/human
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
 
-python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $path_convert_human
+python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $path_convert_human $path_tmp_mtx
 
 }
 
 
-function seurat_human {
+function seurat_mix {
 
-PATH_TMP_HUMAN=$(pwd)/projects/$project_name_mode/tmp/human
-PATH_RESULTS_HUMAN=$(pwd)/projects/$project_name_mode/results/human_results
-PATH_RESULTS=$(pwd)/projects/$project_name_mode/results
-PATH_SCRIPTS=$(pwd)/scripts
-PATH_TMP=$(pwd)/projects/$project_name_mode/tmp
-PATH_MARKERS=$(pwd)/requirements_file/markers.xlsx
-PATH_RESULTS_MICE=$(pwd)/projects/$project_name_mode/results/mice_results
+PATH_PROJECT=$(pwd)/projects/$project_name_mode
+MARKERS=$(pwd)/requirements_file/markers.xlsx
+data=3
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
-Rscript $SCRIPTS_EXTRACT/seurat_cluster.R $PATH_TMP_HUMAN $PATH_RESULTS_HUMAN $cell $project_name_mode $species $PATH_MARKERS $PATH_RESULTS $PATH_RESULTS_MICE $PATH_TMP
+Rscript $SCRIPTS_EXTRACT/seurat_cluster_mix.R $PATH_PROJECT $MARKERS $species $project_name $data
 
 }

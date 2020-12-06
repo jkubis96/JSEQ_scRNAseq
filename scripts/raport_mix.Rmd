@@ -7,14 +7,12 @@ output: html_document
 
 ```{r include=FALSE}
 library(Seurat)
-library(dplyr)
+library(tidyverse)
 library(patchwork)
-library(ggplot2)
 library(gridExtra)
 library(grid)
 library(knitr)
 library(viridis)
-library(tidyr)
 ```
 
 \
@@ -27,34 +25,25 @@ library(tidyr)
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 args <- commandArgs()
 
-species <- FALSE
+path <- args[6]
+markers <-args[7]
+species <- args[8]
+path_results <- file.path(path, 'results')
+project_name <- args[9]
+data <- args[10]
+functions <- file.path(getwd(), 'scripts/functions.R')
+source(functions)
 
-path_tmp <- args[14]
-path_results <- args[7]
+path_tmp <- file.path(path, 'tmp')
 
-cells_number <- args[8]
-cells_number <- as.numeric(cells_number)
+#Cells and genes amount
+UMI_human <- readRDS(file = file.path(path_results, "human/Results.rds"))
+n_gen_h <- as.numeric(quantile(UMI_human@meta.data$nGenes, 0.75))
+cells_number_h <- length(UMI_human@active.ident)
+UMI_mice <- readRDS(file = file.path(path_results, "mice/Results.rds"))
+cells_number_m <- length(UMI_mice@active.ident)
+n_gen_m <- as.numeric(quantile(UMI_mice@meta.data$nGenes, 0.75))
 
-
-OUTPUT <- file.path(path_results)
-
-project_name_mode <- args[9]
-
-species <- args[10]
-
-path_mix <- file.path(args[12])
-
-path_mice <- file.path(args[13])
-
-markers <- args[11]
-
-source(file.path(getwd(), 'functions.R'))
-
-#Load markers
-markers <- readxl::read_excel(file.path(markers))
-
-UMI_human <- readRDS(file = file.path(OUTPUT, "Seurat_object_input.rds"))
-UMI_mice <- readRDS(file = file.path(path_mice, "Seurat_object_input.rds"))
 
 metrics_human <- file.path(path_tmp, 'human/scRNAmetrics.txt')
 metrics_mice <- file.path(path_tmp, 'mice/scRNAmetrics.txt')
@@ -66,9 +55,6 @@ chceck_fq <- grepl("_fq", metrics_human)
 
 # Single Cell analysis for `r species` species
 
-
-\
-
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -77,29 +63,29 @@ cat('Knee plot with threshold for detected unique barcodes and set number of cel
 }
 ```
 
-\
+
 
 ```{r pressure, echo=FALSE, out.width = '70%', fig.align="center"}
 
 if (chceck_fq == TRUE){
   
-knitr::include_graphics(file.path(path_mix,'expect_whitelist_cell_barcode_counts.png'), dpi = 300)
+knitr::include_graphics(file.path(path_results,'expect_whitelist_cell_barcode_counts.png'), dpi = 300)
   
 }
 ``` 
 
-\
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
 if (chceck_fq == TRUE){
   
-cat('The number of cells is provided by the user estimation. To check that number provided number of cells is correct you can look at knee plot, which shows distugushe between estimated number of cells via user (in this case ',cells_number,'cells) and detected unique barcodes. When the values are very different you can change number of cells and conduct analysis from the begining but before you do this, you have to create new project with right settings')
+cat('The number of cells is provided by the user estimation. To check that number provided number of cells is correct you can look at knee plot, which shows distugushe between estimated number of cells via user and detected unique barcodes. When the values are very different you can change number of cells and conduct analysis from the begining but before you do this, you have to create new project with right settings')
 
 }
 ```
 
-\
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 if (chceck_fq == TRUE){
@@ -107,7 +93,7 @@ cat('*In the case of subsequent analyzes mutual data set for mixed species analy
 }
 ```
 
-\
+
 
 
 # Human cells analysis
@@ -117,13 +103,13 @@ cat('*In the case of subsequent analyzes mutual data set for mixed species analy
 
 if (chceck_fq == TRUE){
   
-cat('The following plots show content of genetics elements for mice cells.')
+cat('The following plots show content of genetics elements for human cells types.')
 
 }
 
 ```
 
-\
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
@@ -189,19 +175,7 @@ p1
 }
 ```
 
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-
-if (chceck_fq == TRUE) {
-p2
-}
-```
-
-
-\
-
-## Number of genes and counts for human
+## Number of genes and counts in analysis
 
 \
 
@@ -239,7 +213,6 @@ VlnPlot(UMI_human, features = c("RiboPercent", "MitoPercent"), ncol = 2)
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 
 {
-UMI_selected <- subset(UMI_human, subset = nGenes > 200 & nGenes < 2500 & MitoPercent < 5)
 
 QC_UMI <- data.frame()
 QC_UMI <- as.data.frame(UMI_human$nGenes)
@@ -251,9 +224,9 @@ colnames(QC_UMI) <- c('nGenes','MitoPercent','RiboPercent')
 QC_UMI$Mito_Status[QC_UMI$MitoPercent > 5] <- '> 5%'
 QC_UMI$Mito_Status[QC_UMI$MitoPercent <= 5] <- 'Proper'
 
-QC_UMI$nGenes_Status[UMI_human$nGenes < 200] <- 'Empty'
-QC_UMI$nGenes_Status[UMI_human$nGenes > 2500] <- 'Double'
-QC_UMI$nGenes_Status[UMI_human$nGenes >= 200 & UMI_human$nGenes <= 2500] <- 'Proper'
+QC_UMI$nGenes_Status[QC_UMI$nGenes < 200] <- 'Empty'
+QC_UMI$nGenes_Status[QC_UMI$nGenes > n_gen_h] <- 'Double'
+QC_UMI$nGenes_Status[QC_UMI$nGenes >= 200 & QC_UMI$nGenes <= n_gen_h] <- 'Proper'
 
 QC_UMI$Ribo_Status[QC_UMI$RiboPercent == 0] <- '0%'
 QC_UMI$Ribo_Status[QC_UMI$RiboPercent > 0] <- '> 0 %'
@@ -261,23 +234,21 @@ QC_UMI$Ribo_Status[QC_UMI$RiboPercent > 0] <- '> 0 %'
 
 ```
 
-\
 
-## Quality Control for content of Droplets
 
-\
+## Quality Control of droplets content
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
 if (chceck_fq == TRUE){
-cat('Graphs presents information about cells unique feature counts. There was filtered droplets with over 2,500 (more than one cell in droplet) or less than 200 (empty droplet) counts per droplet and droplets that have >5% mitochondrial counts.')
+cat('Graphs presents information about cells unique feature counts. There was filtered droplets with over the third quartile of all (more than one cell in droplet) or less than 200 (empty droplet) counts per droplet and droplets that have >5% mitochondrial counts.')
 }
 ```
 
-
 \
 
-### Number of counts control
+### Number of counts
 
 \
 
@@ -294,7 +265,7 @@ ggplot()+
 
 \
 
-### Mitogenes counts control
+### Mitogenes counts
 
 \
 
@@ -310,7 +281,7 @@ ggplot()+
 
 \
 
-### Roibogenes content
+### Roibogenes counts
 
 \
 
@@ -333,77 +304,55 @@ ggplot()+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-UMI_human <- NormalizeData(UMI_human, normalization.method = "LogNormalize", scale.factor = 10000)
-
-
-UMI_human <- FindVariableFeatures(UMI_human, selection.method = "vst", nfeatures = 2000)
-
-# Identify the 10 most highly variable genes
 top10 <- head(VariableFeatures(UMI_human), 10)
 top10
+
 ```
 
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
 plot1 <- VariableFeaturePlot(UMI_human)
-
-
 LabelPoints(plot = plot1, points = top10, repel = TRUE)
 
 
 ```
 
 \
-\
-
-## Results for PCA clusters
-
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-all.genes <- rownames(UMI_human)
-UMI_human <- ScaleData(UMI_human, features = all.genes)
-
-UMI_human <- RunPCA(UMI_human, features = VariableFeatures(object = UMI_human))
-
-print(UMI_human[["pca"]], dims = 1:5, nfeatures = 5)
-```
-
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-
-DimPlot(UMI_human, reduction = "pca")
-
-
-```
-\
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-UMI_human <- JackStraw(UMI_human, num.replicate = 100)
-UMI_human <- ScoreJackStraw(UMI_human, dims = 1:20)
-
-
-Jack <- JackStrawPlot(UMI_human, dims = 1:15)
-
-
 
 Elbow <- ElbowPlot(UMI_human)
 
+dims <- as.data.frame(Elbow$data$stdev)
+
+#select the most variable reduction
+
+{
+  dim <- c()
+  score <- c()
+  element <- 0
+  for (i in dims$`Elbow$data$stdev`) {
+    element <- element + 1
+    score <- cbind(i)
+    print(dims$`Elbow$data$stdev`[element+1])
+    print(i)
+    if (i-0.05*i >= dims$`Elbow$data$stdev`[element+1]) {
+      dim <- element
+    } else break
+  }
+  
+  
+  dim <- as.numeric(dim)
+}
+
 ```
+
 
 \
 
 ### Graph presentation of selection right number of PCs
-
-\
-
-### JackStrawPlot
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-Jack
-```
 
 \
 
@@ -415,111 +364,86 @@ Elbow
 
 \
 
-### Graphs with summary for 15 PCs as the primary sources of heterogeneity in a dataset
+### JackStrawPlot for `r dim` PCs
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+JackStrawPlot(UMI_human, dims = 1:(dim))
+```
+
+\
+
+### Graphs with summary for `r dim` PCs as the primary sources of heterogeneity in a dataset
 
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-DimHeatmap(UMI_human, dims = 1:15, cells = cells_number, balanced = TRUE)
+DimHeatmap(UMI_human, dims = 1:dim, cells = cells_number_h, balanced = TRUE)
 
 
 ```
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-UMI_human <- FindNeighbors(UMI_human, dims = 1:10)
-UMI_human <- FindClusters(UMI_human, resolution = 0.5)
-
-
-head(Idents(UMI_human), 5)
-
-
-UMI_human <- RunUMAP(UMI_human, dims = 1:10)
-```
-
-\
 \
 
-## Results for UMAP cluster
+## Cell nameing and clustering
 
-### UMAP plot
+### UMAP and PCA plot after cell naming
 
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-DimPlot(UMI_human, reduction = "umap")
+DimPlot(UMI_human, reduction = "umap") + DimPlot(UMI_human, reduction = "pca")
 
 ```
 
 \
 
-### Top different expressed genes (positive and negative biomarkers)
+### Tree plot of clusters
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+tree_cluster <- Tool(object = UMI_human, slot = 'BuildClusterTree')
+plot(tree_cluster)
+
+```
 
 \
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-# find all markers of cluster 1
-cluster1.markers <- FindMarkers(UMI_human, ident.1 = 1, min.pct = 0.25)
-head(cluster1.markers, n = 10)
-```
+### Pheatmap of selected cell types and top variables genes for clusters
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-# find markers for every cluster compared to all remaining cells, report only the positive ones
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
 UMI.markers <- FindAllMarkers(UMI_human, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
-new_claster <- UMI.markers %>% group_by(cluster) %>% top_n(n = 5, wt = avg_logFC)
 
-top5 <- data.frame(new_claster$cluster, new_claster$gene)
-colnames(top5) <- c('cluster','gene')
+{
+  top10 <- data.frame(top10$cluster, top10$gene)
+  colnames(top10) <- c('cluster','gene')
+  
+  
+  all_unique('top10','[1:2]','cluster')
+  
+  top10$cluster <- top10$Group.1
+  top10 <- top10[,-1] 
+}
+
+top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
+top_genes <- top10$gene[[1]]
+index <- 1
+for (i in 2:nrow(top10)){
+  index <- index + 1
+  top_genes <- c(top_genes, top10$gene[[index]])
+}
+
+average_expression <- read.csv(file.path(path_tmp, "average_expression_matrix_populations.csv"), header = T, row.names = 1)
+average_expression <- as.data.frame(average_expression)
+phet_exp_matrix <- average_expression[rownames(average_expression) %in% top_genes,]
+
+pheatmap::pheatmap(phet_exp_matrix, 
+                          clustering_method = 'complete', 
+                          cluster_rows = F)
 ```
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-
-all_unique('top5','[1:2]','cluster')
-
-top5$cluster <- top5$Group.1
-top5 <- top5[,-1] 
-
-
-markers_patterning(top5, markers)
-
-top5 <- top
-
-rm(top)
-
-
-new.cluster.ids <- top5$cell
-
-names(new.cluster.ids) <- levels(UMI_human)
-UMI_human <- RenameIdents(UMI_human, new.cluster.ids)
-
-
-```
-
-\
-
-### UMAP cluster plot with 'Cell Names' based on markers (for brain cells)
-
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-
-DimPlot(UMI_human, reduction = "umap", label = TRUE, pt.size = 0.5,  label.size = 4) + NoLegend()
-
-```
-
-### Selected Cell Types
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-
-cells <- data.frame(top5$cluster, top5$cell)
-colnames(cells) <- c('cluster','cell')
-
-print(cells)
-
-```
-\
-\
-\
 \
 
 
@@ -531,7 +455,7 @@ print(cells)
 
 if (chceck_fq == TRUE){
   
-cat('The following plots show content of genetics elements for mice cells.')
+cat('The following plots show content of genetics elements for mice cells types.')
 
 }
 ```
@@ -613,8 +537,6 @@ p2
 ```
 
 
-\
-
 ## Number of genes and counts in analysis
 
 \
@@ -653,7 +575,6 @@ VlnPlot(UMI_mice, features = c("RiboPercent", "MitoPercent"), ncol = 2)
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 
 {
-UMI_selected <- subset(UMI_mice, subset = nGenes > 200 & nGenes < 2500 & MitoPercent < 5)
 
 QC_UMI <- data.frame()
 QC_UMI <- as.data.frame(UMI_mice$nGenes)
@@ -665,9 +586,9 @@ colnames(QC_UMI) <- c('nGenes','MitoPercent','RiboPercent')
 QC_UMI$Mito_Status[QC_UMI$MitoPercent > 5] <- '> 5%'
 QC_UMI$Mito_Status[QC_UMI$MitoPercent <= 5] <- 'Proper'
 
-QC_UMI$nGenes_Status[UMI_mice$nGenes < 200] <- 'Empty'
-QC_UMI$nGenes_Status[UMI_mice$nGenes > 2500] <- 'Double'
-QC_UMI$nGenes_Status[UMI_mice$nGenes >= 200 & UMI_mice$nGenes <= 2500] <- 'Proper'
+QC_UMI$nGenes_Status[QC_UMI$nGenes < 200] <- 'Empty'
+QC_UMI$nGenes_Status[QC_UMI$nGenes > n_gen_m] <- 'Double'
+QC_UMI$nGenes_Status[QC_UMI$nGenes >= 200 & QC_UMI$nGenes <= n_gen_m] <- 'Proper'
 
 QC_UMI$Ribo_Status[QC_UMI$RiboPercent == 0] <- '0%'
 QC_UMI$Ribo_Status[QC_UMI$RiboPercent > 0] <- '> 0 %'
@@ -675,22 +596,21 @@ QC_UMI$Ribo_Status[QC_UMI$RiboPercent > 0] <- '> 0 %'
 
 ```
 
-\
 
-## Quality Control for content of Droplets
 
-\
+## Quality Control of droplets content
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
 if (chceck_fq == TRUE){
-cat('Graphs presents information about cells unique feature counts. There was filtered droplets with over 2,500 (more than one cell in droplet) or less than 200 (empty droplet) counts per droplet and droplets that have >5% mitochondrial counts.')
+cat('Graphs presents information about cells unique feature counts. There was filtered droplets with over the third quartile of all (more than one cell in droplet) or less than 200 (empty droplet) counts per droplet and droplets that have >5% mitochondrial counts.')
 }
 ```
 
 \
 
-### Number of counts control
+### Number of counts
 
 \
 
@@ -707,7 +627,7 @@ ggplot()+
 
 \
 
-### Mitogenes counts control
+### Mitogenes counts
 
 \
 
@@ -723,7 +643,7 @@ ggplot()+
 
 \
 
-### Roibogenes content
+### Roibogenes counts
 
 \
 
@@ -746,77 +666,55 @@ ggplot()+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-UMI_mice <- NormalizeData(UMI_mice, normalization.method = "LogNormalize", scale.factor = 10000)
-
-
-UMI_mice <- FindVariableFeatures(UMI_mice, selection.method = "vst", nfeatures = 2000)
-
-# Identify the 10 most highly variable genes
 top10 <- head(VariableFeatures(UMI_mice), 10)
 top10
+
 ```
 
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
 plot1 <- VariableFeaturePlot(UMI_mice)
-
-
 LabelPoints(plot = plot1, points = top10, repel = TRUE)
 
 
 ```
 
 \
-\
-
-## Results for PCA clusters
-
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-all.genes <- rownames(UMI_mice)
-UMI_mice <- ScaleData(UMI_mice, features = all.genes)
-
-UMI_mice <- RunPCA(UMI_mice, features = VariableFeatures(object = UMI_mice))
-
-print(UMI_mice[["pca"]], dims = 1:5, nfeatures = 5)
-```
-
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-
-DimPlot(UMI_mice, reduction = "pca")
-
-
-```
-\
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-UMI_mice <- JackStraw(UMI_mice, num.replicate = 100)
-UMI_mice <- ScoreJackStraw(UMI_mice, dims = 1:20)
-
-
-Jack <- JackStrawPlot(UMI_mice, dims = 1:15)
-
-
 
 Elbow <- ElbowPlot(UMI_mice)
 
+dims <- as.data.frame(Elbow$data$stdev)
+
+#select the most variable reduction
+
+{
+  dim <- c()
+  score <- c()
+  element <- 0
+  for (i in dims$`Elbow$data$stdev`) {
+    element <- element + 1
+    score <- cbind(i)
+    print(dims$`Elbow$data$stdev`[element+1])
+    print(i)
+    if (i-0.05*i >= dims$`Elbow$data$stdev`[element+1]) {
+      dim <- element
+    } else break
+  }
+  
+  
+  dim <- as.numeric(dim)
+}
+
 ```
+
 
 \
 
 ### Graph presentation of selection right number of PCs
-
-\
-
-### JackStrawPlot
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-Jack
-```
 
 \
 
@@ -828,109 +726,86 @@ Elbow
 
 \
 
-### Graphs with summary for 15 PCs as the primary sources of heterogeneity in a dataset
+### JackStrawPlot for `r dim` PCs
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+JackStrawPlot(UMI_mice, dims = 1:(dim))
+```
+
+\
+
+### Graphs with summary for `r dim` PCs as the primary sources of heterogeneity in a dataset
 
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-DimHeatmap(UMI_mice, dims = 1:15, cells = cells_number, balanced = TRUE)
+DimHeatmap(UMI_mice, dims = 1:dim, cells = cells_number_m, balanced = TRUE)
 
 
 ```
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-UMI_mice <- FindNeighbors(UMI_mice, dims = 1:10)
-UMI_mice <- FindClusters(UMI_mice, resolution = 0.5)
-
-
-head(Idents(UMI_mice), 5)
-
-
-UMI_mice <- RunUMAP(UMI_mice, dims = 1:10)
-```
-
-\
 \
 
-## Results for UMAP cluster
+## Cell nameing and clustering
 
-### UMAP plot
+### UMAP and PCA plot after cell naming
 
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-DimPlot(UMI_mice, reduction = "umap")
+DimPlot(UMI_mice, reduction = "umap") + DimPlot(UMI_mice, reduction = "pca")
 
 ```
 
 \
 
-### Top different expressed genes (positive and negative biomarkers)
+### Tree plot of clusters
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+tree_cluster <- Tool(object = UMI_mice, slot = 'BuildClusterTree')
+plot(tree_cluster)
+
+```
 
 \
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-# find all markers of cluster 1
-cluster1.markers <- FindMarkers(UMI_mice, ident.1 = 1, min.pct = 0.25)
-head(cluster1.markers, n = 10)
-```
+### Pheatmap of selected cell types and top variables genes for clusters
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-# find markers for every cluster compared to all remaining cells, report only the positive ones
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
 UMI.markers <- FindAllMarkers(UMI_mice, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
-new_claster <- UMI.markers %>% group_by(cluster) %>% top_n(n = 5, wt = avg_logFC)
 
-top5 <- data.frame(new_claster$cluster, new_claster$gene)
-colnames(top5) <- c('cluster','gene')
+{
+  top10 <- data.frame(top10$cluster, top10$gene)
+  colnames(top10) <- c('cluster','gene')
+  
+  
+  all_unique('top10','[1:2]','cluster')
+  
+  top10$cluster <- top10$Group.1
+  top10 <- top10[,-1] 
+}
+
+top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
+top_genes <- top10$gene[[1]]
+index <- 1
+for (i in 2:nrow(top10)){
+  index <- index + 1
+  top_genes <- c(top_genes, top10$gene[[index]])
+}
+
+average_expression <- read.csv(file.path(path_tmp, "average_expression_matrix_populations.csv"), header = T, row.names = 1)
+average_expression <- as.data.frame(average_expression)
+phet_exp_matrix <- average_expression[rownames(average_expression) %in% top_genes,]
+
+pheatmap::pheatmap(phet_exp_matrix, 
+                          clustering_method = 'complete', 
+                          cluster_rows = F)
 ```
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-
-all_unique('top5','[1:2]','cluster')
-
-top5$cluster <- top5$Group.1
-top5 <- top5[,-1] 
-
-
-markers_patterning(top5, markers)
-
-top5 <- top
-
-rm(top)
-
-
-new.cluster.ids <- top5$cell
-
-names(new.cluster.ids) <- levels(UMI_mice)
-UMI_mice <- RenameIdents(UMI_mice, new.cluster.ids)
-
-```
-
-\
-
-### UMAP cluster plot with 'Cell Names' based on markers (for brain cells)
-
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-
-DimPlot(UMI_mice, reduction = "umap", label = TRUE, pt.size = 0.5,  label.size = 4) + NoLegend()
-
-```
-
-### Selected Cell Types
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-
-cells <- data.frame(top5$cluster, top5$cell)
-colnames(cells) <- c('cluster','cell')
-
-print(cells)
-
-```
-\
-\
 \
 \
 
@@ -939,7 +814,9 @@ print(cells)
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
 if (chceck_fq == TRUE){
-cat('You can also run analysis manually. In this project in',path_mix,'directory for mice and human was saved SeuratObject in two forms: before analysis (Seurat_object_input.Rds) and after analysis (Seurat_object_output.Rds). Read one in to R (preferable IDE RStudio) and run your own analysis with parameters suitable for you.')
+cat('You can also run analysis manually. In this project in',path_mix,'directory for mice and human was saved SeuratObject in two forms: before analysis (Seurat_object.Rds) and after analysis (Results.Rds). Read one in to R (preferable IDE RStudio) and run your own analysis with parameters suitable for you.')
 }
 ```
 
+\
+\

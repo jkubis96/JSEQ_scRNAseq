@@ -4,19 +4,20 @@ import sys
 
 cwd = os.getcwd()
 path=sys.argv[1]
+tmp=sys.argv[2]
 
 
 barcodes = {}
 features = {}
 
-os.mkdir(path + '/seurat_umi')
+os.mkdir(path)
 
-out_barcodes = path + '/seurat_umi/barcodes.tsv'
-out_features = path + '/seurat_umi/genes.tsv'
-mtx = path + '/seurat_umi/matrix.mtx'
-temp_mtx = path + '/temp_umi.mtx'
-header_mtx = path + '/header.mtx'
-expression = path + '/umi_expression.long'
+out_barcodes = path + '/barcodes.tsv'
+out_features = path + '/genes.tsv'
+mtx = path + '/matrix.mtx'
+temp_mtx = tmp + '/temp_umi.mtx'
+header_mtx = tmp + '/header.mtx'
+expression = tmp + '/umi_expression.long'
 n_lines = 0
 barcode_index = 1
 feature_index = 1
