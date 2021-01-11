@@ -201,12 +201,13 @@ dims <- as.data.frame(Elbow$data$stdev)
     element <- element + 1
     print(dims$`Elbow$data$stdev`[element+1])
     print(i)
-    if (i-0.05*i >= dims$`Elbow$data$stdev`[element+1]) {
+    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1]) {
+      dim <- element
     } else break
   }
   
   
-  dim <- as.numeric(element) + 1
+  dim <- as.numeric(dim + 1)
 }
 
 #########################################################################################
@@ -536,16 +537,15 @@ dims <- as.data.frame(Elbow$data$stdev)
   element <- 0
   for (i in dims$`Elbow$data$stdev`) {
     element <- element + 1
-    score <- cbind(i)
     print(dims$`Elbow$data$stdev`[element+1])
     print(i)
-    if (i-0.05*i >= dims$`Elbow$data$stdev`[element+1]) {
+    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1]) {
       dim <- element
     } else break
   }
   
   
-  dim <- as.numeric(dim)
+  dim <- as.numeric(dim + 1)
 }
 
 #########################################################################################
