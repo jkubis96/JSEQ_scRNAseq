@@ -164,8 +164,7 @@ then
 		convert_mtx_umi_mice >> $log 2>&1
 		convert_mtx_umi_human >> $log 2>&1
 		echo $(date) 'Counts analysis and creating REPORT'		
-		seurat_mice >> $log 2>&1
-		seurat_human >> $log 2>&1
+		seurat_mix >> $log 2>&1
 		echo ''
 		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
 		echo ''
@@ -183,6 +182,7 @@ then
 		echo $(date) 'Counts analysis and creating REPORT'	
 		seurat_start >> $log 2>&1
 		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
+		echo ''
 else
         echo ''
 		echo 'Experiment failed - check all data from project'

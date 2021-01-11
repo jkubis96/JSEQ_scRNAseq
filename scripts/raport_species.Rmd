@@ -33,13 +33,12 @@ seurat_umi <- file.path(path,'sc_data/')
 path_results <- file.path(path, 'results')
 project_name <- args[9]
 data <- args[10]
-functions <- file.path(getwd(), 'scripts/functions.R')
+functions <- file.path(getwd(), 'functions.R')
 source(functions)
 
 path_tmp <- file.path(path, 'tmp')
 
-UMI <- readRDS(file = file.path(OUTPUT, "Results.rds"))
-n_gen <- as.numeric(quantile(UMI@meta.data$nGenes, 0.75))
+UMI <- readRDS(file = file.path(path_results, "Results.rds"))
 cells_number <- length(UMI@active.ident)
 
 metrics <- file.path(path_tmp,'scRNAmetrics.txt')
@@ -156,7 +155,7 @@ cat('The above plots show content of genetics elements for each cells (barcodes)
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-VlnPlot(UMI, features = c("nGenes", "nCounts"), ncol = 2)
+knitr::include_graphics(file.path(path_results,'counts~genes.jpeg'), dpi = 300)
 ```
 
 \
@@ -166,7 +165,7 @@ VlnPlot(UMI, features = c("nGenes", "nCounts"), ncol = 2)
 \
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-FeatureScatter(UMI, feature1 = "nCounts", feature2 = "nGenes")
+knitr::include_graphics(file.path(path_results,'counts~genes_QC.jpeg'), dpi = 300)
 
 ```
 
@@ -181,32 +180,7 @@ FeatureScatter(UMI, feature1 = "nCounts", feature2 = "nGenes")
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-VlnPlot(UMI, features = c("RiboPercent", "MitoPercent"), ncol = 2)
-
-```
-
-
-```{r message=FALSE, warning=FALSE, include=FALSE}
-
-{
-
-QC_UMI <- data.frame()
-QC_UMI <- as.data.frame(UMI$nGenes)
-QC_UMI$V2 <- UMI$MitoPercent
-QC_UMI$V3 <- UMI$RiboPercent
-
-colnames(QC_UMI) <- c('nGenes','MitoPercent','RiboPercent')
-
-QC_UMI$Mito_Status[QC_UMI$MitoPercent > 5] <- '> 5%'
-QC_UMI$Mito_Status[QC_UMI$MitoPercent <= 5] <- 'Proper'
-
-QC_UMI$nGenes_Status[QC_UMI$nGenes < 200] <- 'Empty'
-QC_UMI$nGenes_Status[QC_UMI$nGenes > n_gen] <- 'Double'
-QC_UMI$nGenes_Status[QC_UMI$nGenes >= 200 & QC_UMI$nGenes <= n_gen] <- 'Proper'
-
-QC_UMI$Ribo_Status[QC_UMI$RiboPercent == 0] <- '0%'
-QC_UMI$Ribo_Status[QC_UMI$RiboPercent > 0] <- '> 0 %'
-}
+knitr::include_graphics(file.path(path_results,'Ribo~Mito.jpeg'), dpi = 300)
 
 ```
 
@@ -231,12 +205,7 @@ cat('Graphs presents information about cells unique feature counts. There was fi
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-ggplot()+
-  geom_point(QC_UMI, mapping = aes(x = nGenes, y = nGenes, color = nGenes_Status))+
-  ylab("Number of genes for each cells") +
-  xlab("Number of genes for each cells")+
-  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='Droplet content') 
+knitr::include_graphics(file.path(path_results,'DropletQC.jpeg'), dpi = 300)
 
 ```
 
@@ -247,12 +216,9 @@ ggplot()+
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-ggplot()+
-  geom_point(QC_UMI, mapping = aes(x = MitoPercent, y = MitoPercent , color = Mito_Status))+
-  ylab("% MitoRNA") +
-  xlab("% MitoRNA")+
-  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='% Content treshold') 
+
+knitr::include_graphics(file.path(path_results,'MitoQC.jpeg'), dpi = 300)
+
 ```
 
 
@@ -263,12 +229,8 @@ ggplot()+
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-ggplot()+
-  geom_point(QC_UMI, mapping = aes(x = RiboPercent, y = RiboPercent, color = Ribo_Status))+
-  ylab("% RiboRNA") +
-  xlab("% RiboRNA")+
-  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='% Content treshold') 
+
+knitr::include_graphics(file.path(path_results,'RiboQC.jpeg'), dpi = 300)
 
 ```
 
@@ -307,22 +269,20 @@ dims <- as.data.frame(Elbow$data$stdev)
 #select the most variable reduction
 
 {
-  dim <- c()
+  dim <- 1
   score <- c()
   element <- 0
   for (i in dims$`Elbow$data$stdev`) {
     element <- element + 1
-    score <- cbind(i)
-    print(dims$`Elbow$data$stdev`[element+1])
-    print(i)
-    if (i-0.05*i >= dims$`Elbow$data$stdev`[element+1]) {
-      dim <- element
-    } else break
+    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1] & element < 20 | 
+        i-i*0.3 > dims$`Elbow$data$stdev`[element+2] & element < 20) {
+      dim <- dim + 1
+    } else 
+      break
   }
-  
-  
   dim <- as.numeric(dim)
-}
+} 
+  
 
 ```
 
@@ -344,7 +304,7 @@ Elbow
 ### JackStrawPlot for `r dim` PCs
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-JackStrawPlot(UMI, dims = 1:(dim+1))
+JackStrawPlot(UMI, dims = 1:(dim))
 ```
 
 \
@@ -362,62 +322,54 @@ DimHeatmap(UMI, dims = 1:dim, cells = cells_number, balanced = TRUE)
 
 \
 
-## Cell nameing and clustering
+## Cells nameing and clustering
 
-### UMAP and PCA plot after cell naming
+## UMAP and PCA plot
 
-\
+### Cells class
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-DimPlot(UMI, reduction = "umap") + DimPlot(UMI, reduction = "pca")
+knitr::include_graphics(file.path(path_results,'PCA_DimPlot_class.jpeg'), dpi = 300)
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+knitr::include_graphics(file.path(path_results,'UMAP_with_DE_gene_class.jpeg'), dpi = 300)
 
 ```
 
 \
 
-### Tree plot of clusters
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-
-tree_cluster <- Tool(object = UMI, slot = 'BuildClusterTree')
-plot(tree_cluster)
-
-```
+### Cells subclass
 
 \
 
-### Pheatmap of selected cell types and top variables genes for clusters
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+PCA <- DimPlot(UMI, reduction = "pca")
+plotly::ggplotly(PCA)
 
-{
-  top10 <- data.frame(top10$cluster, top10$gene)
-  colnames(top10) <- c('cluster','gene')
-  
-  
-  all_unique('top10','[1:2]','cluster')
-  
-  top10$cluster <- top10$Group.1
-  top10 <- top10[,-1] 
-}
+```
 
-top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
-top_genes <- top10$gene[[1]]
-index <- 1
-for (i in 2:nrow(top10)){
-  index <- index + 1
-  top_genes <- c(top_genes, top10$gene[[index]])
-}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-average_expression <- read.csv(file.path(path_tmp, "average_expression_matrix_populations.csv"), header = T, row.names = 1)
-average_expression <- as.data.frame(average_expression)
-phet_exp_matrix <- average_expression[rownames(average_expression) %in% top_genes,]
+UMAP <- DimPlot(UMI, reduction = "umap")
+plotly::ggplotly(UMAP)
 
-pheatmap::pheatmap(phet_exp_matrix, 
-                          clustering_method = 'complete', 
-                          cluster_rows = F)
+```
+
+
+\
+
+### Pheatmap of selected cell populations with genes expression
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
+
+knitr::include_graphics(file.path(path_results,'pheatmap_cells_populations.jpeg'), dpi = 300)
+
 ```
 
 \
