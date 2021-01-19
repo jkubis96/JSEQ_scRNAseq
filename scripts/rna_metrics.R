@@ -2,17 +2,12 @@
 args <- commandArgs()
 path <- args[6]
 results <- args[7]
-
 library(tidyverse)
 library(ggplot2)
 library(gridExtra)
 library(grid)
 library(viridis)
-debug_flag <- FALSE
 
-
-
-#### /debug
 
 metrics <- file.path(path,'/scRNAmetrics.txt')
 

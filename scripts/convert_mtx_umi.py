@@ -24,7 +24,7 @@ feature_index = 1
 
 with open(temp_mtx,'w') as mtx_stream:
 		with open(expression,'r') as input_file:
-			next(input_file) # skip first line
+			next(input_file) 
 			for line in input_file:
 				barcode,feature,count = line.strip().split('\t')
 				if(barcode not in barcodes):
