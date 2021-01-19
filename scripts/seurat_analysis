@@ -7,6 +7,6 @@ PATH_PROJECT=$(pwd)/projects/$project_name_mode
 MARKERS=$(pwd)/requirements_file/markers.xlsx
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
-Rscript $SCRIPTS_EXTRACT/seurat_cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data
+Rscript $SCRIPTS_EXTRACT/seurat_cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell
 
 }

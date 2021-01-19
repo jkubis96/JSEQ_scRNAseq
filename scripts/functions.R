@@ -272,34 +272,36 @@ cluster_nameing<- function(matrix_a, markers) {
   } 
   
   
-  num <- as.numeric(length(list.markers))
   index = 0
   for (i in colnames(matrix_a)) {
     index = index +1
-    rename_df <- c()
-    rename_df <- matrix_a[toupper(rownames(matrix_a)) %in% list.markers,]
-    rename_df <- as.data.frame(rename_df[order(rename_df[,index], decreasing = T), ,drop = F])
-    if (sum(rename_df[,index] > 0)) {
-      colnames(matrix_a)[index] <- rownames(rename_df[1,])
+    rename_df <- as.data.frame(matrix_a[rownames(matrix_a) %in% list.markers,index , drop = F])
+    rename_df <- as.data.frame(rename_df[order(rename_df, decreasing = T), ,drop = F])
+    sum <- sum(rename_df)
+    if (sum > 0) {
+      colnames(matrix_a)[index] <- rownames(rename_df)[1]
     } else colnames(matrix_a)[index] <- 'Unknow'
   }  
-  matrix_b <- round(matrix_a, digits = 1) 
+  
   
   col <- 0
   for (c.marker in markers) {
     col <- col + 1
-    cell_n <- 0
     for (marker in c.marker) {
+      cell_n <- 0
       for (cell in colnames(matrix_a)) {
         cell_n <- cell_n +1 
         if (cell %in% textclean::mgsub(marker, c('+'), c(''))) {
-          colnames(matrix_a)[cell_n] <- colnames(markers[col])
+          new.names <- colnames(markers[col])
+          colnames(matrix_a)[cell_n] <- new.names
         }
       }
     }
   }
- 
+  
+  
   average_expression <<- matrix_a
   rm(matrix_a)
-  # 
+  
 }
+

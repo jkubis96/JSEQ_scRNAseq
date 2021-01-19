@@ -133,7 +133,7 @@ cat('Knee plot with threshold for detected unique barcodes and set number of cel
 
 if (chceck_fq == TRUE){
   
-knitr::include_graphics(file.path(path_results,'expect_whitelist_cell_barcode_counts.png'), dpi = 300)
+knitr::include_graphics(file.path(path_results,'expect_whitelist_cell_barcode_counts.png'), dpi = 600)
   
 }
 ``` 
@@ -155,7 +155,7 @@ cat('The above plots show content of genetics elements for each cells (barcodes)
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-knitr::include_graphics(file.path(path_results,'counts~genes.jpeg'), dpi = 300)
+knitr::include_graphics(file.path(path_results,'counts~genes.jpeg'), dpi = 600)
 ```
 
 \
@@ -165,7 +165,7 @@ knitr::include_graphics(file.path(path_results,'counts~genes.jpeg'), dpi = 300)
 \
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-knitr::include_graphics(file.path(path_results,'counts~genes_QC.jpeg'), dpi = 300)
+knitr::include_graphics(file.path(path_results,'counts~genes_QC.jpeg'), dpi = 600)
 
 ```
 
@@ -180,7 +180,7 @@ knitr::include_graphics(file.path(path_results,'counts~genes_QC.jpeg'), dpi = 30
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-knitr::include_graphics(file.path(path_results,'Ribo~Mito.jpeg'), dpi = 300)
+knitr::include_graphics(file.path(path_results,'Ribo~Mito.jpeg'), dpi = 600)
 
 ```
 
@@ -205,7 +205,7 @@ cat('Graphs presents information about cells unique feature counts. There was fi
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-knitr::include_graphics(file.path(path_results,'DropletQC.jpeg'), dpi = 300)
+knitr::include_graphics(file.path(path_results,'DropletQC.jpeg'), dpi = 600)
 
 ```
 
@@ -217,7 +217,7 @@ knitr::include_graphics(file.path(path_results,'DropletQC.jpeg'), dpi = 300)
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-knitr::include_graphics(file.path(path_results,'MitoQC.jpeg'), dpi = 300)
+knitr::include_graphics(file.path(path_results,'MitoQC.jpeg'), dpi = 600)
 
 ```
 
@@ -230,7 +230,18 @@ knitr::include_graphics(file.path(path_results,'MitoQC.jpeg'), dpi = 300)
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-knitr::include_graphics(file.path(path_results,'RiboQC.jpeg'), dpi = 300)
+knitr::include_graphics(file.path(path_results,'RiboQC.jpeg'), dpi = 600)
+
+```
+
+\
+
+## Number of cells in subsequent stages of the analysis
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+knitr::include_graphics(file.path(path_results,'Cells.jpeg'), dpi = 600)
+
 
 ```
 
@@ -238,13 +249,13 @@ knitr::include_graphics(file.path(path_results,'RiboQC.jpeg'), dpi = 300)
 \
 
 ## Selection of highly variable genes
-### Top10
+### Top20
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-top10 <- head(VariableFeatures(UMI), 10)
-top10
+top20 <- head(VariableFeatures(UMI), 20)
+top20
 
 ```
 
@@ -253,7 +264,7 @@ top10
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
 plot1 <- VariableFeaturePlot(UMI)
-LabelPoints(plot = plot1, points = top10, repel = TRUE)
+LabelPoints(plot = plot1, points = top20, repel = TRUE)
 
 
 ```
@@ -262,7 +273,7 @@ LabelPoints(plot = plot1, points = top10, repel = TRUE)
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 
-Elbow <- ElbowPlot(UMI)
+Elbow <- ElbowPlot(UMI, ndims = 50)
 
 dims <- as.data.frame(Elbow$data$stdev)
 
@@ -274,15 +285,14 @@ dims <- as.data.frame(Elbow$data$stdev)
   element <- 0
   for (i in dims$`Elbow$data$stdev`) {
     element <- element + 1
-    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1] & element < 20 | 
-        i-i*0.3 > dims$`Elbow$data$stdev`[element+2] & element < 20) {
+    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1] & element < 50 | i-i*0.02 > dims$`Elbow$data$stdev`[element+2] & element < 49 | i-i*0.02 > dims$`Elbow$data$stdev`[element+3] & element < 48) {
       dim <- dim + 1
     } else 
       break
   }
   dim <- as.numeric(dim)
-} 
-  
+}
+
 
 ```
 
@@ -304,25 +314,27 @@ Elbow
 ### JackStrawPlot for `r dim` PCs
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-JackStrawPlot(UMI, dims = 1:(dim))
+knitr::include_graphics(file.path(path_results,'JackStrawPlot.jpeg'), dpi = 600)
 ```
 
 \
 
-### Graphs with summary for `r dim` PCs as the primary sources of heterogeneity in a dataset
-
-\
+## UMAP clusters
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+knitr::include_graphics(file.path(path_results,'UMAP.jpeg'), dpi = 600)
+```
 
-DimHeatmap(UMI, dims = 1:dim, cells = cells_number, balanced = TRUE)
+### MAST algorithm clusters markers
 
-
+```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
+read.csv(file = file.path(path_results, "MAST_markers_clusters.csv"), header = T, sep = ',', row.names = 1)
 ```
 
 \
+\
 
-## Cells nameing and clustering
+## Cells nameing via markers
 
 ## UMAP and PCA plot
 
@@ -331,13 +343,13 @@ DimHeatmap(UMI, dims = 1:dim, cells = cells_number, balanced = TRUE)
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-knitr::include_graphics(file.path(path_results,'PCA_DimPlot_class.jpeg'), dpi = 300)
+knitr::include_graphics(file.path(path_results,'PCA_DimPlot_class.jpeg'), dpi = 600)
 
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-knitr::include_graphics(file.path(path_results,'UMAP_with_DE_gene_class.jpeg'), dpi = 300)
+knitr::include_graphics(file.path(path_results,'UMAP_with_DE_gene_class.jpeg'), dpi = 600)
 
 ```
 
@@ -346,6 +358,13 @@ knitr::include_graphics(file.path(path_results,'UMAP_with_DE_gene_class.jpeg'), 
 ### Cells subclass
 
 \
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+knitr::include_graphics(file.path(path_results,'cells_type_threshold.jpeg'), dpi = 600)
+
+```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -358,19 +377,30 @@ plotly::ggplotly(PCA)
 
 UMAP <- DimPlot(UMI, reduction = "umap")
 plotly::ggplotly(UMAP)
-
 ```
 
 
 \
 
-### Pheatmap of selected cell populations with genes expression
+## Pheatmap of selected cells populations with genes expression 
+### log(CPM+1)
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
 
-knitr::include_graphics(file.path(path_results,'pheatmap_cells_populations.jpeg'), dpi = 300)
+knitr::include_graphics(file.path(path_results,'pheatmap_cells_populations.jpeg'), dpi = 600)
 
 ```
+
+\
+
+### Percent of expressed genes in cell vs mean expression in cell
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
+
+knitr::include_graphics(file.path(path_results,'box_matrix.jpeg'), dpi = 600)
+
+```
+
 
 \
 \

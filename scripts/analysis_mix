@@ -407,6 +407,6 @@ MARKERS=$(pwd)/requirements_file/markers.xlsx
 data=3
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
-Rscript $SCRIPTS_EXTRACT/seurat_cluster_mix.R $PATH_PROJECT $MARKERS $species $project_name $data
+Rscript $SCRIPTS_EXTRACT/seurat_cluster_mix.R $PATH_PROJECT $MARKERS $species $project_name $data $cell
 
 }

@@ -27,26 +27,26 @@ echo ''
 
 if [[ $s == 'install' ]]
 then
-		log_install=$(pwd)/projects/setup/install.log.out
+		log_install=$(pwd)/setup/install.log.out
 
         source=$(pwd)/setup/setup
         cd $(pwd)/setup
         source $source
 		permission 
 		echo $(date) 'Python installing and libraries...'
-		python >> $log 2>&1
+		python >> $log_install 2>&1
 		echo $(date) 'R installing and libraries...'
-		r_base >> $log 2>&1
+		r_base >> $log_install 2>&1
 		echo $(date) 'JAVA installing...'
-		java >> $log 2>&1
+		java >> $log_install 2>&1
 		echo $(date) 'SAMtools installing...'
-		SAMtools >> $log 2>&1
+		SAMtools >> $log_install 2>&1
 		echo $(date) 'fastp installing and libraries...'
-		fastp >> $log 2>&1
+		fastp >> $log_install 2>&1
 		echo $(date) 'dropSEQtools installing...'
-		DropSeq >> $log 2>&1
+		DropSeq >> $log_install 2>&1
 		echo $(date) 'picard installing...'
-		picard >> $log 2>&1
+		picard >> $log_install 2>&1
         cd ..
 		echo ''
 		echo "Installing completed. Before run JSEQ check install.log file in setup directory for some errors."
