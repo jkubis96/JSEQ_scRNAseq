@@ -696,12 +696,12 @@ source(functions)
   if (length(markers_subclass) != 0) {
     
     
-    marker_list <- unique(c(class_marker_list, subclass_marker_list, unique(cell_names)))
+    marker_list <- unique(c(class_marker_list, subclass_marker_list))
     
   } else if (length(markers_subclass) == 0) {
     
     
-    marker_list <- unique(c(class_marker_list, top1$gene, unique(cell_names)))
+    marker_list <- unique(c(class_marker_list, top1$gene))
     
   }
   
