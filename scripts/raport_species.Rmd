@@ -285,7 +285,7 @@ dims <- as.data.frame(Elbow$data$stdev)
   element <- 0
   for (i in dims$`Elbow$data$stdev`) {
     element <- element + 1
-    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1] & element < 50 | i-i*0.02 > dims$`Elbow$data$stdev`[element+2] & element < 49 | i-i*0.02 > dims$`Elbow$data$stdev`[element+3] & element < 48) {
+    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1] & element < 50 | i-i*0.02 > dims$`Elbow$data$stdev`[element+2] & element < 49 | i-i*0.02 > dims$`Elbow$data$stdev`[element+3] & element < 48 | i-i*0.02 > dims$`Elbow$data$stdev`[element+4] & element < 47) {
       dim <- dim + 1
     } else 
       break
@@ -336,16 +336,26 @@ read.csv(file = file.path(path_results, "MAST_markers_clusters.csv"), header = T
 
 ## Cells nameing via markers
 
-## UMAP and PCA plot
 
 ### Cells class
 
+\
+
+## PCA plot
+
+\
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
 knitr::include_graphics(file.path(path_results,'PCA_DimPlot_class.jpeg'), dpi = 600)
 
 ```
+
+\
+
+## UMAP plot
+
+\
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
@@ -355,10 +365,11 @@ knitr::include_graphics(file.path(path_results,'UMAP_with_DE_gene_class.jpeg'), 
 
 \
 
-### Cells subclass
+### Cells subtypes
 
 \
 
+### Quality Control of cell subtypes - double-check markers expression 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
@@ -366,17 +377,34 @@ knitr::include_graphics(file.path(path_results,'cells_type_threshold.jpeg'), dpi
 
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+\
+
+## PCA plot
+
+\
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
 PCA <- DimPlot(UMI, reduction = "pca")
-plotly::ggplotly(PCA)
+PCA <- plotly::ggplotly(PCA, height = 500, width=650)
+PCA <- PCA %>% plotly::layout(showlegend = FALSE)
+PCA 
 
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+\
+
+## UMAP plot
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
 UMAP <- DimPlot(UMI, reduction = "umap")
-plotly::ggplotly(UMAP)
+UMAP <- plotly::ggplotly(UMAP, height = 1200, width=650)
+UMAP <- UMAP %>% plotly::layout(legend = list(orientation = "h", x = 0, y = -0.5)) 
+UMAP
 ```
 
 
