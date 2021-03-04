@@ -1,10 +1,9 @@
 library(Seurat)
 library(patchwork)
 library(tidyverse)
+library(doSNOW)
 library(foreach)
 library(doParallel)
-library(doSNOW)
-
 
 args <- commandArgs()
 
@@ -113,7 +112,7 @@ MQC <- ggplot()+
   ylab("% MitoRNA") +
   xlab("% MitoRNA")+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='% Content treshold') 
+  labs(color='% Content threshold') 
 
 ggsave(MQC, filename = file.path(OUTPUT,'MitoQC.jpeg'), width = 10, height = 7, dpi = 600)
 rm(MQC)
@@ -123,7 +122,7 @@ RQC <- ggplot()+
   ylab("% RiboRNA") +
   xlab("% RiboRNA")+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='% Content treshold') 
+  labs(color='% Content threshold') 
 
 ggsave(RQC, filename = file.path(OUTPUT,'RiboQC.jpeg'),  width = 10, height = 7, dpi = 600)
 rm(RQC)
@@ -253,8 +252,9 @@ dev.off()
 #find markers for every cluster compared to all remaining cells, report only the positive ones
 
 
-UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25, test.use = 'MAST')
+UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.10, test.use = 'MAST')
 top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
+
 
 MAST_markers <- UMI.markers %>% group_by(cluster) %>% top_n(n = 5, wt = avg_logFC)
 
@@ -281,100 +281,118 @@ CPU <- detectCores() - 1
 
 if (CPU > max(as.numeric(unique(UMI@active.ident)))) {
   cl <- makeCluster(max(as.numeric(unique(UMI@active.ident))))
-  } else if (CPU < max(as.numeric(unique(UMI@active.ident)))) {
-    cl <- makeCluster(CPU)
-  }  
+} else if (CPU < max(as.numeric(unique(UMI@active.ident)))) {
+  cl <- makeCluster(CPU)
+}  
 
 registerDoParallel(cl)
 registerDoSNOW(cl)
 
 pca_cluster_genes <- list()
 clusters <- 4
+tmp <- GetAssayData(UMI, slot = 'data')
+colnames(tmp) <- UMI@active.ident
+
 pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.ident))), .packages =c('Seurat', 'patchwork','tidyverse'), .options.snow = opts) %dopar% {
-    
-    pca_cluster <- pca_cluster - 1
-    tmp <- GetAssayData(UMI, slot = 'data')
-    colnames(tmp) <- UMI@active.ident
-    tmp2 <- as.data.frame(tmp[, colnames(tmp) %in% pca_cluster])
-    tmp2[tmp2 > 1] <- 1L
-    tmp2[tmp2 < 1] <- 0L
-    
-    gen_cor <- unique(UMI.markers$gene[UMI.markers$cluster %in% pca_cluster])
-    tmp3 <- tmp2[gen_cor, ]
-    
-    
-    df_groups <- data.frame(1:length(colnames(tmp3)))
-    df_groups <- as.data.frame(t(df_groups))
-    df_groups_tmp <- data.frame(1:length(colnames(tmp3)))
-    df_groups_tmp <- as.data.frame(t(df_groups_tmp))
-    selec_group <- data.frame()
-    df_length <- length(rownames(tmp3))
-    br <- F
-    for (cluster in 1:clusters) {
+  
+  pca_cluster <- pca_cluster - 1
+  
+  tmp2 <- as.data.frame(tmp[, colnames(tmp) %in% pca_cluster])
+  tmp2[tmp2 > 1] <- 1L
+  tmp2[tmp2 < 1] <- 0L
+  
+  gen_cor <- unique(UMI.markers$gene[UMI.markers$cluster %in% pca_cluster])
+  tmp3 <- tmp2[gen_cor, ]
+  rm(tmp2)
+  
+  df_groups <- data.frame(1:length(colnames(tmp3)))
+  df_groups <- as.data.frame(t(df_groups))
+  df_groups_tmp <- data.frame(1:length(colnames(tmp3)))
+  df_groups_tmp <- as.data.frame(t(df_groups_tmp))
+  selec_group <- data.frame()
+  df_length <- length(rownames(tmp3))
+  br <- F
+  for (cluster in 1:clusters) {
+    if(br == T){break}
+    for (i in 1:length(rownames(tmp3))) {
+      if (cluster == 1) {
+        tmp_elements <- tmp3[i,]
+        gen_set <- rownames(tmp3)[i]
+        perc_1 <- length(tmp_elements[tmp_elements == 1])/length(tmp_elements)
+        perc_0 <- length(tmp_elements[tmp_elements == 0])/length(tmp_elements)
+        gene_combination <- gen_set
+        if (is.nan(perc_1)) {perc_1 <- 0}
+        if (is.nan(perc_0)) {perc_2 <- 0}
+        if (i == 1) {selec_group <- data.frame(gene_combination, perc_1, perc_0)
+        } else if (i > 1) {selec_group_tmp <- data.frame(gene_combination, perc_1, perc_0)
+        selec_group <- rbind(selec_group, selec_group_tmp)}
+        df_groups[i,] <- tmp_elements
+        rownames(df_groups)[i] <- gen_set
+        if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.01) == T) {br <- T
+        break}
+      }
+      index_j <- 0
       if(br == T){break}
-      for (i in 1:length(rownames(tmp3))) {
-        index_j <- 0
+      for (j in 1:df_length) {
         if(br == T){break}
-        for (j in 1:df_length) {
-          if (cluster == 1 & grepl(rownames(tmp3)[i], rownames(tmp3)[j]) == F) {
-            index_j <- index_j + 1
-            tmp_elements <- colSums(rbind(tmp3[i,], tmp3[j,])) 
-            gen_set <- rownames(tmp3)[i]
-            gen_set <- paste(gen_set, rownames(tmp3)[j])
-            perc_1 <- length(tmp_elements[tmp_elements == 1])/length(tmp_elements)
-            perc_0 <- length(tmp_elements[tmp_elements == 0])/length(tmp_elements)
-            gene_combination <- gen_set
-            if (is.nan(perc_1)) {perc_1 <- 0}
-            if (is.nan(perc_0)) {perc_2 <- 0}
-            if (index_j == 1 & i == 1) {selec_group <- data.frame(gene_combination, perc_1, perc_0)
-            } else if (index_j > 1) {selec_group_tmp <- data.frame(gene_combination, perc_1, perc_0)
-            selec_group <- rbind(selec_group, selec_group_tmp)}
-            df_groups[index_j,] <- tmp_elements
-            rownames(df_groups)[index_j] <- gen_set
-            if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.01) == T) {br <- T
+        if (cluster == 1 & grepl(rownames(tmp3)[i], rownames(tmp3)[j]) == F) {
+          index_j <- index_j + 1
+          tmp_elements <- colSums(rbind(tmp3[i,], tmp3[j,])) 
+          gen_set <- rownames(tmp3)[i]
+          gen_set <- paste(gen_set, rownames(tmp3)[j])
+          perc_1 <- length(tmp_elements[tmp_elements == 1])/length(tmp_elements)
+          perc_0 <- length(tmp_elements[tmp_elements == 0])/length(tmp_elements)
+          gene_combination <- gen_set
+          if (is.nan(perc_1)) {perc_1 <- 0}
+          if (is.nan(perc_0)) {perc_2 <- 0}
+          selec_group_tmp <- data.frame(gene_combination, perc_1, perc_0)
+          selec_group <- rbind(selec_group, selec_group_tmp)
+          df_groups[index_j,] <- tmp_elements
+          rownames(df_groups)[index_j] <- gen_set
+          if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.01) == T) {br <- T
+          break}
+          if (j == df_length) {
+            df_length <- length(rownames(df_groups))}
+        } else if (cluster != 1 & grepl(rownames(tmp3)[i], rownames(df_groups)[j]) == F) {
+          index_j <- index_j + 1
+          colnames(df_groups) <- colnames(tmp3)
+          tmp_elements <- colSums(rbind(df_groups[j,], tmp3[i,]))
+          gen_set <- rownames(df_groups)[j]
+          gen_set <- paste(gen_set, rownames(tmp3)[i])
+          perc_1 <- length(tmp_elements[tmp_elements == 1])/length(tmp_elements)
+          perc_0 <- length(tmp_elements[tmp_elements == 0])/length(tmp_elements)
+          gene_combination <- gen_set
+          if (is.nan(perc_1)) {perc_1 <- 0}
+          if (is.nan(perc_0)) {perc_2 <- 0}
+          selec_group_tmp <- data.frame(gene_combination, perc_1, perc_0)
+          selec_group <- rbind(selec_group, selec_group_tmp)
+          df_groups_tmp[index_j,] <- tmp_elements
+          rownames(df_groups_tmp)[index_j] <- gen_set
+          if (j == df_length) {
+            df_groups <- df_groups_tmp
+            df_length <- length(rownames(df_groups))
+            if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.01) == T ) {br <- T
             break}
-            if (j == df_length) {
-              df_length <- length(rownames(df_groups))}
-          } else if (cluster != 1 & grepl(rownames(tmp3)[i], rownames(df_groups)[j]) == F) {
-            index_j <- index_j + 1
-            colnames(df_groups) <- colnames(tmp3)
-            tmp_elements <- colSums(rbind(df_groups[j,], tmp3[i,]))
-            gen_set <- rownames(df_groups)[j]
-            gen_set <- paste(gen_set, rownames(tmp3)[i])
-            perc_1 <- length(tmp_elements[tmp_elements == 1])/length(tmp_elements)
-            perc_0 <- length(tmp_elements[tmp_elements == 0])/length(tmp_elements)
-            gene_combination <- gen_set
-            if (is.nan(perc_1)) {perc_1 <- 0}
-            if (is.nan(perc_0)) {perc_2 <- 0}
-            selec_group_tmp <- data.frame(gene_combination, perc_1, perc_0)
-            selec_group <- rbind(selec_group, selec_group_tmp)
-            df_groups_tmp[index_j,] <- tmp_elements
-            rownames(df_groups_tmp)[index_j] <- gen_set
-            if (j == df_length) {
-              df_groups <- df_groups_tmp
-              df_length <- length(rownames(df_groups))
-              if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.01) == T ) {br <- T
-              break}
-              }
-            }
           }
         }
       }
-	  
-      if ((tail(selec_group$perc_0[order(selec_group$perc_0, decreasing = T)], n = 1) <= 0.05) == T) {
-      selec_group <- selec_group[selec_group$perc_0 <= 0.05, ]
-    } else if ((tail(selec_group$perc_0[order(selec_group$perc_0, decreasing = T)], n = 1) <= 0.1) == T) {
-      selec_group <- selec_group[selec_group$perc_0 <= 0.1, ]
-    } 
-    
-    pca_cluster_genes[paste(pca_cluster)] <- selec_group$gene_combination[order(selec_group$perc_1[1], decreasing = T)]
+    }
+  }
+  
+  if ((tail(selec_group$perc_0[order(selec_group$perc_0, decreasing = T)], n = 1) <= 0.05) == T) {
+    selec_group <- selec_group[selec_group$perc_0 <= 0.05, ]
+  } else if ((tail(selec_group$perc_0[order(selec_group$perc_0, decreasing = T)], n = 1) <= 0.1) == T) {
+    selec_group <- selec_group[selec_group$perc_0 <= 0.1, ]
+  } 
+  
+  pca_cluster_genes[paste(pca_cluster)] <- selec_group$gene_combination[order(selec_group$perc_1[1], decreasing = T)]
   
 } 
 
 
 close(pb)
 stopCluster(cl) 
- 
+
 print('Single cell types marker list')
 print(pca_cluster_genes)
 
@@ -389,17 +407,17 @@ unl <- unlist(pca_cluster_genes)
 
 check = 0
 for (num in 1:length(unl)) {
-    for (gen in UMI.markers$gene) {
+  for (gen in UMI.markers$gene) {
+    gen_vector <- gen[grepl(gen, unl[num])]
+    cluster <- num
+    if (check == 0 & cluster == 1 & length(gen_vector) == 1) {
+      check = 1
+      gen_vector_list <- data.frame(cluster, gen_vector)
+    } else if (check == 1 & length(gen_vector) == 1){
       gen_vector <- gen[grepl(gen, unl[num])]
       cluster <- num
-        if (check == 0 & cluster == 1 & length(gen_vector) == 1) {
-          check = 1
-          gen_vector_list <- data.frame(cluster, gen_vector)
-        } else if (check == 1 & length(gen_vector) == 1){
-      gen_vector <- gen[grepl(gen, unl[num])]
-      cluster <- num
-        gen_vector_list_tmp <- data.frame(cluster, gen_vector)
-        gen_vector_list <- unique(rbind(gen_vector_list, gen_vector_list_tmp))
+      gen_vector_list_tmp <- data.frame(cluster, gen_vector)
+      gen_vector_list <- unique(rbind(gen_vector_list, gen_vector_list_tmp))
       
     }
   }
@@ -541,7 +559,7 @@ if (length(markers_subclass) != 0) {
     cell_names.1[i] <- rownames(rename_df[1,])
   }
   
-
+  
   cluster <- 0
   cell_names.2 <- c()
   for (col in 1:length(colnames(average_expression))) {
@@ -583,8 +601,8 @@ if (length(markers_subclass) != 0) {
 }
 
 
-subclass_marker_list_pheat <- rownames(exp_matrix)[toupper(rownames(exp_matrix)) %in% colnames(average_expression)]
-
+subclass_marker_list_pheat <- rownames(exp_matrix)[toupper(rownames(exp_matrix)) %in% toupper(cell_names.2)]
+subclass_marker_list_pheat <- unique(c(subclass_marker_list_pheat, cell_names[!grepl('Bed',cell_names)]))
 #######################################################################################
 #Repair subclass_names
 
@@ -765,18 +783,18 @@ for (marker in markers_class) {
       colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  colnames(markers_class)[n_marker], x = colnames(second_matrix)[col])
       renamed_new.1 <- c(renamed_new.1, colnames(second_matrix)[col])
     }
-    }
   }
+}
 
 
 Renamed_idents <- Idents(UMI)
 
 if (length(renamed_old.1) != 0) {
-n = 0
-for (name in 1:length(renamed_new.1)) {
-  n = n + 1
-  Renamed_idents <- gsub(x = Renamed_idents, pattern = renamed_old.1[n], replacement = renamed_new.1[n])
-}
+  n = 0
+  for (name in 1:length(renamed_new.1)) {
+    n = n + 1
+    Renamed_idents <- gsub(x = Renamed_idents, pattern = renamed_old.1[n], replacement = renamed_new.1[n])
+  }
 }
 
 if (length(markers_subclass) != 0) {
@@ -784,25 +802,25 @@ if (length(markers_subclass) != 0) {
   for (subclass in markers_subclass) {
     subclass_marker_list <- c(subclass_marker_list, subclass)
   }
-
-subclass_marker_list <- rownames(UMI)[toupper(rownames(UMI)) %in% subclass_marker_list]
+}
+  subclass_marker_list <- rownames(UMI)[toupper(rownames(UMI)) %in% subclass_marker_list]
   
   
-old.names <- colnames(second_matrix)
-
-
-second_matrix <- average_expression[subclass_marker_list,]
-colnames(second_matrix) <- old.names
-################################################
-#Renamed function
-
+  old.names <- colnames(second_matrix)
+  
+  
+  second_matrix <- average_expression[subclass_marker_list,]
+  colnames(second_matrix) <- old.names
+  ################################################
+  #Renamed function
+  second_matrix <- second_matrix[!colnames(second_matrix) %in% c('Bad', 'Unknow')]
+  
   for (col in 1:length(colnames(second_matrix))) {
     second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
-    if (!grepl(rownames(second_matrix)[1], colnames(second_matrix)[col]) & !grepl('Bad', colnames(second_matrix)[col])) {
+    if (second_matrix[1,col] == 0) {
+      colnames(second_matrix)[col] <- 'Bad'
+    } else if (!grepl(toupper(rownames(second_matrix)[1]), colnames(second_matrix)[col]) & !grepl('Bad', colnames(second_matrix)[col])) {
       renamed_old.2 <- unique(c(renamed_old.2, colnames(second_matrix)[col]))
-      if (second_matrix[1,col] == 0) {
-        colnames(second_matrix)[col] <- 'Bad'
-      }
       mark <- c()
       for (change in markers_subclass) {
         print(change)
@@ -810,19 +828,19 @@ colnames(second_matrix) <- old.names
       }
       colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  toupper(rownames(second_matrix)[1]), x = colnames(second_matrix)[col])
       renamed_new.2 <- c(renamed_new.2, colnames(second_matrix)[col])
+    } 
+  }
+
+  
+  if (length(renamed_old.2) != 0) {
+    n = 0
+    for (name in 1:length(renamed_new.2)) {
+      n = n + 1
+      Renamed_idents <- gsub(x = Renamed_idents, pattern = renamed_old.2[n], replacement = renamed_new.2[n])
     }
   }
+  
 
-
-if (length(renamed_old.2) != 0) {
-n = 0
-for (name in 1:length(renamed_new.2)) {
-  n = n + 1
-  Renamed_idents <- gsub(x = Renamed_idents, pattern = renamed_old.2[n], replacement = renamed_new.2[n])
-  }
-}
-
-}
 
 
 Idents(UMI) <- Renamed_idents
@@ -844,16 +862,18 @@ bad.subnames <- subclass_names[subclass_names %in% bad]
 data <- as.data.frame(summary(as.factor(subclass_names), maxsum = length(unique(subclass_names))))
 colnames(data)[1] <- 'n'
 data$names <- rownames(data)
-num <- length(Renamed_idents)*0.005
+
+
+num <-head(sort(data$n, decreasing = T), n = 1)*0.01
+
+
 below.names <- data$names[data$n < num]
-
-
 
 
 data$test[data$names %in% bad.subnames] <- "Bad marked types"
 data$test[data$names %in% renamed.subnames] <- "Renamed"
 data$test[data$names %in% new.subnames] <- "Good marked types" 
-data$test[data$names %in% below.names] <- "Below 0.005"
+data$test[data$names %in% below.names] <- "Non-significant < 0.01"
 
 
 
@@ -895,11 +915,11 @@ UMI <- subset(UMI, idents = right.names)
 
 #########################################################################################################################################################################################
 
-jpeg(file.path(OUTPUT, "PCA_DimPlot_subtypes.jpeg") , units="in", width=40, height=15, res=600)
+jpeg(file.path(OUTPUT, "PCA_DimPlot_subtypes.jpeg") , units="in", width=10, height=7, res=600)
 DimPlot(UMI, reduction = "pca")
 dev.off()
 
-jpeg(file.path(OUTPUT, "UMAP_with_DE_gene_subtypes.jpeg") , units="in", width=40, height=15, res=600)
+jpeg(file.path(OUTPUT, "UMAP_with_DE_gene_subtypes.jpeg") , units="in", width=10, height=7, res=600)
 DimPlot(UMI, reduction = "umap") 
 dev.off()
 
@@ -1090,16 +1110,19 @@ saveRDS(UMI, file = file.path(OUTPUT, "Results.rds"))
 
 #Cell populations pheatmaps
 
+ms<- c()
+for (m in subclass_marker_list) {
+ms <- c(ms, m[grepl(toupper(m), list(colnames(average_expression)))])
+}
 
-
-
-marker_list <- unique(c(class_marker_list, subclass_marker_list_pheat))
+marker_list <- unique(c(class_marker_list, subclass_marker_list_pheat, ms))
 
 
 
 
 average_expression <- average_expression[marker_list,]
-jpeg(file.path(OUTPUT, "pheatmap_cells_populations.jpeg"),units="in", width = 25, height = 16,  res=600)
+average_expression <- drop_na(average_expression)
+jpeg(file.path(OUTPUT, "pheatmap_cells_populations.jpeg"),units="in", width = 35, height = 30,  res=600)
 pheatmap::pheatmap(average_expression, 
                    clustering_method = 'ward.D',
                    angle_col = 270, fontsize_row = 20, fontsize_col = 20)
