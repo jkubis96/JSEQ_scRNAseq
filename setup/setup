@@ -9,6 +9,7 @@ echo ''
 read permission_sudo
 
 $permission_sudo apt-get update
+$permission_sudo apt-get upgrade
 
 }
 
@@ -16,8 +17,8 @@ $permission_sudo apt-get update
 #python installation
 
 function python {
-$permission_sudo apt install python3.8
-$permission_sudo apt install python3-pip
+$permission_sudo apt -y install python3.8
+$permission_sudo apt -y install python3-pip
  pip3 install pysam==0.16.0.1
  pip3 install biopython==1.78
  pip3 install umi_tools==1.0.1
@@ -32,31 +33,31 @@ $permission_sudo apt-get update
 $permission_sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
 $permission_sudo add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
 $permission_sudo apt-get update
-$permission_sudo apt-get install r-base
-$permission_sudo apt-get upgrade
-$permission_sudo apt-get install curl
-$permission_sudo apt-get install openssl
-$permission_sudo apt-get install libcurl4-openssl-dev
-$permission_sudo apt-get install libhdf5-dev
-$permission_sudo apt-get install libhdf5-serial-dev
-$permission_sudo apt-get install h5utils
-$permission_sudo apt-get install hdf5-tools
-$permission_sudo apt-get install hdf5-helpers
-$permission_sudo apt-get install r-cran-patchwork
-$permission_sudo apt-get install -y r-cran-httr
-$permission_sudo apt-get install -y r-cran-leiden
-$permission_sudo apt-get install -y r-cran-igraph
-$permission_sudo apt-get install -y r-cran-viridis
-$permission_sudo apt-get install -y r-cran-seurat
-$permission_sudo apt-get install -y r-cran-readxl
-$permission_sudo apt-get install -y r-cran-pheatmap
-$permission_sudo apt-get install -y r-cran-matrix
-$permission_sudo apt-get install -y r-cran-tidyverse
-
+$permission_sudo apt-get -y install r-base=3.6.3-2
+$permission_sudo apt-get -y install curl=7.68.0-1ubuntu2.4
+$permission_sudo apt-get -y install openssl=1.1.1f-1ubuntu2.1
+$permission_sudo apt-get -y install libcurl4-openssl-dev=7.68.0-1ubuntu2.4
+$permission_sudo apt-get -y install libhdf5-dev=1.10.4+repack-11ubuntu1
+$permission_sudo apt-get -y install libhdf5-serial-dev
+$permission_sudo apt-get -y install h5utils=1.13.1-3build1
+$permission_sudo apt-get -y install hdf5-tools=1.10.4+repack-11ubuntu1
+$permission_sudo apt-get -y install hdf5-helpers=1.10.4+repack-11ubuntu1
+$permission_sudo apt-get -y install r-cran-httr=1.4.1-1ubuntu1
+$permission_sudo apt-get -y install r-cran-leiden=0.3.3+dfsg-1
+$permission_sudo apt-get -y install r-cran-igraph=1.2.4.2-2build1
+$permission_sudo apt-get -y install r-cran-readxl=1.3.1-2build1
+$permission_sudo apt-get -y install r-cran-pheatmap=1.0.12-1
+$permission_sudo apt-get -y install r-cran-matrix=1.2-18-1
+$permission_sudo apt-get -y install r-cran-tidyverse=1.3.0-1
+$permission_sudo apt-get -y install r-cran-doparallel=1.0.15-1
+$permission_sudo apt-get -y install r-cran-dosnow=1.0.18-1
 
 
 $permission_sudo apt-get update
 
+
+r_req=$(pwd)/setup
+$permission_sudo -i Rscript $r_req/r_req.R 
 
 }
 
@@ -66,7 +67,7 @@ $permission_sudo apt-get update
 function java {
 
 #apt-get update
-$permission_sudo apt install default-jdk
+$permission_sudo apt -y install default-jdk
 
 }
 
@@ -74,7 +75,7 @@ $permission_sudo apt install default-jdk
 
 function SAMtools {
 
-$permission_sudo apt-get install -y samtools
+$permission_sudo apt-get -y install samtools=1.10-3
 
 }
 
@@ -87,7 +88,7 @@ function STAR {
         cd STAR/source
         make STAR
         cd ..
-		$permission_sudo apt install rna-star
+		$permission_sudo apt -y install rna-star
 }
 
 
@@ -99,7 +100,7 @@ git clone https://github.com/OpenGene/fastp.git
 
 cd fastp
 make
-$permission_sudo apt install fastp
+$permission_sudo apt -y install fastp
 cd ..
 }
 

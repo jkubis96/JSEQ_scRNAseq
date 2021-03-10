@@ -2,11 +2,14 @@
 args <- commandArgs()
 path <- args[6]
 results <- args[7]
+
 library(tidyverse)
 library(ggplot2)
 library(gridExtra)
 library(grid)
 library(viridis)
+
+
 
 
 metrics <- file.path(path,'/scRNAmetrics.txt')
@@ -54,7 +57,7 @@ p1 <- p1 + scale_fill_viridis(discrete = TRUE, option = "viridis")
 
 
 mydata_long_pct <- mydata_pct %>% gather("Read Overlap", fraction, -"Cell Barcode")
-# Keep the original order of the barcodes using factor and levels.
+
 mydata_long_pct$`Cell Barcode` <- factor(mydata_long_pct$`Cell Barcode`,
                                      levels = factor(unique(mydata_long_pct$`Cell Barcode`)))
 mydata_long_pct$`Read Overlap` <- factor(mydata_long_pct$`Read Overlap`,
@@ -65,7 +68,7 @@ p2 <- ggplot(mydata_long_pct, aes(x = `Cell Barcode`, y = fraction, fill = `Read
   theme(axis.text.x = element_text(angle = 90, hjust = 0, size=8, vjust = 0.05), legend.position = "bottom") +
   labs(x = "Barcodes", y = "%Bases") +
   scale_y_continuous(labels = scales::percent) + scale_fill_viridis(discrete = TRUE, option = "viridis")
-# This allows to align the main plots so that we can relate both directly with the label from the bottom one.
+
 gp1 <- ggplotGrob(p1)
 gp2 <- ggplotGrob(p2)
 pdf(file = file.path(results,'/scRNAmetrics.pdf'), width = 16, height = 13)

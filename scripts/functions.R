@@ -6,7 +6,10 @@ all_unique <- function(data, range, value_check_1){
 
 
 
-#Cella name 
+
+
+
+#Cell name change for future
 cluster_nameing<- function(matrix_a, markers) {
   
   

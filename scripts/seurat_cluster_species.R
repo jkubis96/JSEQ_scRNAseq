@@ -252,8 +252,15 @@ dev.off()
 #find markers for every cluster compared to all remaining cells, report only the positive ones
 
 
-UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.10, test.use = 'MAST')
+UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.20, logfc.threshold = 0.25, test.use = 'MAST')
+
+if (sum(as.numeric(levels(UMI))) != sum(unique(as.integer(UMI.markers$cluster)-1))) {
+  UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.20, logfc.threshold = 0.10, test.use = 'MAST')
+  }
+
 top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
+top100 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 100, wt = avg_logFC)
+
 
 
 MAST_markers <- UMI.markers %>% group_by(cluster) %>% top_n(n = 5, wt = avg_logFC)
@@ -301,7 +308,7 @@ pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.id
   tmp2[tmp2 > 1] <- 1L
   tmp2[tmp2 < 1] <- 0L
   
-  gen_cor <- unique(UMI.markers$gene[UMI.markers$cluster %in% pca_cluster])
+  gen_cor <- unique(top100$gene[top100$cluster %in% pca_cluster])
   tmp3 <- tmp2[gen_cor, ]
   rm(tmp2)
   
@@ -999,6 +1006,7 @@ ggsave(cells, filename = file.path(OUTPUT,'box_matrix.jpeg'), units = 'in', widt
 
 
 exp_matrix <- GetAssayData(UMI, slot = 'data')
+colnames(exp_matrix) <- UMI@active.ident
 
 write(colnames(exp_matrix), file = file.path(OUTPUT, "exp_matrix/barcodes.tsv"))
 write(rownames(exp_matrix), file = file.path(OUTPUT, "exp_matrix/genes.tsv"))

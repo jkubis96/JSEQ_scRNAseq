@@ -1,7 +1,9 @@
 library(Seurat)
 library(patchwork)
 library(tidyverse)
-
+library(doSNOW)
+library(foreach)
+library(doParallel)
 
 
 args <- commandArgs()
@@ -27,436 +29,145 @@ source(functions)
 #########################################################
 
 
-markers_human <- readxl::read_xlsx(markers, sheet = 1)
-
-markers_mice <- readxl::read_xlsx(markers, sheet = 2)
+markers_class <- readxl::read_xlsx(markers, sheet = 1)
+markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
 
 
 #####################################################################################
 
 #####################################HUMAN###########################################
-
 { 
-# Load the raw dataset by UMI
-UMI_raw <- Read10X(seurat_umi_human , gene.column = 1)
-
-
-#Create SeuratObject
-UMI <- CreateSeuratObject(counts = UMI_raw, project = project_name, min.cells = 1, min.features = 1)
-UMI
-}
-
-###########################ZMIENIÆ###############################
-cells_number <- length(UMI@active.ident)
-cells_number <- as.numeric(cells_number)
-#################################################################
-
-#Create Ribo and Mito percent stats
-
-UMI[['MitoPercent']] <- PercentageFeatureSet(UMI, pattern = "^MT-")
-UMI[['RiboPercent']] <- PercentageFeatureSet(UMI, pattern = "^Rps-") + PercentageFeatureSet(UMI, pattern = "^Rpl")
-
-UMI@meta.data <- UMI@meta.data %>% 
-  rename(nCounts = nCount_RNA) %>% 
-  rename(nGenes = nFeature_RNA)
-
-saveRDS(UMI, file = file.path(OUTPUT, "human/Seurat_object.rds"))
-
-#Graphs of counts content
-
-jpeg(file.path(OUTPUT, "human/counts~genes.jpeg") , units="in", width=15, height=10, res=300)
-UC_plot <- VlnPlot(UMI, features = c("nGenes", "nCounts"), ncol = 2)
-UC_plot
-dev.off()
-
-jpeg(file.path(OUTPUT, "human/Ribo~Mito.jpeg") , units="in", width=15, height=10, res=300)
-MR_plot <- VlnPlot(UMI, features = c("RiboPercent", "MitoPercent"), ncol = 2)
-MR_plot
-dev.off()
-
-
-jpeg(file.path(OUTPUT, "human/counts~genes_QC.jpeg") , units="in", width=15, height=10, res=300)
-CG_plot <- FeatureScatter(UMI, feature1 = "nCounts", feature2 = "nGenes")
-CG_plot
-dev.off()
-
-####################################################################################
-
-#Droplet content and QC
-
-n_gen <- as.numeric(quantile(UMI@meta.data$nGenes, 0.75))
-
-QC_UMI <- data.frame()
-QC_UMI <- as.data.frame(UMI$nGenes)
-QC_UMI$V2 <- UMI$MitoPercent
-QC_UMI$V3 <- UMI$RiboPercent
-
-colnames(QC_UMI) <- c('nGenes','MitoPercent','RiboPercent')
-
-QC_UMI$Mito_Status[QC_UMI$MitoPercent > 5] <- '> 5%'
-QC_UMI$Mito_Status[QC_UMI$MitoPercent <= 5] <- 'Proper'
-
-QC_UMI$nGenes_Status[UMI$nGenes < 200] <- 'Empty'
-QC_UMI$nGenes_Status[UMI$nGenes > n_gen] <- 'Double'
-QC_UMI$nGenes_Status[UMI$nGenes >= 200 & UMI$nGenes <= n_gen] <- 'Proper'
-
-QC_UMI$Ribo_Status[QC_UMI$RiboPercent == 0] <- '0%'
-QC_UMI$Ribo_Status[QC_UMI$RiboPercent > 0] <- '> 0 %'
-
-
-
-DQC <- ggplot()+
-  geom_point(QC_UMI, mapping = aes(x = nGenes, y = nGenes, color = nGenes_Status))+
-  ylab("Number of genes for each cells") +
-  xlab("Number of genes for each cells")+
-  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='Droplet content') 
-
-ggsave(DQC, filename = file.path(OUTPUT,'human/DropletQC.jpeg'), width = 10, height = 7, dpi = 600)
-rm(DQC)
-
-MQC <- ggplot()+
-  geom_point(QC_UMI, mapping = aes(x = MitoPercent, y = MitoPercent , color = Mito_Status))+
-  ylab("% MitoRNA") +
-  xlab("% MitoRNA")+
-  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='% Content treshold') 
-
-ggsave(MQC, filename = file.path(OUTPUT,'human/MitoQC.jpeg'), width = 10, height = 7, dpi = 600)
-rm(MQC)
-
-RQC <- ggplot()+
-  geom_point(QC_UMI, mapping = aes(x = RiboPercent, y = RiboPercent, color = Ribo_Status))+
-  ylab("% RiboRNA") +
-  xlab("% RiboRNA")+
-  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='% Content treshold') 
-
-ggsave(RQC, filename = file.path(OUTPUT,'human/RiboQC.jpeg'),  width = 10, height = 7, dpi = 600)
-rm(RQC)
-rm(QC_UMI)
-
-####################################################################################
-
-#Selecting right cells
-
-UMI <- subset(UMI, subset = nGenes > 200 & nGenes < n_gen & MitoPercent < 5)
-
-#####################################################################################
-
-UMI <- NormalizeData(UMI, normalization.method = "LogNormalize", scale.factor = 1e6)
-
-
-######################################################################################
-
-#For normalized expression matrix input
-
-if (data == 2) {
-  UMI@assays$RNA@data <- UMI@assays$RNA@counts
-}
-
-UMI <- FindVariableFeatures(UMI, selection.method = "vst", nfeatures = n_gen)
-
-# Identify the 10 most highly variable genes
-
-top10 <- head(VariableFeatures(UMI), 10)
-
-plot1 <- VariableFeaturePlot(UMI)
-
-jpeg(file.path(OUTPUT, "human/variable_genes.jpeg") , units="in", width=10, height=7, res=300)
-plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
-plot2
-dev.off()
-
-#####################################################################################
-
-all.genes <- rownames(UMI)
-UMI <- ScaleData(UMI, features = all.genes)
-
-UMI <- RunPCA(UMI, features = VariableFeatures(object = UMI))
-
-
-
-UMI <- JackStraw(UMI, num.replicate = 100)
-UMI <- ScoreJackStraw(UMI, dims = 1:20)
-
-
-
-################################
-
-jpeg(file.path(OUTPUT, "human/Elbow.jpeg") , units="in", width=10, height=7, res=300)
-Elbow <- ElbowPlot(UMI)
-Elbow
-dev.off()
-
-dims <- as.data.frame(Elbow$data$stdev)
-
-#select the most variable reduction
-
-{
-  dim <- c()
-  score <- c()
-  element <- 0
-  for (i in dims$`Elbow$data$stdev`) {
-    element <- element + 1
-    print(dims$`Elbow$data$stdev`[element+1])
-    print(i)
-    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1]) {
-      dim <- element
-    } else break
-  }
+  # Load the raw dataset by UMI
+  UMI_raw_human <- Read10X(seurat_umi_human, gene.column = 1)
   
+  #Create SeuratObject
+  UMI_human <- CreateSeuratObject(counts = UMI_raw_human, project = project_name, min.cells = 1, min.features = 1)
+  UMI_human@meta.data$orig.ident <- 'Human'
   
-  dim <- as.numeric(dim + 1)
+  cell_input_human <- length(Idents(UMI_human))
+  
+  rm(UMI_raw_human)
 }
-
-#########################################################################################
-
-
-jpeg(file.path(OUTPUT, "human/JackStrawPlot.jpeg") , units="in", width=10, height=7, res=300)
-JackStrawPlot(UMI, dims = 1:(dim))
-dev.off()
-
-jpeg(file.path(OUTPUT, "human/PCA_heatmap.jpeg") , units="in", width=10, height=7, res=300)
-DimHeatmap(UMI, dims = 1:dim, cells = cells_number, balanced = TRUE)
-dev.off()
-
-
-UMI <- FindNeighbors(UMI, dims = 1:dim)
-UMI <- FindClusters(UMI, resolution = 0.5)
-
-
-UMI <- RunUMAP(UMI, dims = 1:dim)
-
-
-jpeg(file.path(OUTPUT, "human/UMAP.jpeg") , units="in", width=10, height=7, res=300)
-DimPlot(UMI, reduction = "umap")
-dev.off()
-
-####################################################################################
-
-
-
-# find markers for every cluster compared to all remaining cells, report only the positive ones
-UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
-top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
-
-
-
-##Cells cluster naming with top genes (different between cell groups)
-
-{
-  top10 <- data.frame(top10$cluster, top10$gene)
-  colnames(top10) <- c('cluster','gene')
-  
-  
-  all_unique('top10','[1:2]','cluster')
-  
-  top10$cluster <- top10$Group.1
-  top10 <- top10[,-1] 
-}
-##########################################################
-### LogFC genes select and cell nameing ###
-
-
-exp_matrix <- as.data.frame(GetAssayData(UMI, slot = 'data'))
-colnames(exp_matrix) <- UMI@active.ident
-exp_matrix <- as.data.frame(exp_matrix)
-
-
-lvl_num <- as.numeric(max(levels(UMI))) +1 
-{
-  for (lvl in 1:lvl_num) {
-    for (i in 1:ncol(exp_matrix)) {
-      rename_df <- c()
-      col <- lvl -1
-      rename_df <- exp_matrix[rownames(exp_matrix) %in% top10$gene[[lvl]],]
-      if (colnames(rename_df[i]) == as.numeric(col)) {
-        rename_df <- rename_df[order(rename_df[,i], decreasing = T),]
-        rename_df <- rownames(rename_df[1:2,])
-        rename_df <- sort(rename_df)
-        colnames(exp_matrix)[i] <- paste(rename_df[1], rename_df[2])
-      }
-    }
-  } 
-  
-}
-
-cell_names <- colnames(exp_matrix)
-cell_nameing(matrix_a = exp_matrix, markers = markers_human)
-colnames(exp_matrix) <- paste(colnames(exp_matrix), cell_names)
-
-
-
-############################################
-#PCA Cluster average expression for nameing
-
-average_expression <- as.data.frame(GetAssayData(UMI, slot = 'data'))
-colnames(average_expression) <- UMI@active.ident
-average_expression <- as.data.frame(average_expression)
-average_expression <- t(average_expression)
-average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = mean, trim = 0.25)
-rownames(average_expression) <- average_expression[,1]
-average_expression <- average_expression[,-1]
-average_expression <- t(average_expression)
-
-cluster_nameing(matrix_a = average_expression, markers = markers_human)
-
-new.cluster.ids <- colnames(average_expression)
-names(new.cluster.ids) <- levels(UMI)
-UMI <- RenameIdents(UMI, new.cluster.ids)
-
-rm(average_expression)
-
-
-#PCA plot and UMAP plot with names
-
-jpeg(file.path(OUTPUT, "human/PCA_DimPlot.jpeg") , units="in", width=10, height=7, res=300)
-DimPlot(UMI, reduction = "pca")
-dev.off()
-
-jpeg(file.path(OUTPUT, "human/UMAP_with_DE_gene.jpeg") , units="in", width=10, height=7, res=300)
-DimPlot(UMI, reduction = "umap") 
-dev.off()
-
-
-#Cluster tree for show connection between groups
-
-UMI <- BuildClusterTree(object = UMI, slot = 'data', verbose = T)
-
-tree_cluster <- Tool(object = UMI, slot = 'BuildClusterTree')
-
-
-jpeg(file.path(OUTPUT, "human/hierarchical_tree.jpeg") , units="in", width=10, height=7, res=300)
-plot(tree_cluster)
-dev.off()
-
-#Create Expression Matrix
-
-#Expression matrix cells
-
-
-write.table(exp_matrix, file = file.path(OUTPUT, "human/expression_matrix_cells.csv"))
-
-#Average expression matrix populations
-
-average_expression <- as.data.frame(exp_matrix)
-rm(exp_matrix)
-average_expression <- t(average_expression)
-average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = mean, trim = 0.25)
-rownames(average_expression) <- average_expression[,1]
-average_expression <- average_expression[,-1]
-average_expression <- t(average_expression)
-
-
-
-write.table(average_expression, file = file.path(OUTPUT, "human/average_expression_matrix_populations.csv"))
-
-
-#save seurat output file
-
-saveRDS(UMI, file = file.path(OUTPUT, "human/Results.rds"))
-
-
-#######################################################################################
-
-top_genes <- top10$gene[[1]]
-index <- 1
-for (i in 2:nrow(top10)){
-  index <- index + 1
-  top_genes <- c(top_genes, top10$gene[[index]])
-}
-
-
-average_expression <- as.data.frame(average_expression)
-phet_exp_matrix <- average_expression[rownames(average_expression) %in% top_genes,]
-jpeg(file.path(OUTPUT, "human/pheatmap_cells_populations.jpeg") , units="in", width=30, height=10, res=300)
-pheatmap::pheatmap(phet_exp_matrix, 
-                          clustering_method = 'complete', 
-                          cluster_rows = F)
-dev.off()
-
-rm(average_expression)
-
-#####################################MICE###########################################
 
 { 
   # Load the raw dataset by UMI
-  UMI_raw <- Read10X(seurat_umi_mice, gene.column = 1)
-  
+  UMI_raw_mice <- Read10X(seurat_umi_human, gene.column = 1)
   
   #Create SeuratObject
-  UMI <- CreateSeuratObject(counts = UMI_raw, project = project_name, min.cells = 1, min.features = 1)
-  UMI
+  UMI_mice <- CreateSeuratObject(counts = UMI_raw_mice, project = project_name, min.cells = 1, min.features = 1)
+  UMI_mice@meta.data$orig.ident <- 'Mouse'
+  
+  cell_input_mice <- length(Idents(UMI_mice))
+  
+  rm(UMI_raw_mice)
 }
 
-###########################ZMIENIÆ###############################
-cells_number <- length(UMI@active.ident)
-cells_number <- as.numeric(cells_number)
+
+UMI <- merge(x = UMI_human, y = UMI_mice, add.cell.ids = c('Human', 'Mouse'))
+
 #################################################################
 
 #Create Ribo and Mito percent stats
 
-UMI[['MitoPercent']] <- PercentageFeatureSet(UMI, pattern = "^MT-")
-UMI[['RiboPercent']] <- PercentageFeatureSet(UMI, pattern = "^Rps-") + PercentageFeatureSet(UMI, pattern = "^Rpl")
+#HUMAN
+UMI_human[['MitoPercent']] <- PercentageFeatureSet(UMI_human, pattern = "^MT-")
+UMI_human[['RiboPercent']] <- PercentageFeatureSet(UMI_human, pattern = "^Rps-") + PercentageFeatureSet(UMI_human, pattern = "^Rpl")
 
-UMI@meta.data <- UMI@meta.data %>% 
+UMI_human@meta.data <- UMI_human@meta.data %>% 
   rename(nCounts = nCount_RNA) %>% 
   rename(nGenes = nFeature_RNA)
 
-saveRDS(UMI, file = file.path(OUTPUT, "mice/Seurat_object.rds"))
+saveRDS(UMI_human, file = file.path(OUTPUT, "Seurat_object_human.rds"))
+
+#MICE
+
+UMI_mice[['MitoPercent']] <- PercentageFeatureSet(UMI_mice, pattern = "^MT-")
+UMI_mice[['RiboPercent']] <- PercentageFeatureSet(UMI_mice, pattern = "^Rps-") + PercentageFeatureSet(UMI_mice, pattern = "^Rpl")
+
+UMI_mice@meta.data <- UMI_mice@meta.data %>% 
+  rename(nCounts = nCount_RNA) %>% 
+  rename(nGenes = nFeature_RNA)
+
+saveRDS(UMI_mice, file = file.path(OUTPUT, "Seurat_object_mice.rds"))
 
 #Graphs of counts content
 
-jpeg(file.path(OUTPUT, "mice/counts~genes.jpeg") , units="in", width=15, height=10, res=300)
+jpeg(file.path(OUTPUT, "counts~genes.jpeg") , units="in", width=15, height=10, res=600)
 UC_plot <- VlnPlot(UMI, features = c("nGenes", "nCounts"), ncol = 2)
 UC_plot
 dev.off()
 
-jpeg(file.path(OUTPUT, "mice/Ribo~Mito.jpeg") , units="in", width=15, height=10, res=300)
+jpeg(file.path(OUTPUT, "Ribo~Mito.jpeg") , units="in", width=15, height=10, res=600)
 MR_plot <- VlnPlot(UMI, features = c("RiboPercent", "MitoPercent"), ncol = 2)
 MR_plot
 dev.off()
 
 
-jpeg(file.path(OUTPUT, "mice/counts~genes_QC.jpeg") , units="in", width=15, height=10, res=300)
+jpeg(file.path(OUTPUT, "counts~genes_QC.jpeg") , units="in", width=15, height=10, res=600)
 CG_plot <- FeatureScatter(UMI, feature1 = "nCounts", feature2 = "nGenes")
 CG_plot
 dev.off()
 
+rm(UMI)
 ####################################################################################
 
-#Droplet content and QC
+#Droplet content and QC human
+#Human
+n_gen_human <- UMI_human@meta.data$nGenes[UMI_human@meta.data$nGenes > 500]
+n_gen_human <- as.numeric(mean(n_gen_human))*2 + 1.5*IQR(as.numeric(UMI_human@meta.data$nGenes))
 
-n_gen <- as.numeric(quantile(UMI@meta.data$nGenes, 0.75))
+QC_UMI_human <- data.frame()
+QC_UMI_human <- as.data.frame(UMI_human$nGenes)
+QC_UMI_human$V2 <- UMI_human$MitoPercent
+QC_UMI_human$V3 <- UMI_human$RiboPercent
 
-QC_UMI <- data.frame()
-QC_UMI <- as.data.frame(UMI$nGenes)
-QC_UMI$V2 <- UMI$MitoPercent
-QC_UMI$V3 <- UMI$RiboPercent
+colnames(QC_UMI_human) <- c('nGenes','MitoPercent','RiboPercent')
 
-colnames(QC_UMI) <- c('nGenes','MitoPercent','RiboPercent')
+QC_UMI_human$Mito_Status[QC_UMI_human$MitoPercent > 5] <- '> 5%'
+QC_UMI_human$Mito_Status[QC_UMI_human$MitoPercent <= 5] <- 'Proper'
 
-QC_UMI$Mito_Status[QC_UMI$MitoPercent > 5] <- '> 5%'
-QC_UMI$Mito_Status[QC_UMI$MitoPercent <= 5] <- 'Proper'
+QC_UMI_human$nGenes_Status[UMI_human$nGenes < 500] <- 'Empty'
+QC_UMI_human$nGenes_Status[UMI_human$nGenes > n_gen_human] <- 'Double'
+QC_UMI_human$nGenes_Status[UMI_human$nGenes >= 500 & UMI_human$nGenes <= n_gen_human] <- 'Proper'
 
-QC_UMI$nGenes_Status[QC_UMI$nGenes < 200] <- 'Empty'
-QC_UMI$nGenes_Status[QC_UMI$nGenes > n_gen] <- 'Double'
-QC_UMI$nGenes_Status[QC_UMI$nGenes >= 200 & QC_UMI$nGenes <= n_gen] <- 'Proper'
+QC_UMI_human$Ribo_Status[QC_UMI_human$RiboPercent == 0] <- '0%'
+QC_UMI_human$Ribo_Status[QC_UMI_human$RiboPercent > 0] <- '> 0 %'
+QC_UMI_human$species <- 'Human'
 
-QC_UMI$Ribo_Status[QC_UMI$RiboPercent == 0] <- '0%'
-QC_UMI$Ribo_Status[QC_UMI$RiboPercent > 0] <- '> 0 %'
+#Mouse
+n_gen_mice <- UMI_mice@meta.data$nGenes[UMI_mice@meta.data$nGenes > 500]
+n_gen_mice <- as.numeric(mean(n_gen_mice))*2 + 1.5*IQR(as.numeric(UMI_mice@meta.data$nGenes))
+
+QC_UMI_mice <- data.frame()
+QC_UMI_mice <- as.data.frame(UMI_mice$nGenes)
+QC_UMI_mice$V2 <- UMI_mice$MitoPercent
+QC_UMI_mice$V3 <- UMI_mice$RiboPercent
+
+colnames(QC_UMI_mice) <- c('nGenes','MitoPercent','RiboPercent')
+
+QC_UMI_mice$Mito_Status[QC_UMI_mice$MitoPercent > 5] <- '> 5%'
+QC_UMI_mice$Mito_Status[QC_UMI_mice$MitoPercent <= 5] <- 'Proper'
+
+QC_UMI_mice$nGenes_Status[QC_UMI_mice$nGenes < 500] <- 'Empty'
+QC_UMI_mice$nGenes_Status[QC_UMI_mice$nGenes > n_gen_mice] <- 'Double'
+QC_UMI_mice$nGenes_Status[QC_UMI_mice$nGenes >= 500 & UMI_mice$nGenes <= n_gen_mice] <- 'Proper'
+
+QC_UMI_mice$Ribo_Status[QC_UMI_mice$RiboPercent == 0] <- '0%'
+QC_UMI_mice$Ribo_Status[QC_UMI_mice$RiboPercent > 0] <- '> 0 %'
+QC_UMI_mice$species <- 'Mouse'
 
 
+QC_UMI <- rbind(QC_UMI_mice, QC_UMI_human)
 
 DQC <- ggplot()+
   geom_point(QC_UMI, mapping = aes(x = nGenes, y = nGenes, color = nGenes_Status))+
   ylab("Number of genes for each cells") +
   xlab("Number of genes for each cells")+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='Droplet content') 
+  labs(color='Droplet content') +
+  facet_grid(.~QC_UMI$species)
 
-ggsave(DQC, filename = file.path(OUTPUT,'mice/DropletQC.jpeg'), width = 10, height = 7, dpi = 600)
+ggsave(DQC, filename = file.path(OUTPUT,'DropletQC.jpeg'), width = 10, height = 7, dpi = 600)
 rm(DQC)
 
 MQC <- ggplot()+
@@ -464,9 +175,10 @@ MQC <- ggplot()+
   ylab("% MitoRNA") +
   xlab("% MitoRNA")+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='% Content treshold') 
+  labs(color='% Content threshold') +
+  facet_grid(.~QC_UMI$species)
 
-ggsave(MQC, filename = file.path(OUTPUT,'mice/MitoQC.jpeg'), width = 10, height = 7, dpi = 600)
+ggsave(MQC, filename = file.path(OUTPUT,'MitoQC.jpeg'), width = 10, height = 7, dpi = 600)
 rm(MQC)
 
 RQC <- ggplot()+
@@ -474,35 +186,70 @@ RQC <- ggplot()+
   ylab("% RiboRNA") +
   xlab("% RiboRNA")+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='% Content treshold') 
+  labs(color='% Content threshold') +
+  facet_grid(.~QC_UMI$species)
 
-ggsave(RQC, filename = file.path(OUTPUT,'mice/RiboQC.jpeg'),  width = 10, height = 7, dpi = 600)
+ggsave(RQC, filename = file.path(OUTPUT,'RiboQC.jpeg'),  width = 10, height = 7, dpi = 600)
 rm(RQC)
 rm(QC_UMI)
+
+
 
 ####################################################################################
 
 #Selecting right cells
 
-UMI <- subset(UMI, subset = nGenes > 200 & nGenes < n_gen & MitoPercent < 5)
+UMI_human <- subset(UMI_human, subset = nGenes > 500 & nGenes <= n_gen_human & MitoPercent < 5)
+n_gen_human <- max(as.numeric(UMI_human@meta.data$nGenes))*0.75
+cells_number_human <- length(Idents(UMI_human))
+
+UMI_mice <- subset(UMI_mice, subset = nGenes > 500 & nGenes <= n_gen_mice & MitoPercent < 5)
+n_gen_mice <- max(as.numeric(UMI_mice@meta.data$nGenes))*0.75
+cells_number_mice <- length(Idents(UMI_mice))
+
+######################################################################################
+#Cells_stats
+
+cells <- factor(c('Estimated_cells_mix', 'Input_cells_human', 'Analyzed_cells_human', 'Input_cells_mouse', 'Analyzed_cells_mouse'), levels = c('Estimated_cells_mix', 'Input_cells_human', 'Analyzed_cells_human', 'Input_cells_mouse', 'Analyzed_cells_mouse'))
+cell_num <- c(as.numeric(estimated_cells), as.numeric(cell_input_human), as.numeric(cells_number_human), as.numeric(cell_input_mice), as.numeric(cells_number_mice))
+df_cells <- data.frame(cells, cell_num)
+
+cells <- ggplot(df_cells, aes(x = cells, y = cell_num, fill = cells)) +
+  geom_col() +
+  ylab("Number of cells") +
+  xlab("Cells in analysis")+
+  geom_text(aes(label = cell_num), vjust = -0.5)+
+  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
+  theme_classic() +
+  theme(legend.position = 'none') 
+
+
+ggsave(cells, filename = file.path(OUTPUT,'Cells.jpeg'), width = 10, height = 7, dpi = 600)
+rm(cells)
+
 
 #####################################################################################
 
-UMI <- NormalizeData(UMI, normalization.method = "LogNormalize", scale.factor = 1e6)
 
+UMI <- merge(x = UMI_human, y = UMI_mice)
+UMI <- NormalizeData(UMI, normalization.method = "LogNormalize", scale.factor = 1e6)
 
 ######################################################################################
 
-UMI <- FindVariableFeatures(UMI, selection.method = "vst", nfeatures = n_gen)
+
+#######################################################################################
+
+n_gen <- mean(n_gen_human + n_gen_mice)
+UMI <- FindVariableFeatures(UMI, selection.method = "vst", nfeatures = n_gen, binning.method = 'equal_frequency')
 
 # Identify the 10 most highly variable genes
 
-top10 <- head(VariableFeatures(UMI), 10)
+top20 <- head(VariableFeatures(UMI), 20)
 
 plot1 <- VariableFeaturePlot(UMI)
 
-jpeg(file.path(OUTPUT, "mice/variable_genes.jpeg") , units="in", width=10, height=7, res=300)
-plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
+jpeg(file.path(OUTPUT, "variable_genes.jpeg") , units="in", width=10, height=7, res=600)
+plot2 <- LabelPoints(plot = plot1, points = top20, repel = TRUE)
 plot2
 dev.off()
 
@@ -515,15 +262,10 @@ UMI <- RunPCA(UMI, features = VariableFeatures(object = UMI))
 
 
 
-UMI <- JackStraw(UMI, num.replicate = 100)
-UMI <- ScoreJackStraw(UMI, dims = 1:20)
-
-
-
 ################################
 
-jpeg(file.path(OUTPUT, "mice/Elbow.jpeg") , units="in", width=10, height=7, res=300)
-Elbow <- ElbowPlot(UMI)
+jpeg(file.path(OUTPUT, "Elbow.jpeg") , units="in", width=10, height=7, res=600)
+Elbow <- ElbowPlot(UMI, ndims = 50)
 Elbow
 dev.off()
 
@@ -532,191 +274,935 @@ dims <- as.data.frame(Elbow$data$stdev)
 #select the most variable reduction
 
 {
-  dim <- c()
+  dim <- 1
   score <- c()
   element <- 0
   for (i in dims$`Elbow$data$stdev`) {
     element <- element + 1
-    print(dims$`Elbow$data$stdev`[element+1])
-    print(i)
-    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1]) {
-      dim <- element
-    } else break
+    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1] & element < 50 | i-i*0.02 > dims$`Elbow$data$stdev`[element+2] & element < 49 | i-i*0.02 > dims$`Elbow$data$stdev`[element+3] & element < 48 | i-i*0.02 > dims$`Elbow$data$stdev`[element+4] & element < 47) {
+      dim <- dim + 1
+    } else 
+      break
   }
-  
-  
-  dim <- as.numeric(dim + 1)
+  dim <- as.numeric(dim)
 }
+
 
 #########################################################################################
 
+UMI <- JackStraw(UMI, num.replicate = 100, dims = dim)
+UMI <- ScoreJackStraw(UMI, dims = 1:dim)
 
-jpeg(file.path(OUTPUT, "mice/JackStrawPlot.jpeg") , units="in", width=10, height=7, res=300)
+
+jpeg(file.path(OUTPUT, "JackStrawPlot.jpeg") , units="in", width=10, height=7, res=600)
 JackStrawPlot(UMI, dims = 1:(dim))
 dev.off()
 
-jpeg(file.path(OUTPUT, "mice/PCA_heatmap.jpeg") , units="in", width=10, height=7, res=300)
-DimHeatmap(UMI, dims = 1:dim, cells = cells_number, balanced = TRUE)
-dev.off()
+
+UMI <- FindNeighbors(UMI, dims = 1:dim, k.param = 49, reduction = 'pca')
+UMI <- FindClusters(UMI, resolution = 0.5, n.start = 10, n.iter = 1000)
 
 
-UMI <- FindNeighbors(UMI, dims = 1:dim)
-UMI <- FindClusters(UMI, resolution = 0.5)
+UMI <- RunUMAP(UMI, dims = 1:dim, n.neighbors = 49)
 
 
-UMI <- RunUMAP(UMI, dims = 1:dim)
-
-
-jpeg(file.path(OUTPUT, "mice/UMAP.jpeg") , units="in", width=10, height=7, res=300)
-DimPlot(UMI, reduction = "umap")
+jpeg(file.path(OUTPUT, "UMAP.jpeg") , units="in", width=10, height=7, res=600)
+species <- DimPlot(UMI, reduction = "umap", group.by = 'orig.ident')
+clusters_plot <- DimPlot(UMI, reduction = "umap")
+mutual_plot <- species + clusters_plot
+mutual_plot
 dev.off()
 
 ####################################################################################
 
 
 
-# find markers for every cluster compared to all remaining cells, report only the positive ones
-UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+#find markers for every cluster compared to all remaining cells, report only the positive ones
+
+
+UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.20, logfc.threshold = 0.25, test.use = 'MAST')
+
+if (sum(as.numeric(levels(UMI))) != sum(unique(as.integer(UMI.markers$cluster)-1))) {
+  UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.20, logfc.threshold = 0.10, test.use = 'MAST')
+}
+
 top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
+top100 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 100, wt = avg_logFC)
 
+MAST_markers <- UMI.markers %>% group_by(cluster) %>% top_n(n = 5, wt = avg_logFC)
 
+write.table(MAST_markers, file = file.path(OUTPUT, "MAST_markers_clusters.csv"), sep = ',')
 
 ##Cells cluster naming with top genes (different between cell groups)
 
-{
-  top10 <- data.frame(top10$cluster, top10$gene)
-  colnames(top10) <- c('cluster','gene')
-  
-  
-  all_unique('top10','[1:2]','cluster')
-  
-  top10$cluster <- top10$Group.1
-  top10 <- top10[,-1] 
-}
 ##########################################################
-### LogFC genes select and cell nameing ###
+### Most variable genes select and cell subtypes nameing 
 
 
-exp_matrix <- as.data.frame(GetAssayData(UMI, slot = 'data'))
-colnames(exp_matrix) <- UMI@active.ident
-exp_matrix <- as.data.frame(exp_matrix)
+##################################################################################
+#Cells subtypes selection
 
 
-lvl_num <- as.numeric(max(levels(UMI))) +1 
-{
-  for (lvl in 1:lvl_num) {
-    for (i in 1:ncol(exp_matrix)) {
-      rename_df <- c()
-      col <- lvl -1
-      rename_df <- exp_matrix[rownames(exp_matrix) %in% top10$gene[[lvl]],]
-      if (colnames(rename_df[i]) == as.numeric(col)) {
-        rename_df <- rename_df[order(rename_df[,i], decreasing = T),]
-        rename_df <- rownames(rename_df[1:2,])
-        rename_df <- sort(rename_df)
-        colnames(exp_matrix)[i] <- paste(rename_df[1], rename_df[2])
+
+iterations <- max(as.numeric(unique(UMI@active.ident)))
+pb <- txtProgressBar(max = iterations, style = 3)
+progress <- function(n) setTxtProgressBar(pb, n)
+opts <- list(progress = progress)
+
+
+CPU <- detectCores() - 1
+
+if (CPU > max(as.numeric(unique(UMI@active.ident)))) {
+  cl <- makeCluster(max(as.numeric(unique(UMI@active.ident))))
+} else if (CPU < max(as.numeric(unique(UMI@active.ident)))) {
+  cl <- makeCluster(CPU)
+}  
+
+registerDoParallel(cl)
+registerDoSNOW(cl)
+
+pca_cluster_genes <- list()
+clusters <- 4
+tmp <- GetAssayData(UMI, slot = 'data')
+colnames(tmp) <- UMI@active.ident
+
+pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.ident))), .packages =c('Seurat', 'patchwork','tidyverse'), .options.snow = opts) %dopar% {
+  
+  pca_cluster <- pca_cluster - 1
+  
+  tmp2 <- as.data.frame(tmp[, colnames(tmp) %in% pca_cluster])
+  tmp2[tmp2 > 1] <- 1L
+  tmp2[tmp2 < 1] <- 0L
+  
+  gen_cor <- unique(top100$gene[top100$cluster %in% pca_cluster])
+  tmp3 <- tmp2[gen_cor, ]
+  rm(tmp2)
+  
+  df_groups <- data.frame(1:length(colnames(tmp3)))
+  df_groups <- as.data.frame(t(df_groups))
+  df_groups_tmp <- data.frame(1:length(colnames(tmp3)))
+  df_groups_tmp <- as.data.frame(t(df_groups_tmp))
+  selec_group <- data.frame()
+  df_length <- length(rownames(tmp3))
+  br <- F
+  for (cluster in 1:clusters) {
+    if(br == T){break}
+    for (i in 1:length(rownames(tmp3))) {
+      if (cluster == 1) {
+        tmp_elements <- tmp3[i,]
+        gen_set <- rownames(tmp3)[i]
+        perc_1 <- length(tmp_elements[tmp_elements == 1])/length(tmp_elements)
+        perc_0 <- length(tmp_elements[tmp_elements == 0])/length(tmp_elements)
+        gene_combination <- gen_set
+        if (is.nan(perc_1)) {perc_1 <- 0}
+        if (is.nan(perc_0)) {perc_2 <- 0}
+        if (i == 1) {selec_group <- data.frame(gene_combination, perc_1, perc_0)
+        } else if (i > 1) {selec_group_tmp <- data.frame(gene_combination, perc_1, perc_0)
+        selec_group <- rbind(selec_group, selec_group_tmp)}
+        df_groups[i,] <- tmp_elements
+        rownames(df_groups)[i] <- gen_set
+        if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.01) == T) {br <- T
+        break}
+      }
+      index_j <- 0
+      if(br == T){break}
+      for (j in 1:df_length) {
+        if(br == T){break}
+        if (cluster == 1 & grepl(rownames(tmp3)[i], rownames(tmp3)[j]) == F) {
+          index_j <- index_j + 1
+          tmp_elements <- colSums(rbind(tmp3[i,], tmp3[j,])) 
+          gen_set <- rownames(tmp3)[i]
+          gen_set <- paste(gen_set, rownames(tmp3)[j])
+          perc_1 <- length(tmp_elements[tmp_elements == 1])/length(tmp_elements)
+          perc_0 <- length(tmp_elements[tmp_elements == 0])/length(tmp_elements)
+          gene_combination <- gen_set
+          if (is.nan(perc_1)) {perc_1 <- 0}
+          if (is.nan(perc_0)) {perc_2 <- 0}
+          selec_group_tmp <- data.frame(gene_combination, perc_1, perc_0)
+          selec_group <- rbind(selec_group, selec_group_tmp)
+          df_groups[index_j,] <- tmp_elements
+          rownames(df_groups)[index_j] <- gen_set
+          if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.01) == T) {br <- T
+          break}
+          if (j == df_length) {
+            df_length <- length(rownames(df_groups))}
+        } else if (cluster != 1 & grepl(rownames(tmp3)[i], rownames(df_groups)[j]) == F) {
+          index_j <- index_j + 1
+          colnames(df_groups) <- colnames(tmp3)
+          tmp_elements <- colSums(rbind(df_groups[j,], tmp3[i,]))
+          gen_set <- rownames(df_groups)[j]
+          gen_set <- paste(gen_set, rownames(tmp3)[i])
+          perc_1 <- length(tmp_elements[tmp_elements == 1])/length(tmp_elements)
+          perc_0 <- length(tmp_elements[tmp_elements == 0])/length(tmp_elements)
+          gene_combination <- gen_set
+          if (is.nan(perc_1)) {perc_1 <- 0}
+          if (is.nan(perc_0)) {perc_2 <- 0}
+          selec_group_tmp <- data.frame(gene_combination, perc_1, perc_0)
+          selec_group <- rbind(selec_group, selec_group_tmp)
+          df_groups_tmp[index_j,] <- tmp_elements
+          rownames(df_groups_tmp)[index_j] <- gen_set
+          if (j == df_length) {
+            df_groups <- df_groups_tmp
+            df_length <- length(rownames(df_groups))
+            if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.01) == T ) {br <- T
+            break}
+          }
+        }
       }
     }
+  }
+  
+  if ((tail(selec_group$perc_0[order(selec_group$perc_0, decreasing = T)], n = 1) <= 0.05) == T) {
+    selec_group <- selec_group[selec_group$perc_0 <= 0.05, ]
+  } else if ((tail(selec_group$perc_0[order(selec_group$perc_0, decreasing = T)], n = 1) <= 0.1) == T) {
+    selec_group <- selec_group[selec_group$perc_0 <= 0.1, ]
   } 
   
+  pca_cluster_genes[paste(pca_cluster)] <- selec_group$gene_combination[order(selec_group$perc_1[1], decreasing = T)]
+  
+} 
+
+
+close(pb)
+stopCluster(cl) 
+
+print('Single cell types marker list')
+print(pca_cluster_genes)
+
+###############################################################################
+
+##Cell nameing
+
+##Create markers DF
+
+unl <- unlist(pca_cluster_genes)
+
+
+check = 0
+for (num in 1:length(unl)) {
+  for (gen in UMI.markers$gene) {
+    gen_vector <- gen[grepl(gen, unl[num])]
+    cluster <- num
+    if (check == 0 & cluster == 1 & length(gen_vector) == 1) {
+      check = 1
+      gen_vector_list <- data.frame(cluster, gen_vector)
+    } else if (check == 1 & length(gen_vector) == 1){
+      gen_vector <- gen[grepl(gen, unl[num])]
+      cluster <- num
+      gen_vector_list_tmp <- data.frame(cluster, gen_vector)
+      gen_vector_list <- unique(rbind(gen_vector_list, gen_vector_list_tmp))
+      
+    }
+  }
 }
 
-cell_names <- colnames(exp_matrix)
-cell_nameing(matrix_a = exp_matrix, markers = markers_mice)
-colnames(exp_matrix) <- paste(colnames(exp_matrix), cell_names)
-
+cell_names <- c()
+for (cluster in 1:max(as.numeric(unique(UMI@active.ident)))) {
+  tmp <- subset(UMI, features = gen_vector_list$gen_vector[gen_vector_list$cluster %in% cluster])
+  tmp <- as.matrix(GetAssayData(tmp, slot = 'data'))
+  colnames(tmp) <- UMI@active.ident
+  for (i in 1:length(colnames(tmp))) {
+    tmp <- tmp[order(tmp[,i], decreasing = T), ,drop =F]
+    if (as.numeric(cluster-1) %in% colnames(tmp)[i] & colSums(tmp)[i] > 0) {
+      cell_names[i] <- rownames(tmp)[1]
+    } else if (as.numeric(cluster-1) %in% colnames(tmp)[i] & colSums(tmp)[i] == 0) {
+      cell_names[i] <- 'Bad'
+    }
+  }
+}
 
 
 ############################################
 #PCA Cluster average expression for nameing
 
-average_expression <- as.data.frame(GetAssayData(UMI, slot = 'data'))
-colnames(average_expression) <- UMI@active.ident
-average_expression <- as.data.frame(average_expression)
-average_expression <- t(average_expression)
-average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = mean, trim = 0.25)
-rownames(average_expression) <- average_expression[,1]
-average_expression <- average_expression[,-1]
-average_expression <- t(average_expression)
+#######################################################################################################
 
-cluster_nameing(matrix_a = average_expression, markers = markers_mice)
 
-new.cluster.ids <- colnames(average_expression)
+subset_num <- round(length(colnames(UMI))/10000)
+cells_num <- round(length(colnames(UMI))/subset_num)
+exp_matrix <- GetAssayData(UMI, slot = 'data')
+cols <- as.data.frame(summary(UMI@active.ident, maxsum = length(unique(colnames(exp_matrix)))))
+colnames(cols)[1] <- 'n'
+
+if (round(length(colnames(UMI))) > 14999) {
+  
+  for (batch in 1:subset_num) {
+    if (batch == 1 & round(length(colnames(UMI))) > 14999) {
+      average_expression <- as.data.frame(exp_matrix[,1:cells_num])
+      colnames(average_expression) <- UMI@active.ident[1:cells_num]
+      average_expression <- t(average_expression)
+      average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = sum)
+      rownames(average_expression) <- average_expression[,1]
+      average_expression <- average_expression[,-1]
+      average_expression <- t(average_expression)
+      
+    } else if (batch == subset_num & round(length(colnames(UMI))) > 14999) {
+      average_expression_tmp <- as.data.frame(exp_matrix[,(((batch - 1) * cells_num)+1):length(colnames(exp_matrix))])
+      colnames(average_expression_tmp) <- UMI@active.ident[(((batch - 1) * cells_num)+1):length(colnames(exp_matrix))]
+      print((((batch - 1) * cells_num)+1))
+      print(length(colnames(UMI)))
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression_tmp <- aggregate(average_expression_tmp, by = list(rownames(average_expression_tmp)), FUN = sum)
+      rownames(average_expression_tmp) <- average_expression_tmp[,1]
+      average_expression_tmp <- average_expression_tmp[,-1]
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression <- cbind(average_expression, average_expression_tmp)
+      rm(average_expression_tmp)
+      average_expression <- as.data.frame(average_expression)
+      average_expression <- t(average_expression)
+      average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = sum)
+      rownames(average_expression) <- average_expression[,1]
+      average_expression <- average_expression[,-1]
+      average_expression <- t(average_expression)
+      average_expression <- average_expression[,order(as.numeric(colnames(average_expression)))]
+      average_expression <- as.data.frame(average_expression)
+      
+      num_col <- 0
+      for (col in average_expression) {
+        num_col <- num_col + 1
+        num_row <- 0
+        for (mean in col) {
+          num_row <- num_row + 1
+          average_expression[num_row , num_col] <- as.numeric(average_expression[num_row , num_col]/cols$n[num_col])
+        } 
+      }
+    } else if (batch > 1 & batch < subset_num & round(length(colnames(UMI))) > 14999) {
+      average_expression_tmp <- as.data.frame(exp_matrix[,(((batch - 1) * cells_num)+1):(batch * cells_num)])
+      colnames(average_expression_tmp) <- UMI@active.ident[(((batch - 1) * cells_num)+1):(batch * cells_num)]
+      print((((batch - 1) * cells_num)+1))
+      print(batch * cells_num)
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression_tmp <- aggregate(average_expression_tmp, by = list(rownames(average_expression_tmp)), FUN = sum)
+      rownames(average_expression_tmp) <- average_expression_tmp[,1]
+      average_expression_tmp <- average_expression_tmp[,-1]
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression <- cbind(average_expression, average_expression_tmp)
+      rm(average_expression_tmp)
+    } 
+  }
+}
+
+if (round(length(colnames(UMI))) < 14999) {
+  average_expression <- as.data.frame(exp_matrix)
+  colnames(average_expression) <- UMI@active.ident
+  average_expression <- t(average_expression)
+  average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = sum)
+  rownames(average_expression) <- average_expression[,1]
+  average_expression <- average_expression[,-1]
+  average_expression <- t(average_expression)
+  average_expression <- average_expression[,order(as.numeric(colnames(average_expression)))]
+  average_expression <- as.data.frame(average_expression)
+  
+  num_col <- 0
+  for (col in average_expression) {
+    num_col <- num_col + 1
+    num_row <- 0
+    for (mean in col) {
+      num_row <- num_row + 1
+      average_expression[num_row , num_col] <- as.numeric(average_expression[num_row , num_col]/cols$n[num_col])
+      
+    } 
+    
+  }
+}
+
+#################################################################################
+
+
+
+cluster_nameing(matrix_a = average_expression, markers = markers_class)
+
+clust_names <- colnames(average_expression)
+
+
+##########################################
+
+if (length(markers_subclass) != 0) {
+  
+  firstup <- function(x) {
+    substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+    x
+  }
+  
+  
+  cell_names.1 <- c()
+  for (i in 1:length(colnames(average_expression))) {
+    rename_df <- average_expression[rownames(average_expression) %in% markers_subclass,]
+    rename_df <- as.data.frame(rename_df[order(rename_df[,i], decreasing = T), ,drop = F])
+    cell_names.1[i] <- rownames(rename_df[1,])
+  }
+  
+  
+  cluster <- 0
+  cell_names.2 <- c()
+  for (col in 1:length(colnames(average_expression))) {
+    tmp_names <- top10$gene[top10$cluster %in% cluster]
+    cluster <- cluster + 1
+    rename_df <- average_expression[rownames(average_expression) %in% toupper(tmp_names),]
+    rename_df <- as.data.frame(rename_df[order(rename_df[,col], decreasing = T), ,drop = F])
+    if (!cell_names.1[col] %in% toupper(rownames(rename_df[1,]))) {
+      cell_names.2[col] <- firstup(tolower(rownames(rename_df[1,])))
+    } else if (cell_names.1[col] %in% toupper(rownames(rename_df[1,]))) {
+      cell_names.2[col] <- firstup(tolower(rownames(rename_df[2,])))
+    }
+  }
+  
+  colnames(average_expression) <- paste(cell_names.1, cell_names.2)
+  
+} else if (length(markers_subclass) == 0) {
+  
+  firstup <- function(x) {
+    substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+    x
+  }
+  
+  cluster <- 0
+  cell_names.1 <- c()
+  cell_names.2 <- c()
+  for (col in 1:length(colnames(average_expression))) {
+    tmp_names <- top10$gene[top10$cluster %in% cluster]
+    cluster <- cluster + 1
+    rename_df <- average_expression[rownames(average_expression) %in% toupper(tmp_names),]
+    rename_df <- as.data.frame(rename_df[order(rename_df[,col], decreasing = T), ,drop = F])
+    cell_names.1[col] <- toupper(rownames(rename_df[1,]))
+    cell_names.2[col] <- firstup(tolower(rownames(rename_df[2,])))
+  }
+  
+  
+  colnames(average_expression) <- paste(cell_names.1, cell_names.2)
+  
+}
+
+
+subclass_marker_list_pheat <- rownames(exp_matrix)[toupper(rownames(exp_matrix)) %in% toupper(cell_names.2)]
+subclass_marker_list_pheat <- unique(c(subclass_marker_list_pheat, cell_names[!grepl('Bed',cell_names)]))
+#######################################################################################
+#Repair subclass_names
+
+new.cluster.ids <- paste(clust_names, colnames(average_expression))
 names(new.cluster.ids) <- levels(UMI)
 UMI <- RenameIdents(UMI, new.cluster.ids)
 
-rm(average_expression)
 
+
+
+#################################################################################
+
+colnames(average_expression) <- new.cluster.ids
+dir.create(path = file.path(OUTPUT,'exp_matrix'))
+write.table(average_expression, file = file.path(OUTPUT, "exp_matrix/class_average_expression.csv"), sep = ',')
+
+########################NOWE#####################################################
 
 #PCA plot and UMAP plot with names
 
-jpeg(file.path(OUTPUT, "mice/PCA_DimPlot.jpeg") , units="in", width=10, height=7, res=300)
+#Class
+
+jpeg(file.path(OUTPUT, "PCA_DimPlot_class.jpeg") , units="in", width=10, height=7, res=600)
 DimPlot(UMI, reduction = "pca")
 dev.off()
 
-jpeg(file.path(OUTPUT, "mice/UMAP_with_DE_gene.jpeg") , units="in", width=10, height=7, res=300)
+
+jpeg(file.path(OUTPUT, "UMAP_with_DE_gene_class.jpeg") , units="in", width=10, height=7, res=600)
 DimPlot(UMI, reduction = "umap") 
 dev.off()
 
 
-#Cluster tree for show connection between groups
+#Subtypes
 
-UMI <- BuildClusterTree(object = UMI, slot = 'data', verbose = T)
-
-tree_cluster <- Tool(object = UMI, slot = 'BuildClusterTree')
+new.names <- paste0(UMI@active.ident,' - ', cell_names)
 
 
-jpeg(file.path(OUTPUT, "mice/hierarchical_tree.jpeg") , units="in", width=10, height=7, res=300)
-plot(tree_cluster)
+Idents(UMI) <- new.names
+
+
+######################################################################################################################
+
+
+#Average expression matrix populations
+rm(average_expression)
+
+subset_num <- round(length(colnames(UMI))/10000)
+cells_num <- round(length(colnames(UMI))/subset_num)
+cols <- as.data.frame(summary(UMI@active.ident, maxsum = length(unique(colnames(exp_matrix)))))
+cols <- as.data.frame(cols[order(rownames(cols)), , drop = F])
+colnames(cols)[1] <- 'n'
+
+if (round(length(colnames(UMI))) > 14999){
+  
+  for (batch in 1:subset_num) {
+    if (batch == 1 & round(length(colnames(UMI))) > 14999) {
+      average_expression <- as.data.frame(exp_matrix[,1:cells_num])
+      colnames(average_expression) <- UMI@active.ident[1:cells_num]
+      average_expression <- t(average_expression)
+      average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = sum)
+      rownames(average_expression) <- average_expression[,1]
+      average_expression <- average_expression[,-1]
+      average_expression <- t(average_expression)
+    } else if (batch == subset_num & round(length(colnames(UMI))) > 14999) {
+      average_expression_tmp <- as.data.frame(exp_matrix[,(((batch - 1) * cells_num)+1):length(colnames(exp_matrix))])
+      colnames(average_expression_tmp) <- UMI@active.ident[(((batch - 1) * cells_num)+1):length(colnames(exp_matrix))]
+      print((((batch - 1) * cells_num)+1))
+      print(length(colnames(UMI)))
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression_tmp <- aggregate(average_expression_tmp, by = list(rownames(average_expression_tmp)), FUN = sum)
+      rownames(average_expression_tmp) <- average_expression_tmp[,1]
+      average_expression_tmp <- average_expression_tmp[,-1]
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression <- cbind(average_expression, average_expression_tmp)
+      rm(average_expression_tmp)
+      average_expression <- as.data.frame(average_expression)
+      average_expression <- t(average_expression)
+      average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = sum)
+      rownames(average_expression) <- average_expression[,1]
+      average_expression <- average_expression[,-1]
+      average_expression <- t(average_expression)
+      average_expression <- average_expression[,order(colnames(average_expression))]
+      average_expression <- as.data.frame(average_expression)
+      
+      num_col <- 0
+      for (col in average_expression) {
+        num_col <- num_col + 1
+        num_row <- 0
+        for (mean in col) {
+          num_row <- num_row + 1
+          average_expression[num_row , num_col] <- as.numeric(average_expression[num_row , num_col]/cols$n[num_col])
+        } 
+      }
+      
+    } else if (batch > 1 & batch < subset_num & round(length(colnames(UMI))) > 14999) {
+      average_expression_tmp <- as.data.frame(exp_matrix[,(((batch - 1) * cells_num)+1):(batch * cells_num)])
+      colnames(average_expression_tmp) <- UMI@active.ident[(((batch - 1) * cells_num)+1):(batch * cells_num)]
+      print((((batch - 1) * cells_num)+1))
+      print(batch * cells_num)
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression_tmp <- aggregate(average_expression_tmp, by = list(rownames(average_expression_tmp)), FUN = sum)
+      rownames(average_expression_tmp) <- average_expression_tmp[,1]
+      average_expression_tmp <- average_expression_tmp[,-1]
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression <- cbind(average_expression, average_expression_tmp)
+      rm(average_expression_tmp)
+    } 
+  }
+}
+
+if (round(length(colnames(UMI))) < 14999) {
+  average_expression <- as.data.frame(exp_matrix)
+  colnames(average_expression) <- UMI@active.ident
+  average_expression <- t(average_expression)
+  average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = sum)
+  rownames(average_expression) <- average_expression[,1]
+  average_expression <- average_expression[,-1]
+  average_expression <- t(average_expression)
+  average_expression <- average_expression[,order(colnames(average_expression))]
+  average_expression <- as.data.frame(average_expression)
+  
+  num_col <- 0
+  for (col in average_expression) {
+    num_col <- num_col + 1
+    num_row <- 0
+    for (mean in col) {
+      num_row <- num_row + 1
+      average_expression[num_row , num_col] <- as.numeric(average_expression[num_row , num_col]/cols$n[num_col])
+      
+    } 
+    
+  }
+}
+#############################################################################################################################
+
+
+
+#remove empty cells (without markers expression)
+
+class_marker_list <- c()
+for (class in markers_class) {
+  print(class)
+  class_marker_list <- c(class_marker_list, textclean::mgsub(class, c('+'), c('')))
+}
+class_marker_list <- rownames(UMI)[toupper(rownames(UMI)) %in% class_marker_list]
+
+
+
+second_matrix <- average_expression[class_marker_list,]
+
+
+renamed_old.1 <- c()
+renamed_new.1 <- c()
+renamed_old.2 <- c()
+renamed_new.2 <- c()
+
+index_marker <- 0
+for (marker in markers_class) {
+  index_marker <- index_marker + 1
+  for (col in 1:length(colnames(second_matrix))) {
+    second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
+    if (max(second_matrix[,col]) == 0 & !grepl('Unknow', colnames(second_matrix)[col])) {
+      colnames(second_matrix)[col] <- 'Bad'
+    } else if (grepl(colnames(markers_class)[index_marker], colnames(second_matrix)[col]) & !grepl(toupper(rownames(second_matrix)[1]), list(textclean::mgsub(marker, c('+'), c(''))))) {
+      renamed_old.1 <- c(renamed_old.1, colnames(second_matrix)[col])
+      mark <- c()
+      for (change in colnames(markers_class)) {
+        mark <- c(mark, change[grepl(change, colnames(second_matrix)[col])])
+      }
+      n_marker = 0
+      for (marker in markers_class) {
+        n_marker = n_marker + 1
+        if (grepl(pattern = toupper(rownames(second_matrix)[1]), x = list(marker))) {
+          break
+        }
+      }
+      colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  colnames(markers_class)[n_marker], x = colnames(second_matrix)[col])
+      renamed_new.1 <- c(renamed_new.1, colnames(second_matrix)[col])
+    }
+  }
+}
+
+
+Renamed_idents <- Idents(UMI)
+
+if (length(renamed_old.1) != 0) {
+  n = 0
+  for (name in 1:length(renamed_new.1)) {
+    n = n + 1
+    Renamed_idents <- gsub(x = Renamed_idents, pattern = renamed_old.1[n], replacement = renamed_new.1[n])
+  }
+}
+
+if (length(markers_subclass) != 0) {
+  subclass_marker_list <- c()
+  for (subclass in markers_subclass) {
+    subclass_marker_list <- c(subclass_marker_list, subclass)
+  }
+}
+subclass_marker_list <- rownames(UMI)[toupper(rownames(UMI)) %in% subclass_marker_list]
+
+
+old.names <- colnames(second_matrix)
+
+
+second_matrix <- average_expression[subclass_marker_list,]
+colnames(second_matrix) <- old.names
+################################################
+#Renamed function
+second_matrix <- second_matrix[!colnames(second_matrix) %in% c('Bad', 'Unknow')]
+
+for (col in 1:length(colnames(second_matrix))) {
+  second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
+  if (second_matrix[1,col] == 0) {
+    colnames(second_matrix)[col] <- 'Bad'
+  } else if (!grepl(toupper(rownames(second_matrix)[1]), colnames(second_matrix)[col]) & !grepl('Bad', colnames(second_matrix)[col])) {
+    renamed_old.2 <- unique(c(renamed_old.2, colnames(second_matrix)[col]))
+    mark <- c()
+    for (change in markers_subclass) {
+      mark <- c(mark, change[grepl(change, colnames(second_matrix)[col])])
+    }
+    colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  toupper(rownames(second_matrix)[1]), x = colnames(second_matrix)[col])
+    renamed_new.2 <- c(renamed_new.2, colnames(second_matrix)[col])
+  } 
+}
+
+
+if (length(renamed_old.2) != 0) {
+  n = 0
+  for (name in 1:length(renamed_new.2)) {
+    n = n + 1
+    Renamed_idents <- gsub(x = Renamed_idents, pattern = renamed_old.2[n], replacement = renamed_new.2[n])
+  }
+}
+
+
+
+
+Idents(UMI) <- Renamed_idents
+
+###############################################
+subclass_names <- Renamed_idents
+bad <- subclass_names[grepl('Bad', subclass_names)]
+renamed.subnames <- c(renamed_new.1, renamed_new.2)
+renamed.subnames <- renamed.subnames[!renamed.subnames %in% new.names]
+renamed.subnames <- renamed.subnames[!renamed.subnames %in% bad]
+new.subnames <- subclass_names[!subclass_names %in% bad]
+new.subnames <- new.subnames[!new.subnames %in% renamed.subnames]
+bad.subnames <- subclass_names[subclass_names %in% bad]
+
+
+
+#############################################################################################################################
+
+data <- as.data.frame(summary(as.factor(subclass_names), maxsum = length(unique(subclass_names))))
+colnames(data)[1] <- 'n'
+data$names <- rownames(data)
+
+
+num <-head(sort(data$n, decreasing = T), n = 1)*0.01
+
+
+below.names <- data$names[data$n < num]
+
+
+data$test[data$names %in% bad.subnames] <- "Bad marked types"
+data$test[data$names %in% renamed.subnames] <- "Renamed"
+data$test[data$names %in% new.subnames] <- "Good marked types" 
+data$test[data$names %in% below.names] <- "Non-significant < 0.01"
+
+
+
+
+
+
+threshold <- ggplot(data, aes(x = n, y = reorder(names, -n), fill = test, sort = test)) +
+  geom_bar(stat = 'identity') +
+  ylab("Cells types") +
+  xlab("Number of cells")+
+  theme_bw() +
+  theme(plot.margin = unit(c(0.5,0.5,0.5,0.5), "cm")) + 
+  labs(fill = "Cells threshold")
+
+ggsave(threshold, filename = file.path(OUTPUT,'cells_type_threshold.jpeg'), units = 'in', width = 15, height = 10, dpi = 600)
+
+
+
+#save bad cells
+bad.subnames <- unique(c(bad.subnames, below.names))
+
+UMI_unknow <- subset(UMI, idents = bad.subnames)
+
+
+bad_cells <- as.data.frame(GetAssayData(object = UMI_unknow, slot = 'counts'))
+colnames(bad_cells)[1:length(colnames(bad_cells))] <- 'Unknow'
+
+write.table(bad_cells, file = file.path(OUTPUT, "exp_matrix/unknow_cells_count_matrix.csv"), sep = ',')
+
+rm(bad_cells)
+
+#####################################################################################################
+
+right.names <- unique(c(subclass_names[subclass_names %in% new.names], subclass_names[subclass_names %in% renamed.subnames]))
+right.names <- right.names[!right.names %in% below.names]
+right.names <- right.names[!right.names %in% bad.subnames]
+
+UMI <- subset(UMI, idents = right.names)
+
+#########################################################################################################################################################################################
+
+jpeg(file.path(OUTPUT, "PCA_DimPlot_subtypes.jpeg") , units="in", width=10, height=7, res=600)
+DimPlot(UMI, reduction = "pca")
 dev.off()
+
+jpeg(file.path(OUTPUT, "UMAP_with_DE_gene_subtypes.jpeg") , units="in", width=10, height=7, res=600)
+DimPlot(UMI, reduction = "umap") 
+dev.off()
+
 
 #Create Expression Matrix
 
 #Expression matrix cells
 
+#######################3
 
-write.table(exp_matrix, file = file.path(OUTPUT, "mice/expression_matrix_cells.csv"))
 
+subset_num <- round(length(colnames(UMI))/1000)
+cells_num <- round(length(colnames(UMI))/subset_num)
+exp_matrix_obl <- GetAssayData(UMI, slot = 'data')
+
+if (round(length(colnames(UMI))) > 14999){
+  
+  for (batch in 1:subset_num) {
+    if (batch == 1 & round(length(colnames(UMI))) > 14999) {
+      exp_matrix_obl_tmp <- as.data.frame(exp_matrix_obl[,1:cells_num])
+      colnames(exp_matrix_obl_tmp) <- UMI@active.ident[1:cells_num]
+      mean_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, mean)
+      exp_matrix_obl_tmp[exp_matrix_obl_tmp != 0] <- 1
+      positive_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, sum)
+      sum_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, length)
+      positive_expression_perc <- positive_expression/sum_expression
+      names <- colnames(exp_matrix_obl_tmp)
+      exp_stat <- data.frame(names,mean_expression, positive_expression_perc)
+    } else if (batch == subset_num & round(length(colnames(UMI))) > 14999) {
+      exp_matrix_obl_tmp <- as.data.frame(exp_matrix_obl[,(((batch - 1) * cells_num)+1):length(colnames(exp_matrix_obl))])
+      colnames(exp_matrix_obl_tmp) <- UMI@active.ident[(((batch - 1) * cells_num)+1):length(colnames(exp_matrix_obl))]
+      mean_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, mean)
+      exp_matrix_obl_tmp[exp_matrix_obl_tmp != 0] <- 1
+      positive_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, sum)
+      sum_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, length)
+      positive_expression_perc <- positive_expression/sum_expression
+      names <- colnames(exp_matrix_obl_tmp)
+      exp_stat_tmp <- data.frame(names,mean_expression, positive_expression_perc)
+      exp_stat <- rbind(exp_stat, exp_stat_tmp)
+    } else if (batch > 1 & batch < subset_num & round(length(colnames(UMI))) > 14999) {
+      exp_matrix_obl_tmp <- as.data.frame(exp_matrix_obl[,(((batch - 1) * cells_num)+1):(batch * cells_num)])
+      colnames(exp_matrix_obl_tmp) <- UMI@active.ident[(((batch - 1) * cells_num)+1):(batch * cells_num)]
+      mean_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, mean)
+      exp_matrix_obl_tmp[exp_matrix_obl_tmp != 0] <- 1
+      positive_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, sum)
+      sum_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, length)
+      positive_expression_perc <- positive_expression/sum_expression
+      names <- colnames(exp_matrix_obl_tmp)
+      exp_stat_tmp <- data.frame(names,mean_expression, positive_expression_perc)
+      exp_stat <- rbind(exp_stat, exp_stat_tmp)
+    } 
+  }
+} 
+
+if (round(length(colnames(UMI))) < 14999){
+  exp_matrix_obl_tmp <- as.data.frame(exp_matrix_obl)
+  colnames(exp_matrix_obl_tmp) <- UMI@active.ident
+  mean_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, mean)
+  exp_matrix_obl_tmp[exp_matrix_obl_tmp != 0] <- 1
+  positive_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, sum)
+  sum_expression <- apply(exp_matrix_obl_tmp, MARGIN = 2, length)
+  positive_expression_perc <- positive_expression/sum_expression
+  names <- colnames(exp_matrix_obl_tmp)
+  exp_stat <- data.frame(names,mean_expression, positive_expression_perc)
+}
+###############################################################################################################
+
+
+cells <- ggplot(exp_stat, mapping = aes(x = mean_expression, y = positive_expression_perc, fill = names)) +
+  geom_boxplot() +
+  facet_wrap(names~.) +
+  theme(legend.position = 'none')
+
+ggsave(cells, filename = file.path(OUTPUT,'box_matrix.jpeg'), units = 'in', width = 20, height = 15, dpi = 600)
+
+################################################################################################################
+
+
+exp_matrix <- GetAssayData(UMI, slot = 'data')
+colnames(exp_matrix) <- UMI@active.ident
+
+
+write(colnames(exp_matrix), file = file.path(OUTPUT, "exp_matrix/barcodes.tsv"))
+write(rownames(exp_matrix), file = file.path(OUTPUT, "exp_matrix/genes.tsv"))
+Matrix::writeMM(exp_matrix, file = file.path(OUTPUT, "exp_matrix/matrix.mtx"))
+
+
+################################################################################################################
 #Average expression matrix populations
 
-average_expression <- as.data.frame(exp_matrix)
-rm(exp_matrix)
-average_expression <- t(average_expression)
-average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = mean, trim = 0.25)
-rownames(average_expression) <- average_expression[,1]
-average_expression <- average_expression[,-1]
-average_expression <- t(average_expression)
+rm(average_expression)
 
+subset_num <- round(length(colnames(UMI))/10000)
+cells_num <- round(length(colnames(UMI))/subset_num)
+cols <- as.data.frame(summary(UMI@active.ident, maxsum = length(unique(colnames(exp_matrix)))))
+cols <- as.data.frame(cols[order(rownames(cols)), , drop = F])
+colnames(cols)[1] <- 'n'
 
+if (round(length(colnames(UMI))) > 14999){
+  
+  for (batch in 1:subset_num) {
+    if (batch == 1 & round(length(colnames(UMI))) > 14999) {
+      average_expression <- as.data.frame(exp_matrix[,1:cells_num])
+      colnames(average_expression) <- UMI@active.ident[1:cells_num]
+      average_expression <- t(average_expression)
+      average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = sum)
+      rownames(average_expression) <- average_expression[,1]
+      average_expression <- average_expression[,-1]
+      average_expression <- t(average_expression)
+    } else if (batch == subset_num & round(length(colnames(UMI))) > 14999) {
+      average_expression_tmp <- as.data.frame(exp_matrix[,(((batch - 1) * cells_num)+1):length(colnames(exp_matrix))])
+      colnames(average_expression_tmp) <- UMI@active.ident[(((batch - 1) * cells_num)+1):length(colnames(exp_matrix))]
+      print((((batch - 1) * cells_num)+1))
+      print(length(colnames(UMI)))
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression_tmp <- aggregate(average_expression_tmp, by = list(rownames(average_expression_tmp)), FUN = sum)
+      rownames(average_expression_tmp) <- average_expression_tmp[,1]
+      average_expression_tmp <- average_expression_tmp[,-1]
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression <- cbind(average_expression, average_expression_tmp)
+      rm(average_expression_tmp)
+      average_expression <- as.data.frame(average_expression)
+      average_expression <- t(average_expression)
+      average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = sum)
+      rownames(average_expression) <- average_expression[,1]
+      average_expression <- average_expression[,-1]
+      average_expression <- t(average_expression)
+      average_expression <- average_expression[,order(colnames(average_expression))]
+      average_expression <- as.data.frame(average_expression)
+      
+      num_col <- 0
+      for (col in average_expression) {
+        num_col <- num_col + 1
+        num_row <- 0
+        for (mean in col) {
+          num_row <- num_row + 1
+          average_expression[num_row , num_col] <- as.numeric(average_expression[num_row , num_col]/cols$n[num_col])
+        } 
+      }
+      
+    } else if (batch > 1 & batch < subset_num & round(length(colnames(UMI))) > 14999) {
+      average_expression_tmp <- as.data.frame(exp_matrix[,(((batch - 1) * cells_num)+1):(batch * cells_num)])
+      colnames(average_expression_tmp) <- UMI@active.ident[(((batch - 1) * cells_num)+1):(batch * cells_num)]
+      print((((batch - 1) * cells_num)+1))
+      print(batch * cells_num)
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression_tmp <- aggregate(average_expression_tmp, by = list(rownames(average_expression_tmp)), FUN = sum)
+      rownames(average_expression_tmp) <- average_expression_tmp[,1]
+      average_expression_tmp <- average_expression_tmp[,-1]
+      average_expression_tmp <- t(average_expression_tmp)
+      average_expression <- cbind(average_expression, average_expression_tmp)
+      rm(average_expression_tmp)
+    } 
+  }
+}
 
-write.table(average_expression, file = file.path(OUTPUT, "mice/average_expression_matrix_populations.csv"))
+if (round(length(colnames(UMI))) < 14999) {
+  average_expression <- as.data.frame(exp_matrix)
+  colnames(average_expression) <- UMI@active.ident
+  average_expression <- t(average_expression)
+  average_expression <- aggregate(average_expression, by = list(rownames(average_expression)), FUN = sum)
+  rownames(average_expression) <- average_expression[,1]
+  average_expression <- average_expression[,-1]
+  average_expression <- t(average_expression)
+  average_expression <- average_expression[,order(colnames(average_expression))]
+  average_expression <- as.data.frame(average_expression)
+  
+  num_col <- 0
+  for (col in average_expression) {
+    num_col <- num_col + 1
+    num_row <- 0
+    for (mean in col) {
+      num_row <- num_row + 1
+      average_expression[num_row , num_col] <- as.numeric(average_expression[num_row , num_col]/cols$n[num_col])
+      
+    } 
+    
+  }
+}
+
+write.table(average_expression, file = file.path(OUTPUT, 'exp_matrix/average_expression_matrix_subtypes.csv'), sep = ',')
 
 
 #save seurat output file
 
-saveRDS(UMI, file = file.path(OUTPUT, "mice/Results.rds"))
+saveRDS(UMI, file = file.path(OUTPUT, "Results.rds"))
 
 
 #######################################################################################
 
-top_genes <- top10$gene[[1]]
-index <- 1
-for (i in 2:nrow(top10)){
-  index <- index + 1
-  top_genes <- c(top_genes, top10$gene[[index]])
+#Cell populations pheatmaps
+
+ms<- c()
+for (m in subclass_marker_list) {
+  ms <- c(ms, m[grepl(toupper(m), list(colnames(average_expression)))])
 }
 
+marker_list <- unique(c(class_marker_list, subclass_marker_list_pheat, ms))
 
-average_expression <- as.data.frame(average_expression)
-phet_exp_matrix <- average_expression[rownames(average_expression) %in% top_genes,]
-jpeg(file.path(OUTPUT, "mice/pheatmap_cells_populations.jpeg") , units="in", width=15, height=7, res=300)
-pheatmap::pheatmap(phet_exp_matrix, 
-                   clustering_method = 'complete', 
-                   cluster_rows = F)
+
+
+
+average_expression <- average_expression[marker_list,]
+average_expression <- drop_na(average_expression)
+jpeg(file.path(OUTPUT, "pheatmap_cells_populations.jpeg"),units="in", width = 35, height = 30,  res=600)
+pheatmap::pheatmap(average_expression, 
+                   clustering_method = 'ward.D',
+                   angle_col = 270, fontsize_row = 20, fontsize_col = 20)
 dev.off()
 
-rm(average_expression)
-#########################################################################################
 
+#########################################################################################
 
 if (species %in% c('human','mice')) {
   rmarkdown::render(input = file.path(getwd(), 'scripts/raport_species.Rmd'), 
@@ -730,4 +1216,3 @@ if (species %in% c('human','mice')) {
   quit()
   n
 }
-

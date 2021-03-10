@@ -189,16 +189,6 @@ knitr::include_graphics(file.path(path_results,'Ribo~Mito.jpeg'), dpi = 600)
 
 ## Quality Control of droplets content
 
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
-
-if (chceck_fq == TRUE){
-cat('Graphs presents information about cells unique feature counts. There was filtered droplets with over 2,500 (more than one cell in droplet) or less than 200 (empty droplet) counts per droplet and droplets that have >5% mitochondrial counts.')
-}
-```
-
-\
-
 ### Number of counts
 
 \
@@ -250,6 +240,7 @@ knitr::include_graphics(file.path(path_results,'Cells.jpeg'), dpi = 600)
 
 ## Selection of highly variable genes
 ### Top20
+
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}

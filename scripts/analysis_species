@@ -101,9 +101,12 @@ else
 fi
 done;
 
+source $(pwd)/requirements_file/barcodes
+barcode=$barcode
+
 
 cd $(pwd)/projects/$project_name_mode/fast_data
-umi_tools whitelist --stdin $R1_NAME_out --bc-pattern='(?P<cell_1>.{12})(?P<umi_1>.{8})' --extract-method=regex --set-cell-number=$cell --plot-prefix=$RESULT/expect_whitelist --log2stderr > $tmp/whitelist.csv ;
+umi_tools whitelist --stdin $R1_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --plot-prefix=$RESULT/expect_whitelist --log2stderr > $tmp/whitelist.csv ;
 cat $tmp/whitelist.csv | cut -f 1 > $tmp/whitelist_barcodes.csv ;
 
 cd ..

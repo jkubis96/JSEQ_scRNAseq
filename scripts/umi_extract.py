@@ -19,7 +19,7 @@ barcode_ext_ref = set()
 
 with open(cwd + '/projects/' + project_name_mode + '/tmp/whitelist.csv') as whitelist:
 	for line in whitelist:
-		if len(line.strip().split()) == 2: 
+		if len(line.strip().split()) == 2:  
 			(reference,counts_ref) = line.strip().split()
 			mapping[0][reference]= defaultdict()
 			mapping[0][reference]['ref'] = reference
