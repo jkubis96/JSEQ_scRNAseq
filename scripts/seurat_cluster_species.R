@@ -225,7 +225,7 @@ dims <- as.data.frame(Elbow$data$stdev)
 
 #########################################################################################
 
-UMI <- JackStraw(UMI, num.replicate = 100, dims = dim)
+UMI <- JackStraw(UMI, num.replicate = 10, dims = dim)
 UMI <- ScoreJackStraw(UMI, dims = 1:dim)
 
 
@@ -251,6 +251,8 @@ dev.off()
 
 #find markers for every cluster compared to all remaining cells, report only the positive ones
 
+print('Searching for cluster marker genes')
+
 
 UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.20, logfc.threshold = 0.25, test.use = 'MAST')
 
@@ -262,10 +264,11 @@ top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
 top100 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 100, wt = avg_logFC)
 
 
-
 MAST_markers <- UMI.markers %>% group_by(cluster) %>% top_n(n = 5, wt = avg_logFC)
 
 write.table(MAST_markers, file = file.path(OUTPUT, "MAST_markers_clusters.csv"), sep = ',')
+
+print('Cluster genes - DONE')
 
 ##Cells cluster naming with top genes (different between cell groups)
 
@@ -276,7 +279,7 @@ write.table(MAST_markers, file = file.path(OUTPUT, "MAST_markers_clusters.csv"),
 ##################################################################################
 #Cells subtypes selection
 
-
+print('Subsetting clusters')
 
 iterations <- max(as.numeric(unique(UMI@active.ident)))
 pb <- txtProgressBar(max = iterations, style = 3)
@@ -430,6 +433,8 @@ for (num in 1:length(unl)) {
   }
 }
 
+print('Single cell naming')
+
 cell_names <- c()
 for (cluster in 1:max(as.numeric(unique(UMI@active.ident)))) {
   tmp <- subset(UMI, features = gen_vector_list$gen_vector[gen_vector_list$cluster %in% cluster])
@@ -445,6 +450,7 @@ for (cluster in 1:max(as.numeric(unique(UMI@active.ident)))) {
   }
 }
 
+print('Naming - DONE')
 
 ############################################
 #PCA Cluster average expression for nameing
@@ -542,7 +548,7 @@ if (round(length(colnames(UMI))) < 14999) {
 
 #################################################################################
 
-
+print('Clusters naming')
 
 cluster_nameing(matrix_a = average_expression, markers = markers_class)
 
@@ -609,7 +615,7 @@ if (length(markers_subclass) != 0) {
 
 
 subclass_marker_list_pheat <- rownames(exp_matrix)[toupper(rownames(exp_matrix)) %in% toupper(cell_names.2)]
-subclass_marker_list_pheat <- unique(c(subclass_marker_list_pheat, cell_names[!grepl('Bed',cell_names)]))
+subclass_marker_list_pheat <- unique(c(subclass_marker_list_pheat, cell_names[!grepl('Bad',cell_names)]))
 #######################################################################################
 #Repair subclass_names
 
@@ -617,7 +623,7 @@ new.cluster.ids <- paste(clust_names, colnames(average_expression))
 names(new.cluster.ids) <- levels(UMI)
 UMI <- RenameIdents(UMI, new.cluster.ids)
 
-
+print('Naming - DONE')
 
 
 #################################################################################
@@ -745,56 +751,58 @@ if (round(length(colnames(UMI))) < 14999) {
 }
 #############################################################################################################################
 
+print('Checking and renaming subtypes')
 
 
 #remove empty cells (without markers expression)
 
 class_marker_list <- c()
 for (class in markers_class) {
-  print(class)
   class_marker_list <- c(class_marker_list, textclean::mgsub(class, c('+'), c('')))
 }
+
+
 class_marker_list <- rownames(UMI)[toupper(rownames(UMI)) %in% class_marker_list]
 
 
-
 second_matrix <- average_expression[class_marker_list,]
+
 
 
 renamed_old.1 <- c()
 renamed_new.1 <- c()
 renamed_old.2 <- c()
 renamed_new.2 <- c()
+col_new.names <- as.character(colnames(second_matrix))
 
 index_marker <- 0
 for (marker in markers_class) {
   index_marker <- index_marker + 1
   for (col in 1:length(colnames(second_matrix))) {
     second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
-    if (max(second_matrix[,col]) == 0 & !grepl('Unknow', colnames(second_matrix)[col])) {
+    if (max(second_matrix[,col]) == 0 & !grepl('Unknow', as.character(colnames(second_matrix)[col]))) {
       colnames(second_matrix)[col] <- 'Bad'
-    } else if (grepl(colnames(markers_class)[index_marker], colnames(second_matrix)[col]) & !grepl(toupper(rownames(second_matrix)[1]), list(textclean::mgsub(marker, c('+'), c(''))))) {
+    } else if (grepl(as.character(colnames(markers_class)[index_marker]), as.character(colnames(second_matrix)[col])) & !grepl(as.character(toupper(rownames(second_matrix)[1])), as.character(list(textclean::mgsub(marker, c('+'), c('')))))) {
       renamed_old.1 <- c(renamed_old.1, colnames(second_matrix)[col])
       mark <- c()
       for (change in colnames(markers_class)) {
-        print(change)
         mark <- c(mark, change[grepl(change, colnames(second_matrix)[col])])
       }
       n_marker = 0
       for (marker in markers_class) {
         n_marker = n_marker + 1
-        if (grepl(pattern = toupper(rownames(second_matrix)[1]), x = list(marker))) {
-          break
+        if (grepl(toupper(rownames(second_matrix)[1]), list(marker))) {
+          colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  colnames(markers_class)[n_marker], x = colnames(second_matrix)[col])
+          renamed_new.1 <- c(renamed_new.1, colnames(second_matrix)[col])
         }
       }
-      colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  colnames(markers_class)[n_marker], x = colnames(second_matrix)[col])
-      renamed_new.1 <- c(renamed_new.1, colnames(second_matrix)[col])
     }
   }
 }
 
 
-Renamed_idents <- Idents(UMI)
+Renamed_idents <- as.character(Idents(UMI))
+
 
 if (length(renamed_old.1) != 0) {
   n = 0
@@ -804,6 +812,9 @@ if (length(renamed_old.1) != 0) {
   }
 }
 
+
+
+
 if (length(markers_subclass) != 0) {
   subclass_marker_list <- c()
   for (subclass in markers_subclass) {
@@ -811,15 +822,18 @@ if (length(markers_subclass) != 0) {
   }
 }
   subclass_marker_list <- rownames(UMI)[toupper(rownames(UMI)) %in% subclass_marker_list]
-  
+ 
+
   
   old.names <- colnames(second_matrix)
   
   
   second_matrix <- average_expression[subclass_marker_list,]
   colnames(second_matrix) <- old.names
+  
   ################################################
   #Renamed function
+  
   second_matrix <- second_matrix[!colnames(second_matrix) %in% c('Bad', 'Unknow')]
   
   for (col in 1:length(colnames(second_matrix))) {
@@ -830,7 +844,6 @@ if (length(markers_subclass) != 0) {
       renamed_old.2 <- unique(c(renamed_old.2, colnames(second_matrix)[col]))
       mark <- c()
       for (change in markers_subclass) {
-        print(change)
         mark <- c(mark, change[grepl(change, colnames(second_matrix)[col])])
       }
       colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  toupper(rownames(second_matrix)[1]), x = colnames(second_matrix)[col])
@@ -847,21 +860,25 @@ if (length(markers_subclass) != 0) {
     }
   }
   
-
+  
 
 
 Idents(UMI) <- Renamed_idents
 
-###############################################
-subclass_names <- Renamed_idents
-bad <- subclass_names[grepl('Bad', subclass_names)]
-renamed.subnames <- c(renamed_new.1, renamed_new.2)
-renamed.subnames <- renamed.subnames[!renamed.subnames %in% new.names]
-renamed.subnames <- renamed.subnames[!renamed.subnames %in% bad]
-new.subnames <- subclass_names[!subclass_names %in% bad]
-new.subnames <- new.subnames[!new.subnames %in% renamed.subnames]
-bad.subnames <- subclass_names[subclass_names %in% bad]
+print('Checking - DONE')
 
+###############################################
+
+print('QC of subtypes')
+
+subclass_names <- Renamed_idents
+bad <- subclass_names[grepl('Bad', as.character(subclass_names))]
+renamed.subnames <- c(as.character(renamed_new.1), as.character(renamed_new.2))
+renamed.subnames <- renamed.subnames[!as.character(renamed.subnames) %in% as.character(new.names)]
+renamed.subnames <- renamed.subnames[!as.character(renamed.subnames) %in% as.character(bad)]
+new.subnames <- subclass_names[!as.character(subclass_names) %in% as.character(bad)]
+new.subnames <- new.subnames[!as.character(new.subnames) %in% as.character(renamed.subnames)]
+bad.subnames <- subclass_names[as.character(subclass_names) %in% as.character(bad)]
 
 
 #############################################################################################################################
@@ -871,7 +888,7 @@ colnames(data)[1] <- 'n'
 data$names <- rownames(data)
 
 
-num <-head(sort(data$n, decreasing = T), n = 1)*0.01
+num <- head(sort(data$n, decreasing = T), n = 1)*0.01
 
 
 below.names <- data$names[data$n < num]
@@ -881,9 +898,6 @@ data$test[data$names %in% bad.subnames] <- "Bad marked types"
 data$test[data$names %in% renamed.subnames] <- "Renamed"
 data$test[data$names %in% new.subnames] <- "Good marked types" 
 data$test[data$names %in% below.names] <- "Non-significant < 0.01"
-
-
-
 
 
 
@@ -900,10 +914,12 @@ ggsave(threshold, filename = file.path(OUTPUT,'cells_type_threshold.jpeg'), unit
 
 
 #save bad cells
-bad.subnames <- unique(c(bad.subnames, below.names))
+
+bad.subnames <- c(as.character(bad.subnames), as.character(below.names))
+bad.subnames <- unique(as.character(bad.subnames))
+
 
 UMI_unknow <- subset(UMI, idents = bad.subnames)
-
 
 bad_cells <- as.data.frame(GetAssayData(object = UMI_unknow, slot = 'counts'))
 colnames(bad_cells)[1:length(colnames(bad_cells))] <- 'Unknow'
@@ -914,11 +930,13 @@ rm(bad_cells)
 
 #####################################################################################################
 
-right.names <- unique(c(subclass_names[subclass_names %in% new.names], subclass_names[subclass_names %in% renamed.subnames]))
-right.names <- right.names[!right.names %in% below.names]
-right.names <- right.names[!right.names %in% bad.subnames]
+right.names <- unique(subclass_names[!as.character(subclass_names) %in% as.character(bad.subnames)])
+
 
 UMI <- subset(UMI, idents = right.names)
+
+print('DONE')
+
 
 #########################################################################################################################################################################################
 
@@ -1138,6 +1156,8 @@ dev.off()
 
 
 #########################################################################################
+
+print('Report creating')
 
 if (species %in% c('human','mice')) {
   rmarkdown::render(input = file.path(getwd(), 'scripts/raport_species.Rmd'), 

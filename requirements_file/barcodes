@@ -1,1 +1,6 @@
-barcode='(?P<cell_1>.{12})(?P<umi_1>.{8})'
+barcode_start=1
+barcode_end=12
+umi_start=13
+umi_end=20
+
+barcode='(?P<cell_1>.{'$barcode_end-$barcode_start+1'})(?P<umi_1>.{'$umi_end-$umi_start+1'})'

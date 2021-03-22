@@ -79,6 +79,12 @@ STAR --outReadsUnmapped Fastx --outFilterMismatchNmax 10 --outFilterMismatchNove
 
 function whitelist {
 
+source $(pwd)/requirements_file/barcodes
+barcode_start=$barcode_start
+barcode_end=$barcode_end
+umi_start=$umi_start
+umi_end=$umi_end
+barcode=$barcode
 
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
 tmp=$(pwd)/projects/$project_name_mode/tmp
@@ -101,9 +107,6 @@ else
 fi
 done;
 
-source $(pwd)/requirements_file/barcodes
-barcode=$barcode
-
 
 cd $(pwd)/projects/$project_name_mode/fast_data
 umi_tools whitelist --stdin $R1_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --plot-prefix=$RESULT/expect_whitelist --log2stderr > $tmp/whitelist.csv ;
@@ -116,6 +119,7 @@ cd ..
 
 function umi_extract {
 
+
 SCRIPTS_EXTRACT=$(pwd)/scripts
 python3 $SCRIPTS_EXTRACT/umi_extract.py $project_name_mode
 
@@ -123,6 +127,12 @@ python3 $SCRIPTS_EXTRACT/umi_extract.py $project_name_mode
 }
 
 function merge_reads {
+
+source $(pwd)/requirements_file/barcodes
+barcode_start=$barcode_start
+barcode_end=$barcode_end
+umi_start=$umi_start
+umi_end=$umi_end
 
 SCRIPTS_EXTRACT=$(pwd)/scripts/
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
@@ -143,7 +153,7 @@ done;
 
 
 R1_FILE=$INFASTP'/'$R1_NAME_py
-python3 $SCRIPTS_EXTRACT/merge_reads.py $R1_FILE $project_name_mode
+python3 $SCRIPTS_EXTRACT/merge_reads.py $R1_FILE $project_name_mode $barcode_start $barcode_end $umi_start $umi_end
 
 }
 

@@ -10,6 +10,10 @@ import os
 cwd = os.getcwd()
 R1_FILE=sys.argv[1]
 project_name_mode=sys.argv[2]
+barcode_start=sys.argv[3]
+barcode_end=sys.argv[4]
+umi_start=sys.argv[5]
+umi_end=sys.argv[6]
 
 
 discard_secondary_alignements = True
@@ -18,10 +22,10 @@ save = pysam.set_verbosity(0)
 
 
 barcodes_struct = {
-	'BC_start':0,
-	'BC_end':12,
-	'UMI_start':13,
-	'UMI_end':20
+	'BC_start':barcode_start,
+	'BC_end':barcode_end,
+	'UMI_start':umi_start,
+	'UMI_end':umi_end
 	}
 
 def parse_barcodes(fastq_parser, query_name, read_barcodes, barcodes_struct):
