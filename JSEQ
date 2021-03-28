@@ -2,10 +2,9 @@
 
 echo 'Welcome in JSEQ® scRNAseq pipeline which was prepared at Institute of Bioorganic Chemistry, Polish Academy of Sciences in Poznań'
 
-echo 'This softwere was made for dropSEQ single cell technology [especially for Nadia Instrument - https://www.dolomite-bio.com/].'
-echo 'Lots of solutions are based on DropSeqPip and others pipelines'
+echo 'This softwere was made for dropSEQ single cell technology'
 
-echo 'All information and references you can check in the file Manual'
+echo 'All information and references you can check in the file JSEQ_manual on my GitHub'
 
 echo 'Author contact: jkubis@ibch.poznan.pl or jakub.kubis1996@gmail.com'
 

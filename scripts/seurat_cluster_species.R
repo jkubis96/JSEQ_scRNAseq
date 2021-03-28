@@ -441,8 +441,8 @@ for (cluster in 1:max(as.numeric(unique(UMI@active.ident)))) {
   tmp <- as.matrix(GetAssayData(tmp, slot = 'data'))
   colnames(tmp) <- UMI@active.ident
   for (i in 1:length(colnames(tmp))) {
-    tmp <- tmp[order(tmp[,i], decreasing = T), ,drop =F]
     if (as.numeric(cluster-1) %in% colnames(tmp)[i] & colSums(tmp)[i] > 0) {
+      tmp <- tmp[order(tmp[,i], decreasing = T), ,drop =F]
       cell_names[i] <- rownames(tmp)[1]
     } else if (as.numeric(cluster-1) %in% colnames(tmp)[i] & colSums(tmp)[i] == 0) {
       cell_names[i] <- 'Bad'
@@ -450,6 +450,7 @@ for (cluster in 1:max(as.numeric(unique(UMI@active.ident)))) {
   }
 }
 
+rm(tmp)
 print('Naming - DONE')
 
 ############################################
@@ -749,6 +750,7 @@ if (round(length(colnames(UMI))) < 14999) {
     
   }
 }
+
 #############################################################################################################################
 
 print('Checking and renaming subtypes')
@@ -773,7 +775,6 @@ renamed_old.1 <- c()
 renamed_new.1 <- c()
 renamed_old.2 <- c()
 renamed_new.2 <- c()
-col_new.names <- as.character(colnames(second_matrix))
 
 index_marker <- 0
 for (marker in markers_class) {
@@ -789,9 +790,9 @@ for (marker in markers_class) {
         mark <- c(mark, change[grepl(change, colnames(second_matrix)[col])])
       }
       n_marker = 0
-      for (marker in markers_class) {
+      for (marker_2 in markers_class) {
         n_marker = n_marker + 1
-        if (grepl(toupper(rownames(second_matrix)[1]), list(marker))) {
+        if (grepl(toupper(rownames(second_matrix)[1]), list(marker_2))) {
           colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  colnames(markers_class)[n_marker], x = colnames(second_matrix)[col])
           renamed_new.1 <- c(renamed_new.1, colnames(second_matrix)[col])
         }
@@ -808,7 +809,7 @@ if (length(renamed_old.1) != 0) {
   n = 0
   for (name in 1:length(renamed_new.1)) {
     n = n + 1
-    Renamed_idents <- gsub(x = Renamed_idents, pattern = renamed_old.1[n], replacement = renamed_new.1[n])
+    Renamed_idents[Renamed_idents %in% renamed_old.1[n]] <- renamed_new.1[n]
   }
 }
 
@@ -821,46 +822,47 @@ if (length(markers_subclass) != 0) {
     subclass_marker_list <- c(subclass_marker_list, subclass)
   }
 }
-  subclass_marker_list <- rownames(UMI)[toupper(rownames(UMI)) %in% subclass_marker_list]
- 
+subclass_marker_list <- rownames(UMI)[toupper(rownames(UMI)) %in% subclass_marker_list]
 
-  
-  old.names <- colnames(second_matrix)
-  
-  
-  second_matrix <- average_expression[subclass_marker_list,]
-  colnames(second_matrix) <- old.names
-  
-  ################################################
-  #Renamed function
-  
-  second_matrix <- second_matrix[!colnames(second_matrix) %in% c('Bad', 'Unknow')]
-  
-  for (col in 1:length(colnames(second_matrix))) {
-    second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
-    if (second_matrix[1,col] == 0) {
-      colnames(second_matrix)[col] <- 'Bad'
-    } else if (!grepl(toupper(rownames(second_matrix)[1]), colnames(second_matrix)[col]) & !grepl('Bad', colnames(second_matrix)[col])) {
-      renamed_old.2 <- unique(c(renamed_old.2, colnames(second_matrix)[col]))
-      mark <- c()
-      for (change in markers_subclass) {
-        mark <- c(mark, change[grepl(change, colnames(second_matrix)[col])])
-      }
-      colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  toupper(rownames(second_matrix)[1]), x = colnames(second_matrix)[col])
-      renamed_new.2 <- c(renamed_new.2, colnames(second_matrix)[col])
-    } 
-  }
 
-  
-  if (length(renamed_old.2) != 0) {
-    n = 0
-    for (name in 1:length(renamed_new.2)) {
-      n = n + 1
-      Renamed_idents <- gsub(x = Renamed_idents, pattern = renamed_old.2[n], replacement = renamed_new.2[n])
+
+old.names <- as.character(colnames(second_matrix))
+
+
+second_matrix <- average_expression[subclass_marker_list,]
+colnames(second_matrix) <- as.character(old.names)
+
+################################################
+#Renamed function
+
+second_matrix <- second_matrix[!colnames(second_matrix) %in% c('Bad', 'Unknow')]
+
+for (col in 1:length(colnames(second_matrix))) {
+  second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
+  if (second_matrix[1,col] == 0) {
+    colnames(second_matrix)[col] <- 'Bad'
+  } else if (!grepl(toupper(rownames(second_matrix)[1]), colnames(second_matrix)[col]) & !grepl('Bad', colnames(second_matrix)[col])) {
+    renamed_old.2 <- unique(c(renamed_old.2, colnames(second_matrix)[col]))
+    mark <- c()
+    
+    for (change in markers_subclass) {
+      mark <- c(mark, change[grepl(change, colnames(second_matrix)[col])])
     }
+    
+    colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  toupper(rownames(second_matrix)[1]), x = colnames(second_matrix)[col])
+    renamed_new.2 <- c(renamed_new.2, colnames(second_matrix)[col])
+  } 
+}
+
+
+if (length(renamed_old.2) != 0) {
+  n = 0
+  for (name in 1:length(renamed_new.2)) {
+    n = n + 1
+    Renamed_idents[Renamed_idents %in% renamed_old.2[n]] <- renamed_new.2[n]
   }
-  
-  
+}
+
 
 
 Idents(UMI) <- Renamed_idents
@@ -874,7 +876,7 @@ print('QC of subtypes')
 subclass_names <- Renamed_idents
 bad <- subclass_names[grepl('Bad', as.character(subclass_names))]
 renamed.subnames <- c(as.character(renamed_new.1), as.character(renamed_new.2))
-renamed.subnames <- renamed.subnames[!as.character(renamed.subnames) %in% as.character(new.names)]
+renamed.subnames <- renamed.subnames[as.character(renamed.subnames) %in% as.character(Renamed_idents)]
 renamed.subnames <- renamed.subnames[!as.character(renamed.subnames) %in% as.character(bad)]
 new.subnames <- subclass_names[!as.character(subclass_names) %in% as.character(bad)]
 new.subnames <- new.subnames[!as.character(new.subnames) %in% as.character(renamed.subnames)]
@@ -895,8 +897,8 @@ below.names <- data$names[data$n < num]
 
 
 data$test[data$names %in% bad.subnames] <- "Bad marked types"
-data$test[data$names %in% renamed.subnames] <- "Renamed"
 data$test[data$names %in% new.subnames] <- "Good marked types" 
+data$test[data$names %in% renamed.subnames] <- "Renamed"
 data$test[data$names %in% below.names] <- "Non-significant < 0.01"
 
 
