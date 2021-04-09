@@ -886,7 +886,7 @@ if (length(markers_subclass) != 0) {
   for (subclass in markers_subclass) {
     subclass_marker_list <- c(subclass_marker_list, subclass)
   }
-}
+
 subclass_marker_list <- rownames(UMI)[toupper(rownames(UMI)) %in% subclass_marker_list]
 
 
@@ -911,7 +911,7 @@ for (col in 1:length(colnames(second_matrix))) {
     mark <- c()
     
     for (change in markers_subclass) {
-      mark <- c(mark, change[grepl(change, colnames(second_matrix)[col])])
+      mark <- c(mark, change[grepl(paste(change,' ', sep = ''), colnames(second_matrix)[col])])
     }
     
     colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  toupper(rownames(second_matrix)[1]), x = colnames(second_matrix)[col])
@@ -928,7 +928,7 @@ if (length(renamed_old.2) != 0) {
   }
 }
 
-
+}
 
 Idents(UMI) <- Renamed_idents
 
@@ -1210,14 +1210,21 @@ saveRDS(UMI, file = file.path(OUTPUT, "Results.rds"))
 
 #Cell populations pheatmaps
 
-ms<- c()
-for (m in subclass_marker_list) {
-  ms <- c(ms, m[grepl(toupper(m), list(colnames(average_expression)))])
+if (length(markers_subclass) != 0) {
+  ms<- c()
+  for (m in subclass_marker_list) {
+    ms <- c(ms, m[grepl(toupper(m), list(colnames(average_expression)))])
+  }
+  
+  marker_list <- unique(c(class_marker_list, subclass_marker_list_pheat, ms))
+  
 }
 
-marker_list <- unique(c(class_marker_list, subclass_marker_list_pheat, ms))
-
-
+if (length(markers_subclass) == 0) {
+  
+  marker_list <- unique(c(class_marker_list, subclass_marker_list_pheat))
+  
+}
 
 
 average_expression <- average_expression[marker_list,]
