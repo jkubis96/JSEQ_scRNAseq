@@ -788,6 +788,7 @@ for (marker in markers_class) {
       mark <- c()
       for (change in colnames(markers_class)) {
         mark <- c(mark, change[grepl(change, colnames(second_matrix)[col])])
+        if (length(mark) !=0) {break}
       }
       n_marker = 0
       for (marker_2 in markers_class) {
@@ -846,6 +847,7 @@ for (col in 1:length(colnames(second_matrix))) {
     mark <- c()
     for (change in markers_subclass) {
       mark <- c(mark, change[grepl(paste(change,' ', sep = ''), colnames(second_matrix)[col])])
+      if (length(mark) !=0) {break}
     }
     
     colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  toupper(rownames(second_matrix)[1]), x = colnames(second_matrix)[col])
