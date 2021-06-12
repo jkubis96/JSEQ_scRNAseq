@@ -4,6 +4,7 @@ library(tidyverse)
 library(doSNOW)
 library(foreach)
 library(doParallel)
+library(stringr)
 
 args <- commandArgs()
 
@@ -638,6 +639,22 @@ write.table(average_expression, file = file.path(OUTPUT, "exp_matrix/class_avera
 #PCA plot and UMAP plot with names
 
 #Class
+Tmp_idents <- Idents(UMI)
+
+part_name_1 <- sub(" .*", "", Tmp_idents)
+part_name_2 <- sub('.*? ', "", Tmp_idents)
+
+
+if (species == 'human') {
+  part_name_2 <- toupper(part_name_2)
+} else if (species == 'mice') {
+  
+  part_name_2 <- str_to_title(part_name_2)
+}
+
+Tmp_idents_species <- paste(part_name_1, part_name_2)
+Idents(UMI) <- Tmp_idents_species
+
 
 jpeg(file.path(OUTPUT, "PCA_DimPlot_class.jpeg") , units="in", width=10, height=7, res=600)
 DimPlot(UMI, reduction = "pca")
@@ -648,10 +665,19 @@ jpeg(file.path(OUTPUT, "UMAP_with_DE_gene_class.jpeg") , units="in", width=10, h
 DimPlot(UMI, reduction = "umap") 
 dev.off()
 
+Idents(UMI) <- Tmp_idents
+
+rm(Tmp_idents)
+rm(Tmp_idents_species)
 
 #Subtypes
 
-new.names <- paste0(UMI@active.ident,' - ', cell_names)
+firstup <- function(x) {
+  substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+  x
+}
+
+new.names <- paste0(UMI@active.ident,' - ', firstup(tolower(cell_names)))
 
 
 Idents(UMI) <- new.names
@@ -866,6 +892,18 @@ if (length(renamed_old.2) != 0) {
 
 }
 
+part_name_1 <- sub(" .*", "", Renamed_idents)
+part_name_2 <- sub('.*? ', "", Renamed_idents)
+
+
+if (species == 'human') {
+  part_name_2 <- toupper(part_name_2)
+} else if (species == 'mice') {
+  
+  part_name_2 <- str_to_title(part_name_2)
+}
+
+Renamed_idents <- paste(part_name_1, part_name_2)
 Idents(UMI) <- Renamed_idents
 
 print('Checking - DONE')
@@ -875,9 +913,9 @@ print('Checking - DONE')
 print('QC of subtypes')
 
 subclass_names <- Renamed_idents
-bad <- subclass_names[grepl('Bad', as.character(subclass_names))]
+bad <- subclass_names[grepl(c('Bad'), as.character(subclass_names)) | grepl(c('BAD'), as.character(subclass_names))]
 renamed.subnames <- c(as.character(renamed_new.1), as.character(renamed_new.2))
-renamed.subnames <- renamed.subnames[as.character(renamed.subnames) %in% as.character(Renamed_idents)]
+renamed.subnames <- subclass_names[as.character(toupper(subclass_names)) %in% as.character(toupper(renamed.subnames))]
 renamed.subnames <- renamed.subnames[!as.character(renamed.subnames) %in% as.character(bad)]
 new.subnames <- subclass_names[!as.character(subclass_names) %in% as.character(bad)]
 new.subnames <- new.subnames[!as.character(new.subnames) %in% as.character(renamed.subnames)]
