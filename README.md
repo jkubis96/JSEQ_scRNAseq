@@ -6,9 +6,9 @@
 
 #### Authors: Jakub Kubiś & Maciej Figiel
 <p align="center">
- Institute of Bioorganic Chemistry\
- Polish Academy of Sciences\
- Department of Molecular Neurobiology\
+ Institute of Bioorganic Chemistry  
+ Polish Academy of Sciences  
+ Department of Molecular Neurobiology  
 </p>
 
 
