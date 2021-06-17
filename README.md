@@ -1,7 +1,7 @@
 ## JSEQ® - single cell sequencing analysis tools
 
 <p align="center">
-<img  src="https://github.com/Qubix96/Pictures/blob/main/Pictures/Logo.png?raw=true" alt="drawing" width="400" />
+<img  src="https://github.com/Qubix96/Pictures/blob/main/Pictures/log_without%20background.PNG?raw=true" alt="drawing" width="400" />
 </p>
 
 #### Authors: Jakub Kubiś & Maciej Figiel
@@ -19,7 +19,7 @@
 ### Pipeline pathway
 
 <p align="center">
-<img  src="https://github.com/Qubix96/Pictures/blob/main/Pictures/pipeline.png?raw=true" alt="drawing" width="600" />
+<img  src="https://github.com/Qubix96/Pictures/blob/main/Pictures/pipeline%20color.png?raw=true" alt="drawing" width="600" />
 </p>
 
 ##### The JSEQ® pipeline was prepared and tested on AMD Ryzen Threadripper 24-Core, RAM 256GB, Ubuntu 20.04 LTS. For more information, I invite you to familiarize yourself with the manual JSEQ.
