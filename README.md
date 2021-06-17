@@ -1,7 +1,7 @@
 ## JSEQ® - single cell sequencing analysis tools
 
 <p align="center">
-<img  src="https://github.com/Qubix96/Pictures/blob/main/Pictures/log_without%20background.PNG?raw=true" alt="drawing" width="400" />
+<img  src="https://github.com/Qubix96/Pictures/blob/main/Pictures/jbio_logo.jpg?raw=true" alt="drawing" width="200" />
 </p>
 
 #### Authors: Jakub Kubiś & Maciej Figiel
