@@ -10,7 +10,6 @@
  Polish Academy of Sciences<br />
  Department of Molecular Neurobiology<br />
 </div>
-
 \
 
 
