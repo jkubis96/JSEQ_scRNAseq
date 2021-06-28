@@ -346,7 +346,7 @@ print('Cluster genes - DONE')
 ##################################################################################
 #Cells subtypes selection
 
-print('Subsetting clusters')
+print('Subsetting clusters - CSSG')
 
 iterations <- max(as.numeric(unique(UMI@active.ident)))
 pb <- txtProgressBar(max = iterations, style = 3)
@@ -399,13 +399,13 @@ pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.id
         perc_0 <- length(tmp_elements[tmp_elements == 0])/length(tmp_elements)
         gene_combination <- gen_set
         if (is.nan(perc_1)) {perc_1 <- 0}
-        if (is.nan(perc_0)) {perc_2 <- 0}
+        if (is.nan(perc_0)) {perc_0 <- 0}
         if (i == 1) {selec_group <- data.frame(gene_combination, perc_1, perc_0)
         } else if (i > 1) {selec_group_tmp <- data.frame(gene_combination, perc_1, perc_0)
         selec_group <- rbind(selec_group, selec_group_tmp)}
         df_groups[i,] <- tmp_elements
         rownames(df_groups)[i] <- gen_set
-        if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.01) == T) {br <- T
+        if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.001) == T) {br <- T
         break}
       }
       index_j <- 0
@@ -421,12 +421,12 @@ pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.id
           perc_0 <- length(tmp_elements[tmp_elements == 0])/length(tmp_elements)
           gene_combination <- gen_set
           if (is.nan(perc_1)) {perc_1 <- 0}
-          if (is.nan(perc_0)) {perc_2 <- 0}
+          if (is.nan(perc_0)) {perc_0 <- 0}
           selec_group_tmp <- data.frame(gene_combination, perc_1, perc_0)
           selec_group <- rbind(selec_group, selec_group_tmp)
           df_groups[index_j,] <- tmp_elements
           rownames(df_groups)[index_j] <- gen_set
-          if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.01) == T) {br <- T
+          if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.001) == T) {br <- T
           break}
           if (j == df_length) {
             df_length <- length(rownames(df_groups))}
@@ -440,7 +440,7 @@ pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.id
           perc_0 <- length(tmp_elements[tmp_elements == 0])/length(tmp_elements)
           gene_combination <- gen_set
           if (is.nan(perc_1)) {perc_1 <- 0}
-          if (is.nan(perc_0)) {perc_2 <- 0}
+          if (is.nan(perc_0)) {perc_0 <- 0}
           selec_group_tmp <- data.frame(gene_combination, perc_1, perc_0)
           selec_group <- rbind(selec_group, selec_group_tmp)
           df_groups_tmp[index_j,] <- tmp_elements
@@ -448,7 +448,7 @@ pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.id
           if (j == df_length) {
             df_groups <- df_groups_tmp
             df_length <- length(rownames(df_groups))
-            if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.01) == T ) {br <- T
+            if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.001) == T ) {br <- T
             break}
           }
         }
@@ -456,7 +456,9 @@ pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.id
     }
   }
   
-  if ((tail(selec_group$perc_0[order(selec_group$perc_0, decreasing = T)], n = 1) <= 0.05) == T) {
+  if ((tail(selec_group$perc_0[order(selec_group$perc_0, decreasing = T)], n = 1) <= 0.001) == T) {
+    selec_group <- selec_group[selec_group$perc_0 <= 0.001, ]
+  } else if ((tail(selec_group$perc_0[order(selec_group$perc_0, decreasing = T)], n = 1) <= 0.05) == T) {
     selec_group <- selec_group[selec_group$perc_0 <= 0.05, ]
   } else if ((tail(selec_group$perc_0[order(selec_group$perc_0, decreasing = T)], n = 1) <= 0.1) == T) {
     selec_group <- selec_group[selec_group$perc_0 <= 0.1, ]

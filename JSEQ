@@ -1,12 +1,11 @@
 #!/bin/bash
 
-echo 'Welcome in JSEQ® scRNAseq pipeline which was prepared at Institute of Bioorganic Chemistry, Polish Academy of Sciences in Poznań'
+echo 'Welcome in the JSEQ® scRNAseq pipeline which was prepared at Institute of Bioorganic Chemistry, Polish Academy of Sciences in Poznań'
 
-echo 'This softwere was made for dropSEQ single cell technology'
 
-echo 'All information and references you can check in the file JSEQ_manual on my GitHub'
+echo 'All information and references you can check in the file JSEQ manual on my GitHub'
 
-echo 'Author contact: jkubis@ibch.poznan.pl or jakub.kubis1996@gmail.com'
+echo 'Contact: jkubis@ibch.poznan.pl or jakub.kubis1996@gmail.com'
 
 echo ''
 echo ''
@@ -48,8 +47,8 @@ then
 		picard >> $log_install 2>&1
         cd ..
 		echo ''
-		echo "Installing completed. Before run JSEQ check install.log file in setup directory for some errors."
-		echo $"If you have trouble with installing any parts of pipeline, you can try\ninstall missing files or libraries manually [instruction in JSEQ manual] or contact us"
+		echo "Installing completed. Before run the JSEQ check the install.log file in setup directory for some errors."
+		echo $"If you have trouble with installing any parts of the pipeline, you can try install missing files or libraries manually [instruction in JSEQ manual] or contact us"
 		echo ''
 		
 elif [[ $s == 'genome' ]]
@@ -80,39 +79,39 @@ then
 		echo ''
 		echo 'Process start...'
 		echo ''
-		echo $(date) 'Trimming adapters and Quality Controle of Reads'
+		echo $(date) 'Trimming of the adapters and quality control of the reads'
 		TRIMMING > $log 2>&1
-		echo $(date) 'Start mapping pocess'
+		echo $(date) 'Starting of the mapping process'
 		STAR_MAPPING >> $log 2>&1
-		echo $(date) 'Create whitelist'
+		echo $(date) 'Creating the whitelist'
 		whitelist >> $log 2>&1
-		echo $(date) 'UMI and barcode extraction'
+		echo $(date) 'UMIs and barcodes extraction'
 		umi_extract >> $log 2>&1
 		merge_reads >> $log 2>&1
 		barcodes >> $log 2>&1
-		echo $(date) 'Create genome reference file'
+		echo $(date) 'Creating genome reference files'
 		create_ref >> $log 2>&1
 		reduce_annotation_gtf >> $log 2>&1
 		create_ref_annotation >> $log 2>&1
-		echo $(date) 'Mapping reads to exonic regions'
+		echo $(date) 'Mapping of the reads to the exonic regions'
 		dropSEQ >> $log 2>&1
-		echo $(date) 'Detecting and repairing substitution errors in cell barcodes'
+		echo $(date) 'Detecting and repairing substitution errors in the cell barcodes'
 		final_exon >> $log 2>&1
-		echo $(date) 'Detecting and repairing barcode index synthesis errors'
+		echo $(date) 'Detecting and repairing barcode indexes synthesis errors'
 		completed_bam >> $log 2>&1
-		echo $(date) 'Generating a number of intervals'
+		echo $(date) 'Generating of the intervals'
 		rna_intervals >> $log 2>&1
 		echo $(date) 'Creating list of count'
 		umi_expression >> $log 2>&1
-		echo $(date) 'Createing metrics of genes parts content'
+		echo $(date) 'Creating metrics of the genetics parts content'
 		scRNAmetrics >> $log 2>&1
 		metric_plot >> $log 2>&1
-		echo $(date) 'Creating matrix of count'
+		echo $(date) 'Creating matrix of counts'
 		convert_mtx_umi >> $log 2>&1
 		echo $(date) 'Counts analysis and creating report'
 		seurat >> $log 2>&1
 		echo ''
-		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
+		echo 'Process completed. Check '$project_name_mode" for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 		echo ''
 		
 elif
@@ -125,28 +124,28 @@ then
 		echo ''
 		echo 'Process start...'
 		echo ''
-		echo $(date) 'Trimming adapters and Quality Controle of Reads'
+		echo $(date) 'Trimming of the adapters and quality control of the reads'
 		directory >> $log 2>&1
 		TRIMMING >> $log 2>&1
-		echo $(date) 'Start mapping pocess'
+		echo $(date) 'Starting of the mapping process'
 		STAR_MAPPING >> $log 2>&1
-		echo $(date) 'Create whitelist'
+		echo $(date) 'Creating the whitelist'
 		whitelist >> $log 2>&1
-		echo $(date) 'UMI and barcode extraction'
+		echo $(date) 'UMIs and barcodes extraction'
 		umi_extract >> $log 2>&1
 		merge_reads >> $log 2>&1
 	    barcodes >> $log 2>&1
-		echo $(date) 'Create genome reference file'
+		echo $(date) 'Creating genome reference files'
 		create_ref >> $log 2>&1
 		reduce_annotation_gtf >> $log 2>&1
 		create_ref_annotation >> $log 2>&1
-		echo $(date) 'Mapping reads to exonic regions'
+		echo $(date) 'Mapping of the reads to the exonic regions'
 		dropSEQ >> $log 2>&1
-		echo $(date) 'Detecting and repairing substitution errors in cell barcodes'
+		echo $(date) 'Detecting and repairing substitution errors in the cell barcodes'
 		final_exon >> $log 2>&1
-		echo $(date) 'Detecting and repairing barcode index synthesis errors'
+		echo $(date) 'Detecting and repairing barcode indexes synthesis errors'
 		completed_bam >> $log 2>&1
-		echo $(date) 'Generating a number of intervals'
+		echo $(date) 'Generating of the intervals'
 		rna_intervals >> $log 2>&1
 		echo $(date) 'Dividing combined scingle cell data to mice and human experiments analysis'
 		filtr_mice >> $log 2>&1
@@ -154,21 +153,21 @@ then
 		echo $(date) 'Creating list of count'
 		umi_expression_mice >> $log 2>&1
 		umi_expression_human >> $log 2>&1
-		echo $(date) 'Createing metrics of genes parts content'
+		echo $(date) 'Creating metrics of the genetics parts content'
 		scRNAmetrics_mice >> $log 2>&1
 		scRNAmetrics_human >> $log 2>&1
 		metric_plot_mice >> $log 2>&1
 		metric_plot_human >> $log 2>&1
-		echo $(date) 'Creating matrix of count'
+		echo $(date) 'Creating matrix of counts'
 		convert_mtx_umi_mice >> $log 2>&1
 		convert_mtx_umi_human >> $log 2>&1
-		echo $(date) 'Counts analysis and creating REPORT'		
+		echo $(date) 'Counts analysis and creating report'		
 		seurat_mix >> $log 2>&1
 		echo ''
-		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
+		echo 'Process completed. Check '$project_name_mode" for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 		echo ''
 		
-elif	[[ $species  == 'human' && $d  == *'_seurat'* ]] || [[ $species  == 'mice' && $d  == *'_seurat'* ]] || [[ $species  == 'mix' && $d  == *'_seurat'* ]]
+elif	[[ $species  == 'human' && $d  == *'_exp'* ]] || [[ $species  == 'mice' && $d  == *'_exp'* ]] || [[ $species  == 'mix' && $d  == *'_exp'* ]]
 then
 
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
@@ -178,13 +177,13 @@ then
 		echo ''
 		echo 'Process start...'
 		echo ''
-		echo $(date) 'Counts analysis and creating REPORT'	
+		echo $(date) 'Counts / expression analysis and creating report'	
 		seurat_start >> $log 2>&1
-		echo 'Process completed. Check '$project_name_mode" for results (REPORT). If you don't see REPORT file, so check process.log file for some errors"
+		echo 'Process completed. Check '$project_name_mode" for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 		echo ''
 else
         echo ''
-		echo 'Experiment failed - check all data from project'
+		echo 'Experiment failed - check all the data from project'
 		echo ''
 		start
 fi

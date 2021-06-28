@@ -321,7 +321,7 @@ python3 $SCRIPTS_EXTRACT/convert_mtx_umi.py $path_convert $path_tmp_mtx
 function seurat {
 
 PATH_PROJECT=$(pwd)/projects/$project_name_mode
-MARKERS=$(pwd)/requirements_file/markers.xlsx
+MARKERS=$marker_path
 data=3
 
 SCRIPTS_EXTRACT=$(pwd)/scripts

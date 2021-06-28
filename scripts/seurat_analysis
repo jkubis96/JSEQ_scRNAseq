@@ -1,10 +1,10 @@
 #!/bin/bash
 
 function seurat_start {
-echo $(date) 'Start seurat analysis'
+echo $(date) 'Start counts / expression analysis'
 
 PATH_PROJECT=$(pwd)/projects/$project_name_mode
-MARKERS=$(pwd)/requirements_file/markers.xlsx
+MARKERS=$marker_path
 
 SCRIPTS_EXTRACT=$(pwd)/scripts
 Rscript $SCRIPTS_EXTRACT/seurat_cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell

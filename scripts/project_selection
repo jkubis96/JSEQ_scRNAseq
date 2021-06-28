@@ -2,7 +2,7 @@
 
 function select_analysis {
 
-echo 'Analyse data for FastQ project [1]  Seurat project [2]:'
+echo 'Analysis of data for fastq analysis project [1]  counts / expression analysis project [2]:'
 read p 
 p=$(echo $p | tr '[:upper:]' '[:lower:]')
 
@@ -26,7 +26,7 @@ fi
 
 function select_project_seurat {
 
-INFASTP=$(pwd)/projects/*'seurat'*
+INFASTP=$(pwd)/projects/*'exp'*
 
 select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
 cd $d
@@ -36,6 +36,7 @@ project_name_mode=$project_name_mode
 READS_LENGHT=$READS_LENGHT 
 species=$species 
 cell=$cell
+marker_path=$marker_path
 
 cd ..
 
@@ -56,6 +57,7 @@ project_name_mode=$project_name_mode
 READS_LENGHT=$READS_LENGHT 
 species=$species 
 cell=$cell
+marker_path=$marker_path
 
 cd ..
 
