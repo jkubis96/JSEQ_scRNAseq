@@ -303,7 +303,7 @@ UMI <- FindNeighbors(UMI, dims = 1:dim, k.param = 49, reduction = 'pca')
 UMI <- FindClusters(UMI, resolution = 0.5, n.start = 10, n.iter = 1000)
 
 
-UMI <- RunUMAP(UMI, dims = 1:dim, n.neighbors = 49)
+UMI <- RunUMAP(UMI, dims = 1:dim, n.neighbors = 49, umap.method = "umap-learn")
 
 
 jpeg(file.path(OUTPUT, "UMAP.jpeg") , units="in", width=10, height=7, res=600)

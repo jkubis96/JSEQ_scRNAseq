@@ -22,6 +22,7 @@ $permission_sudo apt -y install python3-pip
  pip3 install pysam==0.16.0.1
  pip3 install biopython==1.78
  pip3 install umi_tools==1.0.1
+ pip3 install umap-learn==0.5.1
 }
 
 
@@ -34,14 +35,14 @@ $permission_sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3
 $permission_sudo add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
 $permission_sudo apt-get update
 $permission_sudo apt-get -y install r-base=3.6.3-2
-$permission_sudo apt-get -y install curl=7.68.0-1ubuntu2.4
-$permission_sudo apt-get -y install openssl=1.1.1f-1ubuntu2.1
-$permission_sudo apt-get -y install libcurl4-openssl-dev=7.68.0-1ubuntu2.4
-$permission_sudo apt-get -y install libhdf5-dev=1.10.4+repack-11ubuntu1
+$permission_sudo apt-get -y install curl
+$permission_sudo apt-get -y install openssl
+$permission_sudo apt-get -y install libcurl4-openssl-dev
+$permission_sudo apt-get -y install libhdf5-dev
 $permission_sudo apt-get -y install libhdf5-serial-dev
-$permission_sudo apt-get -y install h5utils=1.13.1-3build1
-$permission_sudo apt-get -y install hdf5-tools=1.10.4+repack-11ubuntu1
-$permission_sudo apt-get -y install hdf5-helpers=1.10.4+repack-11ubuntu1
+$permission_sudo apt-get -y install h5utils
+$permission_sudo apt-get -y install hdf5-tools
+$permission_sudo apt-get -y install hdf5-helpers
 $permission_sudo apt-get -y install r-cran-httr=1.4.1-1ubuntu1
 $permission_sudo apt-get -y install r-cran-leiden=0.3.3+dfsg-1
 $permission_sudo apt-get -y install r-cran-igraph=1.2.4.2-2build1
@@ -52,6 +53,7 @@ $permission_sudo apt-get -y install r-cran-tidyverse=1.3.0-1
 $permission_sudo apt-get -y install r-cran-doparallel=1.0.15-1
 $permission_sudo apt-get -y install r-cran-dosnow=1.0.18-1
 $permission_sudo apt-get -y install r-cran-stringr=1.4.0-1
+$permission_sudo apt-get -y install r-cran-seurat
 
 
 $permission_sudo apt-get update
@@ -100,7 +102,7 @@ function fastp {
 git clone https://github.com/OpenGene/fastp.git
 
 cd fastp
-make
+make fastp
 $permission_sudo apt -y install fastp
 cd ..
 }

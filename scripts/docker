@@ -1,28 +1,14 @@
 #!/bin/bash
 
 echo ''
-
-echo 'Welcome in the JSEQ® scRNAseq pipeline which was prepared at Institute of Bioorganic Chemistry, Polish Academy of Sciences in Poznań'
-
-echo 'All information and references you can check in the file JSEQ manual on my GitHub'
-
-echo 'Contact: jkubis@ibch.poznan.pl or jakub.kubis1996@gmail.com'
+echo 'Docker container'
 
 echo ''
 echo ''
 
-echo 'Choose JSEQ working directory location:'
-echo 'Local [local]'
-echo 'Docker container [docker]'
-echo ''
-	
+function start_docker {
 
-
-function start {
-
-echo ''
 echo 'Choose JSEQ function:'
-echo '-local installation [install]'
 echo '-download RefGenome (GENCODE) [genome]'
 echo '-creat new project [project]'
 echo '-start analysis [analysis]'
@@ -32,35 +18,8 @@ echo ''
 	read s
 	s=$(echo $s | tr '[:upper:]' '[:lower:]')
 
-if [[ $s == 'install' ]]
-then
-		log_install=$(pwd)/setup/install.log.out
 
-        source=$(pwd)/setup/setup
-        cd $(pwd)/setup
-        source $source
-		permission 
-		echo $(date) 'Python installing and libraries...'
-		python >> $log_install 2>&1
-		echo $(date) 'R installing and libraries...'
-		r_base >> $log_install 2>&1
-		echo $(date) 'JAVA installing...'
-		java >> $log_install 2>&1
-		echo $(date) 'SAMtools installing...'
-		SAMtools >> $log_install 2>&1
-		echo $(date) 'fastp installing and libraries...'
-		fastp >> $log_install 2>&1
-		echo $(date) 'dropSEQtools installing...'
-		DropSeq >> $log_install 2>&1
-		echo $(date) 'picard installing...'
-		picard >> $log_install 2>&1
-        cd ..
-		echo ''
-		echo "Installing completed. Before run the JSEQ check the install.log file in setup directory for some errors."
-		echo $"If you have trouble with installing any parts of the pipeline, you can try install missing files or libraries manually [instruction in JSEQ manual] or contact us"
-		echo ''
-		
-elif [[ $s == 'genome' ]]
+if [[ $s == 'genome' ]]
 then
         source=$(pwd)/scripts/genome_indexing
 		source $source
@@ -71,7 +30,6 @@ then
         source=$(pwd)/scripts/projects
 		source $source
 		PROJECT
-		
 		
 elif [[ $s == 'analysis' ]]
 then
@@ -195,73 +153,17 @@ else
         echo ''
 		echo 'Experiment failed - check all the data from project'
 		echo ''
-		start
+		start_docker
 fi
 }
 
 experiment_selection
 
 else
-        start
+        start_docker
 fi
 
 
 }
 
-function container {
-
-echo ''
-echo 'Choose function:'
-echo '-docker container installation [install]'
-echo '-start container [start]'
-echo ''
-		read con
-		con=$(echo $con | tr '[:upper:]' '[:lower:]')
-
-if [[ $con == 'install' ]]
-then
-
-	docker build -t jseq -f Dockerfile .
-	id=$(docker images --format "{{.ID}}" jseq)
-	echo $id
-	echo id=$id > $(pwd)/setup/docker_id
-	docker run -it --rm -v $(pwd):/app $id
-		
-elif [[ $con == 'start' ]]
-then
-
-    source $(pwd)/setup/docker_id
-	id=$id
-	docker run -it --rm -v $(pwd):/app $id
-	
-	
-else 
-		container
-fi
-
-}
-
-function repo {
-
-echo ''
-		read l
-		l=$(echo $l | tr '[:upper:]' '[:lower:]')
-
-
-if [[ $l == 'local' ]]
-then
-
-start
-		
-elif [[ $l == 'docker' ]]
-then
-        container
-else 
-		repo
-fi
-
-}
-
-repo
-
-
+start_docker
