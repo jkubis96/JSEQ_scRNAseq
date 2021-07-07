@@ -12,7 +12,7 @@ RUN sudo apt-get install -y git
 RUN git clone https://github.com/Qubix96/JSEQ_scRNAseq.git
 
 RUN sudo apt-get update
-
+RUN sudo apt-get update
 
 
 RUN sudo apt -y install python3.8
@@ -48,6 +48,7 @@ RUN sudo apt-get -y install r-cran-doparallel=1.0.15-1
 RUN sudo apt-get -y install r-cran-dosnow=1.0.18-1
 RUN sudo apt-get -y install r-cran-stringr=1.4.0-1
 RUN sudo apt-get -y install r-cran-seurat
+RUN sudo apt-get install r-cran-biocmanager
 
 
 RUN sudo apt-get update

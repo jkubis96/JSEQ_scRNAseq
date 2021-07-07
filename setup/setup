@@ -54,6 +54,7 @@ $permission_sudo apt-get -y install r-cran-doparallel=1.0.15-1
 $permission_sudo apt-get -y install r-cran-dosnow=1.0.18-1
 $permission_sudo apt-get -y install r-cran-stringr=1.4.0-1
 $permission_sudo apt-get -y install r-cran-seurat
+$permission_sudo apt-get install r-cran-biocmanager
 
 
 $permission_sudo apt-get update
