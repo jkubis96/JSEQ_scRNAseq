@@ -152,8 +152,7 @@ echo 'Index' $READS_LENGHT 'for' $species 'already exist'
 echo 'You can run analysis'
 echo ''
 
-jseq=$(pwd)/JSEQ
-source jseq
+
 start
 
 fi
