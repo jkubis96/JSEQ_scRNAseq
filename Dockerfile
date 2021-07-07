@@ -98,9 +98,8 @@ RUN cd JSEQ_scRNAseq/setup/picard \
 RUN sudo apt-get update -y
 
 
-RUN chmod -rwx JSEQ_scRNAseq/JSEQ
-RUN cd JSEQ_scRNAseq/scripts & 
-	CMD ./docker
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/docker
+CMD $(pwd)/JSEQ_scRNAseq/scripts/docker
 
 
 

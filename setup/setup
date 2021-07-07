@@ -59,7 +59,7 @@ $permission_sudo apt-get -y install r-cran-seurat
 $permission_sudo apt-get update
 
 
-r_req=$(pwd)/setup
+r_req=$(pwd)
 $permission_sudo -i Rscript $r_req/r_req.R 
 
 }

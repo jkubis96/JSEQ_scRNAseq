@@ -225,14 +225,14 @@ then
 	id=$(docker images --format "{{.ID}}" jseq)
 	echo $id
 	echo id=$id > $(pwd)/setup/docker_id
-	docker run -it --rm -v $(pwd):/app $id
+	docker run -it -v $(pwd):/app/JSEQ_scRNAseq $id
 		
 elif [[ $con == 'start' ]]
 then
 
     source $(pwd)/setup/docker_id
 	id=$id
-	docker run -it --rm -v $(pwd):/app $id
+	docker run -it --rm -v $(pwd):/app/JSEQ_scRNAseq $id
 	
 	
 else 

@@ -21,28 +21,28 @@ echo ''
 
 if [[ $s == 'genome' ]]
 then
-        source=$(pwd)/scripts/genome_indexing
+        source=app/scripts/genome_indexing
 		source $source
 		GENOME
 		
 elif [[ $s == 'project' ]]
 then
-        source=$(pwd)/scripts/projects
+        source=app/scripts/projects
 		source $source
 		PROJECT
 		
 elif [[ $s == 'analysis' ]]
 then
-		source=$(pwd)/scripts
+		source=app/scripts
 		source $source/project_selection
 		select_analysis
 		
 		function experiment_selection {
 		if [[ $d  == *'fq'* && $species  == 'human' ]] || [[ $d  == *'fq'* && $species  == 'mice' ]];
 then
-		log=$(pwd)/projects/$project_name_mode/results/process.log.out
+		log=app/projects/$project_name_mode/results/process.log.out
 		
-        source=$(pwd)/scripts
+        source=app/scripts
 		source $source/analysis_species
 		echo ''
 		echo 'Process start...'
@@ -85,9 +85,9 @@ then
 elif
 		[[ $d  == *'_fq'* ]] && [[ $species  == 'mix' ]];
 then
-		log=$(pwd)/projects/$project_name_mode/results/process.log.out
+		log=app/projects/$project_name_mode/results/process.log.out
 		
-        source=$(pwd)/scripts
+        source=app/scripts
 		source $source/analysis_mix
 		echo ''
 		echo 'Process start...'
@@ -138,9 +138,9 @@ then
 elif	[[ $species  == 'human' && $d  == *'_exp'* ]] || [[ $species  == 'mice' && $d  == *'_exp'* ]] || [[ $species  == 'mix' && $d  == *'_exp'* ]]
 then
 
-		log=$(pwd)/projects/$project_name_mode/results/process.log.out
+		log=app/projects/$project_name_mode/results/process.log.out
 		
-		source=$(pwd)/scripts
+		source=app/scripts
 		source $source/seurat_analysis
 		echo ''
 		echo 'Process start...'
