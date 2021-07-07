@@ -109,21 +109,22 @@ RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/merge_genome.py
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/merge_reads.py
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/project_selection
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/projects
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_mix.R
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_species.R
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_mix.Rmd
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_species.Rmd
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/rna_metrics.R
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_analysis
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_cluster_mix.R
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_cluster_speciesR
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_cluster_species.R
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/rna_metrics.R
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/umi_extract
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/umi_extract.py
 
 RUN mkdir $(pwd)/JSEQ_scRNAseq/projects
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/projects
 RUN mkdir $(pwd)/JSEQ_scRNAseq/results
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/results
 
-CMD $(pwd)/JSEQ_scRNAseq/scripts/docker
+WORKDIR /app/JSEQ_scRNAseq
+CMD $(pwd)/scripts/docker
 
 
 

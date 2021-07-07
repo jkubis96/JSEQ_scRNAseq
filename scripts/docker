@@ -6,7 +6,7 @@ echo 'Docker container'
 echo ''
 echo ''
 
-function start_docker {
+function start {
 
 echo 'Choose JSEQ function:'
 echo '-download RefGenome (GENCODE) [genome]'
@@ -153,17 +153,17 @@ else
         echo ''
 		echo 'Experiment failed - check all the data from project'
 		echo ''
-		start_docker
+		start
 fi
 }
 
 experiment_selection
 
 else
-        start_docker
+        start
 fi
 
 
 }
 
-start_docker
+start
