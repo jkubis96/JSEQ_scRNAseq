@@ -2,7 +2,7 @@
 FROM ubuntu:latest
 
 WORKDIR /app
-
+RUN apt-get update
 RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
@@ -92,13 +92,37 @@ RUN cd JSEQ_scRNAseq/setup \
 RUN cd JSEQ_scRNAseq/setup/picard \
 	&& sudo chmod +x gradlew \
 	&& ./gradlew shadowJar
+
 	
 
 
 RUN sudo apt-get update -y
 
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/analysis_mix
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/analysis_species
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/barcodes_aligment.py
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/convert_mtx_umi.py
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/converter.R
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/functions.R
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/genome_indexing
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/merge_genome.py
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/merge_reads.py
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/project_selection
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/projects
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_mix.R
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_species.R
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/rna_metrics.R
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_analysis
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_cluster_mix.R
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_cluster_speciesR
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/rna_metrics.R
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/umi_extract
 
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/docker
+RUN mkdir $(pwd)/JSEQ_scRNAseq/projects
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/projects
+RUN mkdir $(pwd)/JSEQ_scRNAseq/results
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/results
+
 CMD $(pwd)/JSEQ_scRNAseq/scripts/docker
 
 

@@ -21,36 +21,36 @@ echo ''
 
 if [[ $s == 'genome' ]]
 then
-        source=app/scripts/genome_indexing
+        source=$(pwd)/scripts/genome_indexing
 		source $source
 		GENOME
 		
 elif [[ $s == 'project' ]]
 then
-        source=app/scripts/projects
+        source=$(pwd)/scripts/projects
 		source $source
 		PROJECT
 		
 elif [[ $s == 'analysis' ]]
 then
-		source=app/scripts
+		source=$(pwd)/scripts
 		source $source/project_selection
 		select_analysis
 		
 		function experiment_selection {
 		if [[ $d  == *'fq'* && $species  == 'human' ]] || [[ $d  == *'fq'* && $species  == 'mice' ]];
 then
-		log=app/projects/$project_name_mode/results/process.log.out
+		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
-        source=app/scripts
+        source=$(pwd)/scripts
 		source $source/analysis_species
 		echo ''
 		echo 'Process start...'
 		echo ''
 		echo $(date) 'Trimming of the adapters and quality control of the reads'
 		TRIMMING > $log 2>&1
-		echo $(date) 'Starting of the mapping process'
-		STAR_MAPPING >> $log 2>&1
+		echo $(date) 'Starting of the m$(pwd)ing process'
+		STAR_M$(pwd)ING >> $log 2>&1
 		echo $(date) 'Creating the whitelist'
 		whitelist >> $log 2>&1
 		echo $(date) 'UMIs and barcodes extraction'
@@ -61,7 +61,7 @@ then
 		create_ref >> $log 2>&1
 		reduce_annotation_gtf >> $log 2>&1
 		create_ref_annotation >> $log 2>&1
-		echo $(date) 'Mapping of the reads to the exonic regions'
+		echo $(date) 'M$(pwd)ing of the reads to the exonic regions'
 		dropSEQ >> $log 2>&1
 		echo $(date) 'Detecting and repairing substitution errors in the cell barcodes'
 		final_exon >> $log 2>&1
@@ -85,9 +85,9 @@ then
 elif
 		[[ $d  == *'_fq'* ]] && [[ $species  == 'mix' ]];
 then
-		log=app/projects/$project_name_mode/results/process.log.out
+		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
-        source=app/scripts
+        source=$(pwd)/scripts
 		source $source/analysis_mix
 		echo ''
 		echo 'Process start...'
@@ -95,8 +95,8 @@ then
 		echo $(date) 'Trimming of the adapters and quality control of the reads'
 		directory >> $log 2>&1
 		TRIMMING >> $log 2>&1
-		echo $(date) 'Starting of the mapping process'
-		STAR_MAPPING >> $log 2>&1
+		echo $(date) 'Starting of the m$(pwd)ing process'
+		STAR_M$(pwd)ING >> $log 2>&1
 		echo $(date) 'Creating the whitelist'
 		whitelist >> $log 2>&1
 		echo $(date) 'UMIs and barcodes extraction'
@@ -107,7 +107,7 @@ then
 		create_ref >> $log 2>&1
 		reduce_annotation_gtf >> $log 2>&1
 		create_ref_annotation >> $log 2>&1
-		echo $(date) 'Mapping of the reads to the exonic regions'
+		echo $(date) 'M$(pwd)ing of the reads to the exonic regions'
 		dropSEQ >> $log 2>&1
 		echo $(date) 'Detecting and repairing substitution errors in the cell barcodes'
 		final_exon >> $log 2>&1
@@ -138,9 +138,9 @@ then
 elif	[[ $species  == 'human' && $d  == *'_exp'* ]] || [[ $species  == 'mice' && $d  == *'_exp'* ]] || [[ $species  == 'mix' && $d  == *'_exp'* ]]
 then
 
-		log=app/projects/$project_name_mode/results/process.log.out
+		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
-		source=app/scripts
+		source=$(pwd)/scripts
 		source $source/seurat_analysis
 		echo ''
 		echo 'Process start...'
