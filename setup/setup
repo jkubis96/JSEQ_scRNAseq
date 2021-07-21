@@ -54,7 +54,9 @@ $permission_sudo apt-get -y install r-cran-doparallel=1.0.15-1
 $permission_sudo apt-get -y install r-cran-dosnow=1.0.18-1
 $permission_sudo apt-get -y install r-cran-stringr=1.4.0-1
 $permission_sudo apt-get -y install r-cran-seurat
-$permission_sudo apt-get install r-cran-biocmanager
+$permission_sudo apt-get -y install r-cran-biocmanager
+$permission_sudo apt-get -y install r-cran-plotly
+$permission_sudo apt-get -y install r-cran-gridextra
 
 
 $permission_sudo apt-get update
@@ -114,6 +116,7 @@ function DropSeq {
 
 wget -O DropSeq.zip https://github.com/broadinstitute/Drop-seq/releases/download/v2.4.0/Drop-seq_tools-2.4.0.zip
 unzip DropSeq
+mv Drop-seq_tools-2.4.0 DropSeq
 rm -r DropSeq.zip
 
 }
@@ -123,7 +126,7 @@ rm -r DropSeq.zip
 function picard {
 
 git clone https://github.com/broadinstitute/picard.git
-cd picard/
+cd picard
 ./gradlew shadowJar
 cd ..
 

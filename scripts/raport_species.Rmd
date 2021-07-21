@@ -378,7 +378,7 @@ knitr::include_graphics(file.path(path_results,'cells_type_threshold.jpeg'), dpi
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
 PCA <- DimPlot(UMI, reduction = "pca")
-PCA <- plotly::ggplotly(PCA, height = 500, width=650)
+PCA <- plotly::ggplotly(PCA, height = 800, width=800)
 PCA <- PCA %>% plotly::layout(showlegend = FALSE)
 PCA 
 
@@ -393,8 +393,8 @@ PCA
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
 UMAP <- DimPlot(UMI, reduction = "umap")
-UMAP <- plotly::ggplotly(UMAP, height = 1200, width=650)
-UMAP <- UMAP %>% plotly::layout(legend = list(orientation = "h", x = 0, y = -0.5)) 
+UMAP <- plotly::ggplotly(UMAP, height = 800, width=1400)
+UMAP <- UMAP %>% plotly::layout(legend = list(x = 1.1)) 
 UMAP
 ```
 

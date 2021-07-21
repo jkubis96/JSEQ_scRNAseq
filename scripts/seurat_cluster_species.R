@@ -944,13 +944,14 @@ data$test[data$names %in% below.names] <- "Non-significant < 0.01"
 
 
 
-threshold <- ggplot(data, aes(x = n, y = reorder(names, -n), fill = test, sort = test)) +
+threshold <- ggplot(data, aes(y = n, x = reorder(names, -n), fill = test, sort = test)) +
   geom_bar(stat = 'identity') +
   ylab("Cells types") +
   xlab("Number of cells")+
   theme_bw() +
   theme(plot.margin = unit(c(0.5,0.5,0.5,0.5), "cm")) + 
-  labs(fill = "Cells threshold")
+  labs(fill = "Cells threshold") +
+  coord_flip()
 
 ggsave(threshold, filename = file.path(OUTPUT,'cells_type_threshold.jpeg'), units = 'in', width = 15, height = 10, dpi = 600)
 

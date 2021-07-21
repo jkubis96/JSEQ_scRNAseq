@@ -2,48 +2,61 @@
 
 function TRIMMING {
 
-echo Mapping Start
+echo Trimming Start
 
 
 RESULT=$(pwd)/projects/$project_name_mode/results/
 ADAPTERS=$(pwd)/requirements_file/Adapters.fa
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
 
-
-for i in $INFASTP/*.fastq.gz;
+for d in $INFASTP/*.fastq;
 do
-if       [[ $i == *"R1"* ]];
+if [[ $d != *"_out.fastq"* ]];
 then
-        R1=$i
-	R1_NAME=$(basename $i)
-elif
-        [[ $i == *"R2"* ]];
-then
-        R2=$i
-	R2_NAME=$(basename $i)
-else
-        echo 'Next step =>'
+
+	for i in $INFASTP/*.fastq.gz;
+	do
+	if       [[ $i == *"R1"* ]];
+	then
+			R1=$i
+		R1_NAME=$(basename $i)
+	elif
+			[[ $i == *"R2"* ]];
+	then
+			R2=$i
+		R2_NAME=$(basename $i)
+	else
+			echo 'Not fastq'
+
+	fi
+	done;
+
+	cd $INFASTP
+
+	fastp -i $R1 -I $R2 -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --html $RESULT/QC_RAPORT.html 
+
+	gunzip -k R1_out.fastq.gz
+	gunzip -k R2_out.fastq.gz
+
+	rm $R1 $R2
+
+
+	cd ..
+	cd ..
+	cd ..
+
+else 
+
+	echo 'Trimming was done before'
+	break
 fi
 done;
-
-cd $INFASTP
-
-fastp -i $R1 -I $R2 -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --html $RESULT/QC_RAPORT.html 
-
-gunzip -k R1_out.fastq.gz
-gunzip -k R2_out.fastq.gz
-
-rm $R1 $R2
-
-
-cd ..
-cd ..
-cd ..
 }
 
 
 function STAR_MAPPING {
 
+echo Mapping Start
 
 RESULT=$(pwd)/projects/$project_name_mode/results/
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
@@ -84,6 +97,8 @@ barcode_start=$barcode_start
 barcode_end=$barcode_end
 umi_start=$umi_start
 umi_end=$umi_end
+umi_length=$umi_length
+barcode_length=$barcode_length
 barcode=$barcode
 
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
@@ -112,6 +127,10 @@ cd $(pwd)/projects/$project_name_mode/fast_data
 umi_tools whitelist --stdin $R1_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --plot-prefix=$RESULT/expect_whitelist --log2stderr > $tmp/whitelist.csv ;
 cat $tmp/whitelist.csv | cut -f 1 > $tmp/whitelist_barcodes.csv ;
 
+cell=`cat $tmp/whitelist_barcodes.csv  | wc -l`
+
+echo 'Cells detected - $cell'
+
 cd ..
 cd ..
 cd ..
@@ -129,10 +148,11 @@ python3 $SCRIPTS_EXTRACT/umi_extract.py $project_name_mode
 function merge_reads {
 
 source $(pwd)/requirements_file/barcodes
-barcode_start=$barcode_start
-barcode_end=$barcode_end
-umi_start=$umi_start
-umi_end=$umi_end
+barcode_start=$[$barcode_start-1]
+barcode_end=$[$barcode_end]
+umi_start=$[$umi_start-1]
+umi_end=$[$umi_end]
+
 
 SCRIPTS_EXTRACT=$(pwd)/scripts/
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
@@ -182,7 +202,7 @@ java -jar $SCRIPTS_EXTRACT/picard/build/libs/picard.jar CreateSequenceDictionary
 function reduce_annotation_gtf {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
-java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar ReduceGtf \
+java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar ReduceGtf \
         GTF=$(pwd)/genome/$species/correct_annotation.gtf \
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/reduced_annotation.gtf \
         SEQUENCE_DICTIONARY=$(pwd)/projects/$project_name_mode/tmp/genome.dict \
@@ -194,7 +214,7 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar ReduceGtf \
 function create_ref_annotation {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
-java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar ConvertToRefFlat \
+java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar ConvertToRefFlat \
         ANNOTATIONS_FILE=$(pwd)/genome/$species/correct_annotation.gtf \
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/correct_annotation.refFlat \
         SEQUENCE_DICTIONARY=$(pwd)/projects/$project_name_mode/tmp/genome.dict
@@ -205,7 +225,7 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar ConvertToRefFlat
 function dropSEQ {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
-java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar TagReadWithGeneFunction \
+java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar TagReadWithGeneFunction \
         INPUT=$(pwd)/projects/$project_name_mode/tmp/Map_barcodes.out.bam \
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged.bam \
         ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/correct_annotation.refFlat 
@@ -218,7 +238,7 @@ cpu=$(grep -c ^processor /proc/cpuinfo)
 cpu=$[$cpu-2]
 
 SCRIPTS_EXTRACT=$(pwd)/setup
-java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DetectBeadSubstitutionErrors \
+java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar DetectBeadSubstitutionErrors \
         I=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged.bam \
         O=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged_error.bam \
         OUTPUT_REPORT=$(pwd)/projects/$project_name_mode/tmp/beadSubstitutionReport.txt \
@@ -229,7 +249,9 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DetectBeadSubsti
 
 function completed_bam {
 
-CELL2=$[$cell*2]
+tmp=$(pwd)/projects/$project_name_mode/tmp
+bad=`sed '7q;d' $tmp/beadSubstitutionReport.txt | grep -o '[0-9]*'`
+
 
 cpu=$(grep -c ^processor /proc/cpuinfo)
 cpu=$[$cpu-2]
@@ -238,13 +260,13 @@ source $(pwd)/requirements_file/smart_primer
 smart=$smart
 
 SCRIPTS_EXTRACT=$(pwd)/setup
-java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DetectBeadSynthesisErrors \
+java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar DetectBeadSynthesisErrors \
         INPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged_error.bam \
         OUTPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam \
         OUTPUT_STATS=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats.txt \
         SUMMARY=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats_summary.txt \
-        NUM_BARCODES=$CELL2 \
-        PRIMER_SEQUENCE=$smart \
+        NUM_BARCODES=$bad \
+		PRIMER_SEQUENCE=$smart \
         NUM_THREADS=$cpu
 
 }
@@ -253,7 +275,7 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DetectBeadSynthe
 function rna_intervals {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
-java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar CreateIntervalsFiles \
+java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar CreateIntervalsFiles \
         REDUCED_GTF=$(pwd)/projects/$project_name_mode/tmp/reduced_annotation.gtf \
         SEQUENCE_DICTIONARY=$(pwd)/projects/$project_name_mode/tmp/genome.dict \
         O=$(pwd)/projects/$project_name_mode/tmp/ \
@@ -266,7 +288,7 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar CreateIntervalsF
 function umi_expression {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
-java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DigitalExpression \
+java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar DigitalExpression \
         I=$(pwd)/projects/$project_name_mode/results/Completed.bam \
         O=$(pwd)/projects/$project_name_mode/tmp/umi_expression.tsv \
         EDIT_DISTANCE=1 \
@@ -282,7 +304,7 @@ java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar DigitalExpressio
 function scRNAmetrics {
 
 SCRIPTS_EXTRACT=$(pwd)/setup
-java -jar $SCRIPTS_EXTRACT/Drop-seq_tools-2.4.0/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
+java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
         INPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam\
         OUTPUT=$(pwd)/projects/$project_name_mode/tmp/scRNAmetrics.txt\
         ANNOTATIONS_FILE=$(pwd)/projects/$project_name_mode/tmp/correct_annotation.refFlat \

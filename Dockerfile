@@ -12,7 +12,6 @@ RUN sudo apt-get install -y git
 RUN git clone https://github.com/Qubix96/JSEQ_scRNAseq.git
 
 RUN sudo apt-get update
-RUN sudo apt-get update
 
 
 RUN sudo apt -y install python3.8
@@ -48,8 +47,9 @@ RUN sudo apt-get -y install r-cran-doparallel=1.0.15-1
 RUN sudo apt-get -y install r-cran-dosnow=1.0.18-1
 RUN sudo apt-get -y install r-cran-stringr=1.4.0-1
 RUN sudo apt-get -y install r-cran-seurat
-RUN sudo apt-get install r-cran-biocmanager
-
+RUN sudo apt-get -y install r-cran-biocmanager
+RUN sudo apt-get -y install r-cran-plotly
+RUN sudo apt-get -y install r-cran-gridextra
 
 RUN sudo apt-get update
 
@@ -84,17 +84,18 @@ RUN sudo apt-get update
 RUN cd JSEQ_scRNAseq/setup \
 	&& wget -O DropSeq.zip https://github.com/broadinstitute/Drop-seq/releases/download/v2.4.0/Drop-seq_tools-2.4.0.zip \
 	&& unzip DropSeq \
-	&& rm -r DropSeq.zip
+	&& mv Drop-seq_tools-2.4.0 DropSeq \
+	&& rm -r DropSeq.zip \
+	&& sudo chmod +rwx DropSeq
 
 RUN cd JSEQ_scRNAseq/setup \
 	&& git clone https://github.com/broadinstitute/picard.git
 	
 
 RUN cd JSEQ_scRNAseq/setup/picard \
+	&& sudo chmod +rwx ../picard \
 	&& sudo chmod +x gradlew \
 	&& ./gradlew shadowJar
-
-	
 
 
 RUN sudo apt-get update -y
@@ -123,6 +124,7 @@ RUN mkdir $(pwd)/JSEQ_scRNAseq/projects
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/projects
 RUN mkdir $(pwd)/JSEQ_scRNAseq/results
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/results
+
 
 WORKDIR /app/JSEQ_scRNAseq
 CMD $(pwd)/scripts/docker

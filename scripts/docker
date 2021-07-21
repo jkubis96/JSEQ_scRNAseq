@@ -49,8 +49,8 @@ then
 		echo ''
 		echo $(date) 'Trimming of the adapters and quality control of the reads'
 		TRIMMING > $log 2>&1
-		echo $(date) 'Starting of the m$(pwd)ing process'
-		STAR_M$(pwd)ING >> $log 2>&1
+		echo $(date) 'Starting of the mapping process'
+		STAR_MAPPING >> $log 2>&1
 		echo $(date) 'Creating the whitelist'
 		whitelist >> $log 2>&1
 		echo $(date) 'UMIs and barcodes extraction'
@@ -61,7 +61,7 @@ then
 		create_ref >> $log 2>&1
 		reduce_annotation_gtf >> $log 2>&1
 		create_ref_annotation >> $log 2>&1
-		echo $(date) 'M$(pwd)ing of the reads to the exonic regions'
+		echo $(date) 'Mapping of the reads to the exonic regions'
 		dropSEQ >> $log 2>&1
 		echo $(date) 'Detecting and repairing substitution errors in the cell barcodes'
 		final_exon >> $log 2>&1
@@ -95,8 +95,8 @@ then
 		echo $(date) 'Trimming of the adapters and quality control of the reads'
 		directory >> $log 2>&1
 		TRIMMING >> $log 2>&1
-		echo $(date) 'Starting of the m$(pwd)ing process'
-		STAR_M$(pwd)ING >> $log 2>&1
+		echo $(date) 'Starting of the mapping process'
+		STAR_MAPPING >> $log 2>&1
 		echo $(date) 'Creating the whitelist'
 		whitelist >> $log 2>&1
 		echo $(date) 'UMIs and barcodes extraction'
@@ -107,7 +107,7 @@ then
 		create_ref >> $log 2>&1
 		reduce_annotation_gtf >> $log 2>&1
 		create_ref_annotation >> $log 2>&1
-		echo $(date) 'M$(pwd)ing of the reads to the exonic regions'
+		echo $(date) 'Mapping of the reads to the exonic regions'
 		dropSEQ >> $log 2>&1
 		echo $(date) 'Detecting and repairing substitution errors in the cell barcodes'
 		final_exon >> $log 2>&1

@@ -4,7 +4,7 @@ library(tidyverse)
 library(doSNOW)
 library(foreach)
 library(doParallel)
-
+library(stringr)
 
 args <- commandArgs()
 
@@ -22,6 +22,7 @@ seurat_umi_human <- file.path(path,'human_sc_data/')
 OUTPUT <- file.path(path, 'results')
 project_name <- args[9]
 data <- args[10]
+estimated_cells <- args[11]
 functions <- file.path(getwd(), 'scripts/functions.R')
 source(functions)
 }
@@ -44,6 +45,8 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
   UMI_human <- CreateSeuratObject(counts = UMI_raw_human, project = project_name, min.cells = 1, min.features = 1)
   UMI_human@meta.data$orig.ident <- 'Human'
   
+  UMI_human <- subset(UMI_human, subset = nFeature_RNA > 100)
+  
   cell_input_human <- length(Idents(UMI_human))
   
   rm(UMI_raw_human)
@@ -51,11 +54,13 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
 
 { 
   # Load the raw dataset by UMI
-  UMI_raw_mice <- Read10X(seurat_umi_human, gene.column = 1)
+  UMI_raw_mice <- Read10X(seurat_umi_mice, gene.column = 1)
   
   #Create SeuratObject
   UMI_mice <- CreateSeuratObject(counts = UMI_raw_mice, project = project_name, min.cells = 1, min.features = 1)
   UMI_mice@meta.data$orig.ident <- 'Mouse'
+  
+  UMI_mice <- subset(UMI_mice, subset = nFeature_RNA > 100)
   
   cell_input_mice <- length(Idents(UMI_mice))
   
@@ -64,6 +69,12 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
 
 
 UMI <- merge(x = UMI_human, y = UMI_mice, add.cell.ids = c('Human', 'Mouse'))
+UMI[['MitoPercent']] <- PercentageFeatureSet(UMI, pattern = "^MT-")
+UMI[['RiboPercent']] <- PercentageFeatureSet(UMI, pattern = "^Rps-") + PercentageFeatureSet(UMI, pattern = "^Rpl")
+
+UMI@meta.data <- UMI@meta.data %>% 
+  rename(nCounts = nCount_RNA) %>% 
+  rename(nGenes = nFeature_RNA)
 
 #################################################################
 
@@ -248,7 +259,7 @@ top20 <- head(VariableFeatures(UMI), 20)
 
 plot1 <- VariableFeaturePlot(UMI)
 
-jpeg(file.path(OUTPUT, "variable_genes.jpeg") , units="in", width=10, height=7, res=600)
+jpeg(file.path(OUTPUT, "variable_genes.jpeg") , units="in", width=20, height=7, res=600)
 plot2 <- LabelPoints(plot = plot1, points = top20, repel = TRUE)
 plot2
 dev.off()
@@ -306,10 +317,10 @@ UMI <- FindClusters(UMI, resolution = 0.5, n.start = 10, n.iter = 1000)
 UMI <- RunUMAP(UMI, dims = 1:dim, n.neighbors = 49, umap.method = "umap-learn")
 
 
-jpeg(file.path(OUTPUT, "UMAP.jpeg") , units="in", width=10, height=7, res=600)
-species <- DimPlot(UMI, reduction = "umap", group.by = 'orig.ident')
+jpeg(file.path(OUTPUT, "UMAP.jpeg") , units="in", width=22, height=10, res=600)
+species_plot <- DimPlot(UMI, reduction = "umap", group.by = 'orig.ident')
 clusters_plot <- DimPlot(UMI, reduction = "umap")
-mutual_plot <- species + clusters_plot
+mutual_plot <- species_plot + clusters_plot
 mutual_plot
 dev.off()
 
@@ -979,6 +990,7 @@ new.subnames <- subclass_names[!as.character(subclass_names) %in% as.character(b
 new.subnames <- new.subnames[!as.character(new.subnames) %in% as.character(renamed.subnames)]
 bad.subnames <- subclass_names[as.character(subclass_names) %in% as.character(bad)]
 
+
 #############################################################################################################################
 
 data <- as.data.frame(summary(as.factor(subclass_names), maxsum = length(unique(subclass_names))))
@@ -986,29 +998,27 @@ colnames(data)[1] <- 'n'
 data$names <- rownames(data)
 
 
-num <-head(sort(data$n, decreasing = T), n = 1)*0.01
+num <- head(sort(data$n, decreasing = T), n = 1)*0.01
 
 
 below.names <- data$names[data$n < num]
 
 
 data$test[data$names %in% bad.subnames] <- "Bad marked types"
-data$test[data$names %in% renamed.subnames] <- "Renamed"
 data$test[data$names %in% new.subnames] <- "Good marked types" 
+data$test[data$names %in% renamed.subnames] <- "Renamed"
 data$test[data$names %in% below.names] <- "Non-significant < 0.01"
 
 
 
-
-
-
-threshold <- ggplot(data, aes(x = n, y = reorder(names, -n), fill = test, sort = test)) +
+threshold <- ggplot(data, aes(y = n, x = reorder(names, -n), fill = test, sort = test)) +
   geom_bar(stat = 'identity') +
   ylab("Cells types") +
   xlab("Number of cells")+
   theme_bw() +
   theme(plot.margin = unit(c(0.5,0.5,0.5,0.5), "cm")) + 
-  labs(fill = "Cells threshold")
+  labs(fill = "Cells threshold") +
+  coord_flip()
 
 ggsave(threshold, filename = file.path(OUTPUT,'cells_type_threshold.jpeg'), units = 'in', width = 15, height = 10, dpi = 600)
 
@@ -1022,7 +1032,6 @@ bad.subnames <- unique(as.character(bad.subnames))
 
 UMI_unknow <- subset(UMI, idents = bad.subnames)
 
-
 bad_cells <- as.data.frame(GetAssayData(object = UMI_unknow, slot = 'counts'))
 colnames(bad_cells)[1:length(colnames(bad_cells))] <- 'Unknow'
 
@@ -1032,10 +1041,7 @@ rm(bad_cells)
 
 #####################################################################################################
 
-right.names <- unique(c(subclass_names[subclass_names %in% new.names], subclass_names[subclass_names %in% renamed.subnames]))
-right.names <- right.names[!right.names %in% below.names]
-right.names <- right.names[!right.names %in% bad.subnames]
-right.names <- right.names[right.names %in% Idents(UMI)]
+right.names <- unique(subclass_names[!as.character(subclass_names) %in% as.character(bad.subnames)])
 
 
 UMI <- subset(UMI, idents = right.names)
@@ -1276,7 +1282,7 @@ if (species %in% c('human','mice')) {
   rmarkdown::render(input = file.path(getwd(), 'scripts/raport_species.Rmd'), 
                     output_format = 'html_document', output_dir = OUTPUT, 
                     output_file = 'Raport')
-} else if (species == 'mix') {
+} else if (species %in% 'mix') {
   rmarkdown::render(input = file.path(getwd(), 'scripts/raport_mix.Rmd'), 
                     output_format = 'html_document', output_dir = OUTPUT, 
                     output_file = 'Raport')

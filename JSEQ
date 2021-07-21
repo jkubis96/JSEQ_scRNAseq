@@ -48,6 +48,8 @@ then
 		java >> $log_install 2>&1
 		echo $(date) 'SAMtools installing...'
 		SAMtools >> $log_install 2>&1
+		echo $(date) 'STAR installing...'
+		STAR >> $log_install 2>&1
 		echo $(date) 'fastp installing and libraries...'
 		fastp >> $log_install 2>&1
 		echo $(date) 'dropSEQtools installing...'
@@ -80,7 +82,7 @@ then
 		select_analysis
 		
 		function experiment_selection {
-		if [[ $d  == *'fq'* && $species  == 'human' ]] || [[ $d  == *'fq'* && $species  == 'mice' ]];
+if [[ $d  == *'fq'* && $species  == 'human' ]] || [[ $d  == *'fq'* && $species  == 'mice' ]]
 then
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
@@ -124,8 +126,7 @@ then
 		echo 'Process completed. Check '$project_name_mode" for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 		echo ''
 		
-elif
-		[[ $d  == *'_fq'* ]] && [[ $species  == 'mix' ]];
+elif	[[ $d  == *'_fq'* ]] && [[ $species  == 'mix' ]]
 then
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
@@ -221,18 +222,34 @@ echo ''
 if [[ $con == 'install' ]]
 then
 
+	log_install=$(pwd)/setup/install.log.out
+	
+	cd setup
+	echo $(date) 'Localhost env preparing...'
+	wget -O DropSeq.zip https://github.com/broadinstitute/Drop-seq/releases/download/v2.4.0/Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
+	unzip DropSeq >> $log_install 2>&1
+	mv Drop-seq_tools-2.4.0 DropSeq >> $log_install 2>&1
+	rm -r DropSeq.zip >> $log_install 2>&1
+	git clone https://github.com/broadinstitute/picard.git >> $log_install 2>&1
+	cd picard 
+	./gradlew shadowJar >> $log_install 2>&1
+	
+	cd ..
+	cd ..
+	
+	echo $(date) 'Docker build starting...'
 	docker build -t jseq -f Dockerfile .
 	id=$(docker images --format "{{.ID}}" jseq)
 	echo $id
 	echo id=$id > $(pwd)/setup/docker_id
-	docker run -it -v $(pwd):/app/JSEQ_scRNAseq $id
-		
+	docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq $id
+
 elif [[ $con == 'start' ]]
 then
 
     source $(pwd)/setup/docker_id
 	id=$id
-	docker run -it --rm -v $(pwd):/app/JSEQ_scRNAseq $id
+	docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq $id
 	
 	
 else 

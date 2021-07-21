@@ -22,10 +22,10 @@ save = pysam.set_verbosity(0)
 
 
 barcodes_struct = {
-	'BC_start':barcode_start,
-	'BC_end':barcode_end,
-	'UMI_start':umi_start,
-	'UMI_end':umi_end
+	'BC_start':int(barcode_start),
+	'BC_end':int(barcode_end),
+	'UMI_start':int(umi_start),
+	'UMI_end':int(umi_end)
 	}
 
 def parse_barcodes(fastq_parser, query_name, read_barcodes, barcodes_struct):
