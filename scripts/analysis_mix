@@ -442,4 +442,7 @@ data=3
 SCRIPTS_EXTRACT=$(pwd)/scripts
 Rscript $SCRIPTS_EXTRACT/seurat_cluster_mix.R $PATH_PROJECT $MARKERS $species $project_name $data $cell
 
+cp $SCRIPTS_EXTRACT/manual_mix.R $PATH_PROJECT/results
+mv $PATH_PROJECT/results/manual_mix.R $PATH_PROJECT/results/manual_analysis.R 
+
 }
