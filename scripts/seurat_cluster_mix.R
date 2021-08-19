@@ -317,9 +317,11 @@ UMI <- FindClusters(UMI, resolution = 0.5, n.start = 10, n.iter = 1000)
 UMI <- RunUMAP(UMI, dims = 1:dim, n.neighbors = 49, umap.method = "umap-learn")
 
 
-jpeg(file.path(OUTPUT, "UMAP.jpeg") , units="in", width=22, height=10, res=600)
-species_plot <- DimPlot(UMI, reduction = "umap", group.by = 'orig.ident')
-clusters_plot <- DimPlot(UMI, reduction = "umap")
+width <- 15 + (length(unique(Idents(UMI))))/7
+
+jpeg(file.path(OUTPUT, "UMAP.jpeg") , units="in", width = width, height = 15, res=600)
+species_plot <- DimPlot(UMI, reduction = "umap", group.by = 'orig.ident', raster = FALSE)
+clusters_plot <- DimPlot(UMI, reduction = "umap", raster = FALSE)
 mutual_plot <- species_plot + clusters_plot
 mutual_plot
 dev.off()
@@ -730,13 +732,15 @@ Tmp_idents_species <- paste(part_name_1, part_name_2)
 Idents(UMI) <- Tmp_idents_species
 
 
-jpeg(file.path(OUTPUT, "PCA_DimPlot_class.jpeg") , units="in", width=10, height=7, res=600)
-DimPlot(UMI, reduction = "pca")
+width <- 20 + (length(unique(Idents(UMI))))/5
+
+jpeg(file.path(OUTPUT, "PCA_DimPlot_class.jpeg") , units="in", width = width, height = 15, res=600)
+DimPlot(UMI, reduction = "pca", raster = FALSE)
 dev.off()
 
 
-jpeg(file.path(OUTPUT, "UMAP_with_DE_gene_class.jpeg") , units="in", width=10, height=7, res=600)
-DimPlot(UMI, reduction = "umap") 
+jpeg(file.path(OUTPUT, "UMAP_with_DE_gene_class.jpeg") , units="in", width = width, height = 15, res=600)
+DimPlot(UMI, reduction = "umap", raster = FALSE) 
 dev.off()
 
 Idents(UMI) <- Tmp_idents
@@ -1020,8 +1024,9 @@ threshold <- ggplot(data, aes(y = n, x = reorder(names, -n), fill = test, sort =
   labs(fill = "Cells threshold") +
   coord_flip()
 
-ggsave(threshold, filename = file.path(OUTPUT,'cells_type_threshold.jpeg'), units = 'in', width = 15, height = 10, dpi = 600)
+height <- 10 + (length(unique(Idents(UMI))))/5
 
+ggsave(threshold, filename = file.path(OUTPUT,'cells_type_threshold.jpeg'), units = 'in', width = 15, height = height, dpi = 600, limitsize = FALSE)
 
 
 #save bad cells
@@ -1051,12 +1056,14 @@ print('DONE')
 
 #########################################################################################################################################################################################
 
-jpeg(file.path(OUTPUT, "PCA_DimPlot_subtypes.jpeg") , units="in", width=10, height=7, res=600)
-DimPlot(UMI, reduction = "pca")
+width <- 20 + (length(unique(Idents(UMI))))/5
+
+jpeg(file.path(OUTPUT, "PCA_DimPlot_subtypes.jpeg") , units="in", width = width, height = 15, res=600)
+DimPlot(UMI, reduction = "pca", raster = FALSE)
 dev.off()
 
-jpeg(file.path(OUTPUT, "UMAP_with_DE_gene_subtypes.jpeg") , units="in", width=10, height=7, res=600)
-DimPlot(UMI, reduction = "umap") 
+jpeg(file.path(OUTPUT, "UMAP_with_DE_gene_subtypes.jpeg") , units="in", width = width, height = 15, res=600)
+DimPlot(UMI, reduction = "umap", raster = FALSE) 
 dev.off()
 
 
@@ -1123,13 +1130,15 @@ if (round(length(colnames(UMI))) < 14999){
 }
 ###############################################################################################################
 
+width <- 25 + (length(unique(Idents(UMI))))/5
+height <- 20 + (length(unique(Idents(UMI))))/5
 
 cells <- ggplot(exp_stat, mapping = aes(x = mean_expression, y = positive_expression_perc, fill = names)) +
   geom_boxplot() +
   facet_wrap(names~.) +
   theme(legend.position = 'none')
 
-ggsave(cells, filename = file.path(OUTPUT,'box_matrix.jpeg'), units = 'in', width = 20, height = 15, dpi = 600)
+ggsave(cells, filename = file.path(OUTPUT,'box_matrix.jpeg'), units = 'in', width = width, height = height, dpi = 600, limitsize = FALSE)
 
 ################################################################################################################
 
@@ -1265,9 +1274,12 @@ if (length(markers_subclass) == 0) {
 }
 
 
+width <- 30 + (length(unique(Idents(UMI))))/5
+height <- 25 + (length(unique(Idents(UMI))))/5
+
 average_expression <- average_expression[marker_list,]
 average_expression <- drop_na(average_expression)
-jpeg(file.path(OUTPUT, "pheatmap_cells_populations.jpeg"),units="in", width = 35, height = 30,  res=600)
+jpeg(file.path(OUTPUT, "pheatmap_cells_populations.jpeg"),units="in", width = width, height = height ,  res=600)
 pheatmap::pheatmap(average_expression, 
                    clustering_method = 'ward.D',
                    angle_col = 270, fontsize_row = 20, fontsize_col = 20)
