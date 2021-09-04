@@ -16,8 +16,8 @@
 
 <div align="justify"> Mechanisms of brain development, diseases, and function are strictly related to dynamically changing cellular composition resulting from nerve cell proliferation, differentiation, and programmed death. Single-cell transcriptomes' resolution brings new and exact insights on cellular gene expressions, activated promoters, diseased populations in the brain, sequence of developmental events, regional structure, and cellular architecture. One of the approaches in single-cell is DropSeq technology, based on encapsulation (Fig.1A) single-cell with single beads including barcode and UMI sequences. The barcode sequence is specific to every single cell (beads), and UMI is specific to the single copy of mRNA (count) in every single cell. </div>
 
-<p align="right">
-<img  src="https://github.com/Qubix96/JSEQ_scRNAseq/blob/main/setup/fig/sc.png?raw=true" alt="drawing" width="250" />
+<p align="center">
+<img  src="https://github.com/Qubix96/JSEQ_scRNAseq/blob/main/setup/fig/sc.png?raw=true" alt="drawing" width="600" />
 </p>
 
 ##### Figure 1 Single-cell sequencing in DropSeq technology A) libraries preparing  B) sequencing and analysis  [Created in BioRender]
