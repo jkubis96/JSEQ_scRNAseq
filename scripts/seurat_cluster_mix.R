@@ -1138,7 +1138,7 @@ cells <- ggplot(exp_stat, mapping = aes(x = mean_expression, y = positive_expres
   facet_wrap(names~.) +
   theme(legend.position = 'none')
 
-ggsave(cells, filename = file.path(OUTPUT,'box_matrix.jpeg'), units = 'in', width = width, height = height, dpi = 600, limitsize = FALSE)
+ggsave(cells, filename = file.path(OUTPUT,'box_matrix.jpeg'), units = 'in', width = width, height = height, dpi = 300, limitsize = FALSE)
 
 ################################################################################################################
 
@@ -1279,7 +1279,7 @@ height <- 25 + (length(unique(Idents(UMI))))/5
 
 average_expression <- average_expression[marker_list,]
 average_expression <- drop_na(average_expression)
-jpeg(file.path(OUTPUT, "pheatmap_cells_populations.jpeg"),units="in", width = width, height = height ,  res=600)
+jpeg(file.path(OUTPUT, "pheatmap_cells_populations.jpeg"),units="in", width = width, height = height ,  res=300)
 pheatmap::pheatmap(average_expression, 
                    clustering_method = 'ward.D',
                    angle_col = 270, fontsize_row = 20, fontsize_col = 20)

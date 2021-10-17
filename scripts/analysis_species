@@ -33,7 +33,7 @@ then
 
 	cd $INFASTP
 
-	fastp -i $R1 -I $R2 -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --html $RESULT/QC_RAPORT.html 
+	fastp -i $R1_NAME -I $R2_NAME -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --length_required 20 --html $RESULT/QC_RAPORT.html 
 
 	gunzip -k R1_out.fastq.gz
 	gunzip -k R2_out.fastq.gz
@@ -129,7 +129,7 @@ cat $tmp/whitelist.csv | cut -f 1 > $tmp/whitelist_barcodes.csv ;
 
 cell=`cat $tmp/whitelist_barcodes.csv  | wc -l`
 
-echo 'Cells detected - $cell'
+echo 'Cells detected - ' $cell
 
 cd ..
 cd ..
