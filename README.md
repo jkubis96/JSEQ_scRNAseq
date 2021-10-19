@@ -1,7 +1,7 @@
 ## JSEQ® - single cell sequencing analysis tools
 
 <p align="right">
-<img  src="https://github.com/Qubix96/JSEQ_scRNAseq/blob/main/setup/fig/logo_jbs.PNG?raw=true" alt="drawing" width="250" />
+<img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/logo_jbs.PNG?raw=true" alt="drawing" width="250" />
 </p>
 
 #### Authors: Jakub Kubiś & Maciej Figiel
@@ -19,7 +19,7 @@
 <br />
 
 <p align="center">
-<img  src="https://github.com/Qubix96/JSEQ_scRNAseq/blob/main/setup/fig/sc.png?raw=true" alt="drawing" width="600" />
+<img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/sc.png?raw=true" alt="drawing" width="600" />
 </p>
 
 ##### Figure 1 Single-cell sequencing in DropSeq technology A) libraries preparing  B) sequencing and analysis  [Created in BioRender]
@@ -32,7 +32,7 @@
 ### Pipeline pathway
 
 <p align="center">
-<img  src="https://github.com/Qubix96/JSEQ_scRNAseq/blob/main/setup/fig/pipeline.png?raw=true" alt="drawing" width="600" />
+<img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/pipeline.png?raw=true" alt="drawing" width="600" />
 </p>
 
 ##### The JSEQ® pipeline was prepared and tested on AMD Ryzen Threadripper 24-Core, RAM 256GB, Ubuntu 20.04 LTS. For more information, I invite you to familiarize yourself with the manual JSEQ.
