@@ -22,6 +22,7 @@ $permission_sudo apt -y install python3-pip
  pip3 install pysam==0.16.0.1
  pip3 install biopython==1.78
  pip3 install umi_tools==1.0.1
+ pip3 install numba
  pip3 install umap-learn==0.5.1
 }
 
@@ -90,7 +91,7 @@ $permission_sudo apt-get -y install samtools=1.10-3
 function STAR {
 
 	$permission_sudo apt-get update
-        git clone https://github.com/alexdobin/STAR.git
+        git clone https://github.com/alexdobin/STAR.git --branch STAR_2.5.0a
         cd STAR/source
         make STAR
         cd ..
@@ -102,7 +103,7 @@ function STAR {
 
 function fastp {
 
-git clone https://github.com/OpenGene/fastp.git
+git clone https://github.com/OpenGene/fastp.git --branch v0.22.0
 
 cd fastp
 make fastp
@@ -125,7 +126,7 @@ rm -r DropSeq.zip
 
 function picard {
 
-git clone https://github.com/broadinstitute/picard.git
+git clone https://github.com/broadinstitute/picard.git --branch 2.26.5
 cd picard
 ./gradlew shadowJar
 cd ..

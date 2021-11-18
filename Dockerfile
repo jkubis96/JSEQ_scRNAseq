@@ -1,5 +1,5 @@
 #Dockerfile for JSEQ_scRNAseq pipeline
-FROM ubuntu:latest
+FROM ubuntu:20.04
 
 WORKDIR /app
 RUN apt-get update
@@ -13,13 +13,15 @@ RUN git clone https://github.com/jkubis96/JSEQ_scRNAseq.git
 
 RUN sudo apt-get update
 
-
 RUN sudo apt -y install python3.8
 RUN sudo apt -y install python3-pip
+RUN sudo apt-get update
 RUN pip3 install pysam==0.16.0.1
 RUN pip3 install biopython==1.78
 RUN pip3 install umi_tools==1.0.1
+RUN pip3 install numba
 RUN pip3 install umap-learn==0.5.1
+
 
 
 RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common
@@ -66,14 +68,14 @@ RUN sudo apt-get -y install samtools=1.10-3
 RUN sudo apt-get update
 RUN chmod +rwx $(pwd)/JSEQ_scRNAseq/setup
 RUN cd JSEQ_scRNAseq/setup \
-	&& git clone https://github.com/alexdobin/STAR.git
+	&& git clone https://github.com/alexdobin/STAR.git --branch STAR_2.5.0a
 RUN cd JSEQ_scRNAseq/setup/STAR/source \
 	&& make STAR
 RUN sudo apt -y install rna-star
 
 
 RUN cd JSEQ_scRNAseq/setup \
-	&& git clone https://github.com/OpenGene/fastp.git
+	&& git clone https://github.com/OpenGene/fastp.git --branch v0.22.0
 RUN cd JSEQ_scRNAseq/setup/fastp \
 	&& make fastp
 RUN sudo apt -y install fastp
@@ -89,7 +91,7 @@ RUN cd JSEQ_scRNAseq/setup \
 	&& sudo chmod +rwx DropSeq
 
 RUN cd JSEQ_scRNAseq/setup \
-	&& git clone https://github.com/broadinstitute/picard.git
+	&& git clone https://github.com/broadinstitute/picard.git --branch 2.26.5
 	
 
 RUN cd JSEQ_scRNAseq/setup/picard \
