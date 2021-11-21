@@ -4,12 +4,22 @@
 <img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/logo_jbs.PNG?raw=true" alt="drawing" width="250" />
 </p>
 
+
+#### NEW RELEASE: JSEQ® v2.1.1 
+##### Changes:
+##### - JSEQ clustering steps optymalization
+##### - CSSG algorithm performance & resolution improve
+##### - graphs improve
+##### - adjusting JSEQ results for Seurat v4 compatibility
+
+
 #### Authors: Jakub Kubiś & Maciej Figiel
 <div align="center">
  Institute of Bioorganic Chemistry<br />
  Polish Academy of Sciences<br />
  Department of Molecular Neurobiology<br />
 </div>
+
 
 <br />
 <br />
