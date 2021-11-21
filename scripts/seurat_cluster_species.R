@@ -163,17 +163,6 @@ rm(cells)
 UMI <- NormalizeData(UMI, normalization.method = "LogNormalize", scale.factor = 1e6)
 
 
-######################################################################################
-
-#For normalized expression matrix input
-
-decision <- mean(as.numeric(UMI@assays$RNA@counts@x)) < 15
-if (data == 2 & decision == T) {
-  UMI@assays$RNA@data@x <- UMI@assays$RNA@counts@x
-} else if (data == 2 & decision == F) {
-  UMI@assays$RNA@data@x <- log(UMI@assays$RNA@counts@x+1)
-}
-
 #######################################################################################
 
 UMI <- FindVariableFeatures(UMI, selection.method = "vst", nfeatures = n_gen, binning.method = 'equal_frequency')
@@ -200,10 +189,8 @@ UMI <- RunPCA(UMI, features = VariableFeatures(object = UMI))
 
 ################################
 
-jpeg(file.path(OUTPUT, "Elbow.jpeg") , units="in", width=10, height=7, res=600)
+
 Elbow <- ElbowPlot(UMI, ndims = 50)
-Elbow
-dev.off()
 
 dims <- as.data.frame(Elbow$data$stdev)
 
@@ -224,6 +211,10 @@ dims <- as.data.frame(Elbow$data$stdev)
 }
 
 
+jpeg(file.path(OUTPUT, "Elbow.jpeg") , units="in", width=10, height=7, res=600)
+Elbow + geom_vline(xintercept = dim, color = 'red')
+dev.off()
+
 #########################################################################################
 
 UMI <- JackStraw(UMI, num.replicate = 10, dims = dim)
@@ -234,12 +225,16 @@ jpeg(file.path(OUTPUT, "JackStrawPlot.jpeg") , units="in", width=10, height=7, r
 JackStrawPlot(UMI, dims = 1:(dim))
 dev.off()
 
+#Select significient PCs
+jc <- as.data.frame(UMI@reductions$pca@jackstraw@overall.p.values)
+jc <- jc[jc$Score < 0.05,]
+dim <- as.vector(jc$PC)
 
-UMI <- FindNeighbors(UMI, dims = 1:dim, k.param = 49, reduction = 'pca')
+UMI <- FindNeighbors(UMI, dims = dim, reduction = 'pca')
 UMI <- FindClusters(UMI, resolution = 0.5, n.start = 10, n.iter = 1000)
 
 
-UMI <- RunUMAP(UMI, dims = 1:dim, n.neighbors = 49, umap.method = "umap-learn")
+UMI <- RunUMAP(UMI, dims = dim, n.neighbors = 29, umap.method = "umap-learn")
 
 
 width <- 15 + (length(unique(Idents(UMI))))/7
@@ -264,10 +259,10 @@ if (sum(as.numeric(levels(UMI))) != sum(unique(as.integer(UMI.markers$cluster)-1
   }
 
 top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
-top100 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 100, wt = avg_logFC)
+top_sig <- UMI.markers[UMI.markers$p_val < 0.05,]
 
 
-MAST_markers <- UMI.markers %>% group_by(cluster) %>% top_n(n = 5, wt = avg_logFC)
+MAST_markers <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
 
 write.table(MAST_markers, file = file.path(OUTPUT, "MAST_markers_clusters.csv"), sep = ',')
 
@@ -311,10 +306,10 @@ pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.id
   pca_cluster <- pca_cluster - 1
   
   tmp2 <- as.data.frame(tmp[, colnames(tmp) %in% pca_cluster])
-  tmp2[tmp2 > 1] <- 1L
-  tmp2[tmp2 < 1] <- 0L
+  tmp2[tmp2 > 0] <- 1L
+  tmp2[tmp2 == 0] <- 0L
   
-  gen_cor <- unique(top100$gene[top100$cluster %in% pca_cluster])
+  gen_cor <- unique(top_sig$gene[top_sig$cluster %in% pca_cluster])
   tmp3 <- tmp2[gen_cor, ]
   rm(tmp2)
   
@@ -341,8 +336,8 @@ pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.id
         selec_group <- rbind(selec_group, selec_group_tmp)}
         df_groups[i,] <- tmp_elements
         rownames(df_groups)[i] <- gen_set
-        if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.001) == T) {br <- T
-        break}
+        test <- sort(selec_group$perc_1, decreasing = T)[1]
+        
       }
       index_j <- 0
       if(br == T){break}
@@ -362,8 +357,10 @@ pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.id
           selec_group <- rbind(selec_group, selec_group_tmp)
           df_groups[index_j,] <- tmp_elements
           rownames(df_groups)[index_j] <- gen_set
-          if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.001) == T) {br <- T
-          break}
+          if (test >= sort(selec_group$perc_1, decreasing = T)[1] & sort(selec_group$perc_0, decreasing = F)[1] == 0) {br <- T
+          break} 
+          else {test <- sort(selec_group$perc_1, decreasing = T)[1]}
+          
           if (j == df_length) {
             df_length <- length(rownames(df_groups))}
         } else if (cluster != 1 & grepl(rownames(tmp3)[i], rownames(df_groups)[j]) == F) {
@@ -384,8 +381,9 @@ pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.id
           if (j == df_length) {
             df_groups <- df_groups_tmp
             df_length <- length(rownames(df_groups))
-            if ((mean(tail(sort(selec_group$perc_0, decreasing = T), n = 10,)) < 0.001) == T ) {br <- T
-            break}
+            if (test >= sort(selec_group$perc_1, decreasing = T)[1] & sort(selec_group$perc_0, decreasing = F)[1] == 0) {br <- T
+            break} 
+            else {test <- sort(selec_group$perc_1, decreasing = T)[1]}
           }
         }
       }
@@ -400,7 +398,7 @@ pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.id
     selec_group <- selec_group[selec_group$perc_0 <= 0.1, ]
   } 
   
-  pca_cluster_genes[paste(pca_cluster)] <- selec_group$gene_combination[order(selec_group$perc_1[1], decreasing = T)]
+  pca_cluster_genes[paste(pca_cluster)] <- selec_group$gene_combination[order(selec_group$perc_1, decreasing = T)][1]
   
 } 
 
@@ -815,6 +813,8 @@ for (marker in markers_class) {
     second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
     if (max(second_matrix[,col]) == 0 & !grepl('Unknow', as.character(colnames(second_matrix)[col]))) {
       colnames(second_matrix)[col] <- 'Bad'
+	} else if  (max(second_matrix[,col]) == 0 & grepl('Unknow', as.character(colnames(second_matrix)[col]))) {
+      colnames(second_matrix)[col] <- 'Unknow'
     } else if (grepl(as.character(colnames(markers_class)[index_marker]), as.character(colnames(second_matrix)[col])) & !grepl(as.character(toupper(rownames(second_matrix)[1])), as.character(list(textclean::mgsub(marker, c('+'), c('')))))) {
       renamed_old.1 <- c(renamed_old.1, colnames(second_matrix)[col])
       mark <- c()
@@ -933,18 +933,22 @@ bad.subnames <- subclass_names[as.character(subclass_names) %in% as.character(ba
 data <- as.data.frame(summary(as.factor(subclass_names), maxsum = length(unique(subclass_names))))
 colnames(data)[1] <- 'n'
 data$names <- rownames(data)
+data$p_val <- NA
+
+for (n in 1:length(data$n)) {
+  bin <- binom.test(data$n[n], sum(data$n), p = 1/sum(data$n),
+             conf.level = 0.9)
+  data$p_val[n] <- bin$p.value
+}
 
 
-num <- head(sort(data$n, decreasing = T), n = 1)*0.01
 
-
-below.names <- data$names[data$n < num]
-
-
-data$test[data$names %in% bad.subnames] <- "Bad marked types"
+below.names <- data$names[data$p_val > 0.05]
 data$test[data$names %in% new.subnames] <- "Good marked types" 
 data$test[data$names %in% renamed.subnames] <- "Renamed"
-data$test[data$names %in% below.names] <- "Non-significant < 0.01"
+data$test[data$names %in% bad.subnames] <- "Bad marked types"
+data$test[data$names %in% below.names] <- "Non-significant < 0.05"
+
 
 
 
@@ -955,7 +959,8 @@ threshold <- ggplot(data, aes(y = n, x = reorder(names, -n), fill = test, sort =
   theme_bw() +
   theme(plot.margin = unit(c(0.5,0.5,0.5,0.5), "cm")) + 
   labs(fill = "Cells threshold") +
-  coord_flip()
+  coord_flip() + 
+  scale_fill_manual(values = c("Good marked types" = "#00BA38", "Renamed" = "#00BF7D", "Bad marked types" = "#F8766D",  "Non-significant < 0.05" = "gray"))
 
 height <- 10 + (length(unique(Idents(UMI))))/5
 
@@ -1067,11 +1072,11 @@ width <- 25 + (length(unique(Idents(UMI))))/5
 height <- 20 + (length(unique(Idents(UMI))))/5
 
 cells <- ggplot(exp_stat, mapping = aes(x = mean_expression, y = positive_expression_perc, fill = names)) +
-  geom_boxplot() +
+  geom_violin() +
   facet_wrap(names~.) +
   theme(legend.position = 'none')
 
-ggsave(cells, filename = file.path(OUTPUT,'box_matrix.jpeg'), units = 'in', width = width, height = height, dpi = 300, limitsize = FALSE)
+ggsave(cells, filename = file.path(OUTPUT,'violin_matrix.jpeg'), units = 'in', width = width, height = height, dpi = 300, limitsize = FALSE)
 
 ################################################################################################################
 

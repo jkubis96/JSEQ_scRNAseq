@@ -511,7 +511,7 @@ knitr::include_graphics(file.path(path_results,'pheatmap_cells_populations.jpeg'
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
 
-knitr::include_graphics(file.path(path_results,'box_matrix.jpeg'), dpi = 600)
+knitr::include_graphics(file.path(path_results,'violin_matrix.jpeg'), dpi = 600)
 
 ```
 
