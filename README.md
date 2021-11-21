@@ -7,13 +7,14 @@
 
 #### NEW RELEASE: JSEQ® v2.1.1 
 ##### Changes:
-##### - JSEQ clustering steps optymalization
-##### - CSSG algorithm performance & resolution improve
-##### - graphs improve
-##### - adjusting JSEQ results for Seurat v4 compatibility
+- JSEQ clustering steps optymalization <br />
+- CSSG algorithm performance & resolution improve <br />
+- graphs improve <br />
+- adjusting JSEQ results for Seurat v4 compatibility <br />
 
+<br />
 
-#### Authors: Jakub Kubiś & Maciej Figiel
+### Authors: Jakub Kubiś & Maciej Figiel
 <div align="center">
  Institute of Bioorganic Chemistry<br />
  Polish Academy of Sciences<br />
