@@ -220,15 +220,14 @@ dev.off()
 UMI <- JackStraw(UMI, num.replicate = 10, dims = dim)
 UMI <- ScoreJackStraw(UMI, dims = 1:dim)
 
-
-jpeg(file.path(OUTPUT, "JackStrawPlot.jpeg") , units="in", width=10, height=7, res=600)
-JackStrawPlot(UMI, dims = 1:(dim))
-dev.off()
-
 #Select significient PCs
 jc <- as.data.frame(UMI@reductions$pca@jackstraw@overall.p.values)
 jc <- jc[jc$Score < 0.05,]
 dim <- as.vector(jc$PC)
+
+jpeg(file.path(OUTPUT, "JackStrawPlot.jpeg") , units="in", width=10, height=7, res=600)
+JackStrawPlot(UMI, dims = dim)
+dev.off()
 
 UMI <- FindNeighbors(UMI, dims = dim, reduction = 'pca')
 UMI <- FindClusters(UMI, resolution = 0.5, n.start = 10, n.iter = 1000)
@@ -800,7 +799,6 @@ class_marker_list <- rownames(UMI)[toupper(rownames(UMI)) %in% class_marker_list
 second_matrix <- average_expression[class_marker_list,]
 
 
-
 renamed_old.1 <- c()
 renamed_new.1 <- c()
 renamed_old.2 <- c()
@@ -812,9 +810,8 @@ for (marker in markers_class) {
   for (col in 1:length(colnames(second_matrix))) {
     second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
     if (max(second_matrix[,col]) == 0 & !grepl('Unknow', as.character(colnames(second_matrix)[col]))) {
-      colnames(second_matrix)[col] <- 'Bad'
-	} else if  (max(second_matrix[,col]) == 0 & grepl('Unknow', as.character(colnames(second_matrix)[col]))) {
-      colnames(second_matrix)[col] <- 'Unknow'
+      renamed_old.1 <- c(renamed_old.1, colnames(second_matrix)[col])
+      renamed_new.1 <- c(renamed_new.1, 'Bad')
     } else if (grepl(as.character(colnames(markers_class)[index_marker]), as.character(colnames(second_matrix)[col])) & !grepl(as.character(toupper(rownames(second_matrix)[1])), as.character(list(textclean::mgsub(marker, c('+'), c('')))))) {
       renamed_old.1 <- c(renamed_old.1, colnames(second_matrix)[col])
       mark <- c()
@@ -828,12 +825,12 @@ for (marker in markers_class) {
         if (grepl(toupper(rownames(second_matrix)[1]), list(marker_2))) {
           colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  colnames(markers_class)[n_marker], x = colnames(second_matrix)[col])
           renamed_new.1 <- c(renamed_new.1, colnames(second_matrix)[col])
+          break
         }
       }
     }
   }
 }
-
 
 Renamed_idents <- as.character(Idents(UMI))
 
@@ -873,7 +870,8 @@ second_matrix <- second_matrix[!colnames(second_matrix) %in% c('Bad', 'Unknow')]
 for (col in 1:length(colnames(second_matrix))) {
   second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
   if (second_matrix[1,col] == 0) {
-    colnames(second_matrix)[col] <- 'Bad'
+    renamed_old.2 <- c(renamed_old.2, colnames(second_matrix)[col])
+    renamed_new.2 <- c(renamed_new.2, 'Bad')
   } else if (!grepl(toupper(rownames(second_matrix)[1]), colnames(second_matrix)[col]) & !grepl('Bad', colnames(second_matrix)[col])) {
     renamed_old.2 <- unique(c(renamed_old.2, colnames(second_matrix)[col]))
     mark <- c()
@@ -918,7 +916,7 @@ print('Checking - DONE')
 
 print('QC of subtypes')
 
-subclass_names <- Renamed_idents
+subclass_names <- Renamed_idents[!Renamed_idents %in% c('Bad BAD', 'Bad Bad')]
 bad <- subclass_names[grepl(c('Bad'), as.character(subclass_names)) | grepl(c('BAD'), as.character(subclass_names))]
 renamed.subnames <- c(as.character(renamed_new.1), as.character(renamed_new.2))
 renamed.subnames <- subclass_names[as.character(toupper(subclass_names)) %in% as.character(toupper(renamed.subnames))]

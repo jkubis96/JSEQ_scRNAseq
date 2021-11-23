@@ -893,9 +893,8 @@ for (marker in markers_class) {
   for (col in 1:length(colnames(second_matrix))) {
     second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
     if (max(second_matrix[,col]) == 0 & !grepl('Unknow', as.character(colnames(second_matrix)[col]))) {
-      colnames(second_matrix)[col] <- 'Bad'
-	} else if  (max(second_matrix[,col]) == 0 & grepl('Unknow', as.character(colnames(second_matrix)[col]))) {
-      colnames(second_matrix)[col] <- 'Unknow'
+      renamed_old.1 <- c(renamed_old.1, colnames(second_matrix)[col])
+      renamed_new.1 <- c(renamed_new.1, 'Bad')
     } else if (grepl(as.character(colnames(markers_class)[index_marker]), as.character(colnames(second_matrix)[col])) & !grepl(as.character(toupper(rownames(second_matrix)[1])), as.character(list(textclean::mgsub(marker, c('+'), c('')))))) {
       renamed_old.1 <- c(renamed_old.1, colnames(second_matrix)[col])
       mark <- c()
@@ -909,12 +908,12 @@ for (marker in markers_class) {
         if (grepl(toupper(rownames(second_matrix)[1]), list(marker_2))) {
           colnames(second_matrix)[col] <- gsub(pattern = mark, replacement =  colnames(markers_class)[n_marker], x = colnames(second_matrix)[col])
           renamed_new.1 <- c(renamed_new.1, colnames(second_matrix)[col])
+          break
         }
       }
     }
   }
 }
-
 
 Renamed_idents <- as.character(Idents(UMI))
 
@@ -954,7 +953,8 @@ second_matrix <- second_matrix[!colnames(second_matrix) %in% c('Bad', 'Unknow')]
 for (col in 1:length(colnames(second_matrix))) {
   second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
   if (second_matrix[1,col] == 0) {
-    colnames(second_matrix)[col] <- 'Bad'
+    renamed_old.2 <- c(renamed_old.2, colnames(second_matrix)[col])
+    renamed_new.2 <- c(renamed_new.2, 'Bad')
   } else if (!grepl(toupper(rownames(second_matrix)[1]), colnames(second_matrix)[col]) & !grepl('Bad', colnames(second_matrix)[col])) {
     renamed_old.2 <- unique(c(renamed_old.2, colnames(second_matrix)[col]))
     mark <- c()
@@ -979,12 +979,16 @@ if (length(renamed_old.2) != 0) {
 
 }
 
-
 part_name_1 <- sub(" .*", "", Renamed_idents)
 part_name_2 <- sub('.*? ', "", Renamed_idents)
 
-part_name_2 <- toupper(part_name_2)
 
+if (species == 'human') {
+  part_name_2 <- toupper(part_name_2)
+} else if (species == 'mice') {
+  
+  part_name_2 <- str_to_title(part_name_2)
+}
 
 Renamed_idents <- paste(part_name_1, part_name_2)
 Idents(UMI) <- Renamed_idents
@@ -995,7 +999,7 @@ print('Checking - DONE')
 
 print('QC of subtypes')
 
-subclass_names <- Renamed_idents
+subclass_names <- Renamed_idents[!Renamed_idents %in% c('Bad BAD', 'Bad Bad')]
 bad <- subclass_names[grepl(c('Bad'), as.character(subclass_names)) | grepl(c('BAD'), as.character(subclass_names))]
 renamed.subnames <- c(as.character(renamed_new.1), as.character(renamed_new.2))
 renamed.subnames <- subclass_names[as.character(toupper(subclass_names)) %in% as.character(toupper(renamed.subnames))]
@@ -1042,7 +1046,6 @@ threshold <- ggplot(data, aes(y = n, x = reorder(names, -n), fill = test, sort =
 height <- 10 + (length(unique(Idents(UMI))))/5
 
 ggsave(threshold, filename = file.path(OUTPUT,'cells_type_threshold.jpeg'), units = 'in', width = 15, height = height, dpi = 600, limitsize = FALSE)
-
 
 #save bad cells
 
