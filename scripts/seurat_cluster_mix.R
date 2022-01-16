@@ -12,19 +12,35 @@ args <- commandArgs()
 
 #Paths and arguments from env
 {
-print(args)
+  print(args)
+  
+  path <- args[6]
+  markers <-args[7]
+  species <- args[8]
+  seurat_umi_mice <- file.path(path,'mice_sc_data/')
+  seurat_umi_human <- file.path(path,'human_sc_data/')
+  OUTPUT <- file.path(path, 'results')
+  project_name <- args[9]
+  data <- args[10]
+  estimated_cells <- args[11]
+  functions <- file.path(getwd(), 'scripts/functions.R')
+  source(functions)
+}
 
-path <- args[6]
-markers <-args[7]
-species <- args[8]
-seurat_umi_mice <- file.path(path,'mice_sc_data/')
-seurat_umi_human <- file.path(path,'human_sc_data/')
-OUTPUT <- file.path(path, 'results')
-project_name <- args[9]
-data <- args[10]
-estimated_cells <- args[11]
-functions <- file.path(getwd(), 'scripts/functions.R')
-source(functions)
+#Configuration file 
+
+{
+  conf_file <- read.csv(file = file.path(getwd(), 'requirements_file/config_file.conf'), header = F, sep = ':', row.names = 1)
+  
+  mt_per <- as.numeric(conf_file$V2[grep(pattern = 'mt_per', rownames(conf_file))])
+  
+  down_tr <- as.numeric(conf_file$V2[grep(pattern = 'down', rownames(conf_file))])
+  
+  up_tr <- as.numeric(conf_file$V2[grep(pattern = 'up', rownames(conf_file))])
+  
+  mt_cssg <- as.character(conf_file$V2[grep(pattern = 'mt_cssg', rownames(conf_file))])
+  
+  s_factor <- as.numeric(conf_file$V2[grep(pattern = 's_factor', rownames(conf_file))])
 }
 
 #########################################################
@@ -108,9 +124,19 @@ UC_plot <- VlnPlot(UMI, features = c("nGenes", "nCounts"), ncol = 2)
 UC_plot
 dev.off()
 
+svg(file.path(OUTPUT, "counts~genes.svg"), width=15, height=10)
+UC_plot
+rm(UC_plot)
+dev.off()
+
 jpeg(file.path(OUTPUT, "Ribo~Mito.jpeg") , units="in", width=15, height=10, res=600)
 MR_plot <- VlnPlot(UMI, features = c("RiboPercent", "MitoPercent"), ncol = 2)
 MR_plot
+dev.off()
+
+svg(file.path(OUTPUT, "Ribo~Mito.svg"), width=15, height=10)
+MR_plot
+rm(MR_plot)
 dev.off()
 
 
@@ -119,13 +145,24 @@ CG_plot <- FeatureScatter(UMI, feature1 = "nCounts", feature2 = "nGenes")
 CG_plot
 dev.off()
 
+svg(file.path(OUTPUT, "counts~genes_QC.svg"), width=15, height=10)
+CG_plot
+rm(CG_plot)
+dev.off()
+
+
 rm(UMI)
 ####################################################################################
 
 #Droplet content and QC human
 #Human
-n_gen_human <- UMI_human@meta.data$nGenes[UMI_human@meta.data$nGenes > 500]
-n_gen_human <- as.numeric(mean(n_gen_human))*2 + 1.5*IQR(as.numeric(UMI_human@meta.data$nGenes))
+n_gen_human <- UMI_human@meta.data$nGenes[UMI_human@meta.data$nGenes > down_tr]
+
+if (is.na(up_tr)) {
+  n_gen_human <- as.numeric(mean(n_gen_human))*2 + 1.5*IQR(as.numeric(UMI_human@meta.data$nGenes))
+} else {
+  n_gen_human <- up_tr
+}
 
 QC_UMI_human <- data.frame()
 QC_UMI_human <- as.data.frame(UMI_human$nGenes)
@@ -134,20 +171,26 @@ QC_UMI_human$V3 <- UMI_human$RiboPercent
 
 colnames(QC_UMI_human) <- c('nGenes','MitoPercent','RiboPercent')
 
-QC_UMI_human$Mito_Status[QC_UMI_human$MitoPercent > 5] <- '> 5%'
-QC_UMI_human$Mito_Status[QC_UMI_human$MitoPercent <= 5] <- 'Proper'
+QC_UMI_human$Mito_Status[QC_UMI_human$MitoPercent > mt_per] <- paste0('> ' , mt_per , '%')
+QC_UMI_human$Mito_Status[QC_UMI_human$MitoPercent <= mt_per] <- 'Proper'
 
-QC_UMI_human$nGenes_Status[UMI_human$nGenes < 500] <- 'Empty'
+QC_UMI_human$nGenes_Status[UMI_human$nGenes < down_tr] <- 'Empty'
 QC_UMI_human$nGenes_Status[UMI_human$nGenes > n_gen_human] <- 'Double'
-QC_UMI_human$nGenes_Status[UMI_human$nGenes >= 500 & UMI_human$nGenes <= n_gen_human] <- 'Proper'
+QC_UMI_human$nGenes_Status[UMI_human$nGenes >= down_tr & UMI_human$nGenes <= n_gen_human] <- 'Proper'
 
 QC_UMI_human$Ribo_Status[QC_UMI_human$RiboPercent == 0] <- '0%'
 QC_UMI_human$Ribo_Status[QC_UMI_human$RiboPercent > 0] <- '> 0 %'
 QC_UMI_human$species <- 'Human'
 
 #Mouse
-n_gen_mice <- UMI_mice@meta.data$nGenes[UMI_mice@meta.data$nGenes > 500]
-n_gen_mice <- as.numeric(mean(n_gen_mice))*2 + 1.5*IQR(as.numeric(UMI_mice@meta.data$nGenes))
+n_gen_mice <- UMI_mice@meta.data$nGenes[UMI_mice@meta.data$nGenes > down_tr]
+
+if (is.na(up_tr)) {
+  n_gen_mice <- as.numeric(mean(n_gen_mice))*2 + 1.5*IQR(as.numeric(UMI_mice@meta.data$nGenes))
+} else {
+  n_gen_mice <- up_tr
+}
+
 
 QC_UMI_mice <- data.frame()
 QC_UMI_mice <- as.data.frame(UMI_mice$nGenes)
@@ -156,12 +199,12 @@ QC_UMI_mice$V3 <- UMI_mice$RiboPercent
 
 colnames(QC_UMI_mice) <- c('nGenes','MitoPercent','RiboPercent')
 
-QC_UMI_mice$Mito_Status[QC_UMI_mice$MitoPercent > 5] <- '> 5%'
-QC_UMI_mice$Mito_Status[QC_UMI_mice$MitoPercent <= 5] <- 'Proper'
+QC_UMI_mice$Mito_Status[QC_UMI_mice$MitoPercent > mt_per] <- paste0('> ' , mt_per , '%')
+QC_UMI_mice$Mito_Status[QC_UMI_mice$MitoPercent <= mt_per] <- 'Proper'
 
-QC_UMI_mice$nGenes_Status[QC_UMI_mice$nGenes < 500] <- 'Empty'
+QC_UMI_mice$nGenes_Status[QC_UMI_mice$nGenes < down_tr] <- 'Empty'
 QC_UMI_mice$nGenes_Status[QC_UMI_mice$nGenes > n_gen_mice] <- 'Double'
-QC_UMI_mice$nGenes_Status[QC_UMI_mice$nGenes >= 500 & UMI_mice$nGenes <= n_gen_mice] <- 'Proper'
+QC_UMI_mice$nGenes_Status[QC_UMI_mice$nGenes >= down_tr & UMI_mice$nGenes <= n_gen_mice] <- 'Proper'
 
 QC_UMI_mice$Ribo_Status[QC_UMI_mice$RiboPercent == 0] <- '0%'
 QC_UMI_mice$Ribo_Status[QC_UMI_mice$RiboPercent > 0] <- '> 0 %'
@@ -179,6 +222,10 @@ DQC <- ggplot()+
   facet_grid(.~QC_UMI$species)
 
 ggsave(DQC, filename = file.path(OUTPUT,'DropletQC.jpeg'), width = 10, height = 7, dpi = 600)
+
+svg(filename = file.path(OUTPUT,'DropletQC.svg'), width = 10, height = 7)
+DQC
+dev.off()
 rm(DQC)
 
 MQC <- ggplot()+
@@ -190,6 +237,10 @@ MQC <- ggplot()+
   facet_grid(.~QC_UMI$species)
 
 ggsave(MQC, filename = file.path(OUTPUT,'MitoQC.jpeg'), width = 10, height = 7, dpi = 600)
+
+svg(filename = file.path(OUTPUT,'MitoQC.svg'), width = 10, height = 7)
+MQC
+dev.off()
 rm(MQC)
 
 RQC <- ggplot()+
@@ -201,20 +252,25 @@ RQC <- ggplot()+
   facet_grid(.~QC_UMI$species)
 
 ggsave(RQC, filename = file.path(OUTPUT,'RiboQC.jpeg'),  width = 10, height = 7, dpi = 600)
+
+svg(filename = file.path(OUTPUT,'RiboQC.svg'),  width = 10, height = 7)
+RQC
+dev.off()
 rm(RQC)
 rm(QC_UMI)
-
+rm(QC_UMI_mice)
+rm(QC_UMI_human)
 
 
 ####################################################################################
 
 #Selecting right cells
 
-UMI_human <- subset(UMI_human, subset = nGenes > 500 & nGenes <= n_gen_human & MitoPercent < 5)
+UMI_human <- subset(UMI_human, subset = nGenes > down_tr & nGenes <= n_gen_human & MitoPercent < mt_per)
 n_gen_human <- max(as.numeric(UMI_human@meta.data$nGenes))*0.75
 cells_number_human <- length(Idents(UMI_human))
 
-UMI_mice <- subset(UMI_mice, subset = nGenes > 500 & nGenes <= n_gen_mice & MitoPercent < 5)
+UMI_mice <- subset(UMI_mice, subset = nGenes > down_tr & nGenes <= n_gen_mice & MitoPercent < mt_per)
 n_gen_mice <- max(as.numeric(UMI_mice@meta.data$nGenes))*0.75
 cells_number_mice <- length(Idents(UMI_mice))
 
@@ -236,6 +292,10 @@ cells <- ggplot(df_cells, aes(x = cells, y = cell_num, fill = cells)) +
 
 
 ggsave(cells, filename = file.path(OUTPUT,'Cells.jpeg'), width = 10, height = 7, dpi = 600)
+rm(cells)
+
+svg(filename = file.path(OUTPUT,'Cells.svg'), width = 10, height = 7)
+cells
 rm(cells)
 
 
@@ -263,6 +323,11 @@ jpeg(file.path(OUTPUT, "variable_genes.jpeg") , units="in", width=20, height=7, 
 plot2 <- LabelPoints(plot = plot1, points = top20, repel = TRUE)
 plot2
 dev.off()
+
+svg(file.path(OUTPUT, "variable_genes.svg"), width=10, height=7)
+plot2
+dev.off()
+rm(plot2)
 
 #####################################################################################
 
@@ -300,6 +365,11 @@ jpeg(file.path(OUTPUT, "Elbow.jpeg") , units="in", width=10, height=7, res=600)
 Elbow + geom_vline(xintercept = dim, color = 'red')
 dev.off()
 
+svg(file.path(OUTPUT, "Elbow.svg"), width=10, height=7)
+Elbow + geom_vline(xintercept = dim, color = 'red')
+dev.off()
+rm(Elbow)
+
 #########################################################################################
 
 UMI <- JackStraw(UMI, num.replicate = 10, dims = dim)
@@ -314,6 +384,9 @@ jpeg(file.path(OUTPUT, "JackStrawPlot.jpeg") , units="in", width=10, height=7, r
 JackStrawPlot(UMI, dims = dim)
 dev.off()
 
+svg(file.path(OUTPUT, "JackStrawPlot.svg"), width=10, height=7)
+JackStrawPlot(UMI, dims = dim)
+dev.off()
 
 UMI <- FindNeighbors(UMI, dims = dim, reduction = 'pca')
 UMI <- FindClusters(UMI, resolution = 0.5, n.start = 10, n.iter = 1000)
@@ -331,6 +404,11 @@ mutual_plot <- species_plot + clusters_plot
 mutual_plot
 dev.off()
 
+svg(file.path(OUTPUT, "UMAP.svg"), width = width, height = 15)
+mutual_plot
+dev.off()
+rm(mutual_plot)
+
 ####################################################################################
 
 
@@ -347,7 +425,12 @@ if (sum(as.numeric(levels(UMI))) != sum(unique(as.integer(UMI.markers$cluster)-1
 }
 
 top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
-top_sig <- UMI.markers[UMI.markers$p_val < 0.05,]
+top_sig <- UMI.markers %>% group_by(cluster) %>% top_n(n = 100, wt = avg_logFC)
+top_sig <- top_sig[top_sig$p_val < 0.001 ,] 
+
+if (mt_cssg == "exclude") {
+  top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grep('t-', top_sig$gene)],]
+}
 
 MAST_markers <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
 
@@ -363,6 +446,47 @@ print('Cluster genes - DONE')
 
 ##################################################################################
 #Cells subtypes selection
+
+# Gene selection by split factor
+
+print('Split genes selection')
+
+tmp <- GetAssayData(UMI, slot = 'data')
+colnames(tmp) <- UMI@active.ident
+
+
+genes_CSSG <- c()
+for (pca_cluster in 1:max(as.numeric(unique(UMI@active.ident)))) {
+  pca_cluster <- pca_cluster - 1
+  
+  tmp2 <- as.data.frame(tmp[, colnames(tmp) %in% pca_cluster])
+  tmp2[tmp2 > 0] <- 1L
+  tmp2[tmp2 == 0] <- 0L
+  
+  gen_cor <- unique(top_sig$gene[top_sig$cluster %in% pca_cluster])
+  tmp3 <- tmp2[gen_cor, ]
+  rm(tmp2)
+  
+  gen <- c()
+  per_obj <- c()
+  
+  for (i in 1:length(rownames(tmp3))) {
+    gen <- c(gen, rownames(tmp3)[i])
+    per_obj <- c(per_obj, length(tmp3[i,][tmp3[i,] == 1])/length(tmp3[i,])*100)
+    
+  } 
+  
+  rm(tmp3)
+  df <- data.frame(gen, per_obj)
+  
+  genes_CSSG <- c(genes_CSSG, as.vector(df$gen[as.numeric(df$per_obj) <= s_factor]))
+  
+}
+
+
+top_sig <- top_sig[top_sig$gene %in% genes_CSSG, ]
+
+# Subtype gene selection 
 
 print('Subsetting clusters - CSSG')
 
@@ -380,13 +504,12 @@ if (CPU > max(as.numeric(unique(UMI@active.ident)))) {
   cl <- makeCluster(CPU)
 }  
 
+pca_cluster_genes <- list()
+clusters <- 4
+
 registerDoParallel(cl)
 registerDoSNOW(cl)
 
-pca_cluster_genes <- list()
-clusters <- 4
-tmp <- GetAssayData(UMI, slot = 'data')
-colnames(tmp) <- UMI@active.ident
 
 pca_cluster_genes <- foreach(pca_cluster = 1:max(as.numeric(unique(UMI@active.ident))), .packages =c('Seurat', 'patchwork','tidyverse'), .options.snow = opts) %dopar% {
   
@@ -746,8 +869,16 @@ jpeg(file.path(OUTPUT, "PCA_DimPlot_class.jpeg") , units="in", width = width, he
 DimPlot(UMI, reduction = "pca", raster = FALSE)
 dev.off()
 
+svg(file.path(OUTPUT, "PCA_DimPlot_class.svg"), width = width, height = 15)
+DimPlot(UMI, reduction = "pca", raster = FALSE)
+dev.off()
+
 
 jpeg(file.path(OUTPUT, "UMAP_with_DE_gene_class.jpeg") , units="in", width = width, height = 15, res=600)
+DimPlot(UMI, reduction = "umap", raster = FALSE) 
+dev.off()
+
+svg(file.path(OUTPUT, "UMAP_with_DE_gene_class.svg"), width = width, height = 15)
 DimPlot(UMI, reduction = "umap", raster = FALSE) 
 dev.off()
 
@@ -863,6 +994,7 @@ if (round(length(colnames(UMI))) < 14999) {
     
   }
 }
+
 #############################################################################################################################
 
 print('Checking and renaming subtypes')
@@ -983,12 +1115,9 @@ part_name_1 <- sub(" .*", "", Renamed_idents)
 part_name_2 <- sub('.*? ', "", Renamed_idents)
 
 
-if (species == 'human') {
-  part_name_2 <- toupper(part_name_2)
-} else if (species == 'mice') {
-  
-  part_name_2 <- str_to_title(part_name_2)
-}
+
+part_name_2 <- toupper(part_name_2)
+
 
 Renamed_idents <- paste(part_name_1, part_name_2)
 Idents(UMI) <- Renamed_idents
@@ -1047,6 +1176,11 @@ height <- 10 + (length(unique(Idents(UMI))))/5
 
 ggsave(threshold, filename = file.path(OUTPUT,'cells_type_threshold.jpeg'), units = 'in', width = 15, height = height, dpi = 600, limitsize = FALSE)
 
+svg(filename = file.path(OUTPUT,'cells_type_threshold.svg'), width = 15, height = height)
+threshold
+dev.off()
+rm(threshold)
+
 #save bad cells
 
 bad.subnames <- c(as.character(bad.subnames), as.character(below.names))
@@ -1080,10 +1214,17 @@ jpeg(file.path(OUTPUT, "PCA_DimPlot_subtypes.jpeg") , units="in", width = width,
 DimPlot(UMI, reduction = "pca", raster = FALSE)
 dev.off()
 
+svg(file.path(OUTPUT, "PCA_DimPlot_subtypes.svg"), width = width, height = 15)
+DimPlot(UMI, reduction = "pca", raster = FALSE)
+dev.off()
+
 jpeg(file.path(OUTPUT, "UMAP_with_DE_gene_subtypes.jpeg") , units="in", width = width, height = 15, res=600)
 DimPlot(UMI, reduction = "umap", raster = FALSE) 
 dev.off()
 
+svg(file.path(OUTPUT, "UMAP_with_DE_gene_subtypes.svg"), width = width, height = 15)
+DimPlot(UMI, reduction = "umap", raster = FALSE) 
+dev.off()
 
 #Create Expression Matrix
 
@@ -1146,6 +1287,7 @@ if (round(length(colnames(UMI))) < 14999){
   names <- colnames(exp_matrix_obl_tmp)
   exp_stat <- data.frame(names,mean_expression, positive_expression_perc)
 }
+
 ###############################################################################################################
 
 width <- 25 + (length(unique(Idents(UMI))))/5
@@ -1157,6 +1299,11 @@ cells <- ggplot(exp_stat, mapping = aes(x = mean_expression, y = positive_expres
   theme(legend.position = 'none')
 
 ggsave(cells, filename = file.path(OUTPUT,'violin_matrix.jpeg'), units = 'in', width = width, height = height, dpi = 300, limitsize = FALSE)
+
+svg(filename = file.path(OUTPUT,'violin_matrix.svg'), width = width, height = height)
+cells
+dev.off()
+rm(cells)
 
 ################################################################################################################
 
@@ -1297,12 +1444,19 @@ height <- 25 + (length(unique(Idents(UMI))))/5
 
 average_expression <- average_expression[marker_list,]
 average_expression <- drop_na(average_expression)
+
+pheat <- pheatmap::pheatmap(average_expression, 
+                            clustering_method = 'ward.D',
+                            angle_col = 270, fontsize_row = 20, fontsize_col = 20)
+
 jpeg(file.path(OUTPUT, "pheatmap_cells_populations.jpeg"),units="in", width = width, height = height ,  res=300)
-pheatmap::pheatmap(average_expression, 
-                   clustering_method = 'ward.D',
-                   angle_col = 270, fontsize_row = 20, fontsize_col = 20)
+pheat
 dev.off()
 
+svg(file.path(OUTPUT, "pheatmap_cells_populations.svg"), width = width, height = height)
+pheat
+dev.off()
+rm(pheat)
 
 #########################################################################################
 
