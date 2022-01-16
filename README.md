@@ -10,7 +10,7 @@
 - added configuration file <br />
 - JSEQ® clustering steps optymalized <br />
 - CSSG algorithm performance & resolution improved <br />
-- improved charts autoadjusting <br />
+- improved charts auto-adjusting <br />
 - added charts saving in vector format <br />
 - adjusted JSEQ results for Seurat v4 compatibility <br />
 
