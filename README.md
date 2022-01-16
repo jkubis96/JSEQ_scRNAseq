@@ -7,10 +7,12 @@
 
 #### NEW RELEASE: JSEQ® v2.1.1 
 ##### Changes:
-- JSEQ clustering steps optymalization <br />
-- CSSG algorithm performance & resolution improve <br />
-- graphs improve <br />
-- adjusting JSEQ results for Seurat v4 compatibility <br />
+- added configuration file <br />
+- JSEQ® clustering steps optymalized <br />
+- CSSG algorithm performance & resolution improved <br />
+- improved charts autoadjusting <br />
+- added charts saving in vector format <br />
+- adjusted JSEQ results for Seurat v4 compatibility <br />
 
 <br />
 
