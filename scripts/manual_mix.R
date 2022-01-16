@@ -44,19 +44,20 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
 #Configuration file 
 
 ## Load configuration from config_file.conf or !!!provide other variables changing value after '<-'!!!
-
+  
+  
 {
   conf_file <- read.csv(file = '../../../requirements_file/config_file.conf', header = F, sep = ':', row.names = 1)
   
-  mt_per <- as.numeric(conf_file$V2[grep(pattern = 'mt_per', rownames(conf_file))])
+  mt_per <- as.numeric(as.character(conf_file$V2[grep(pattern = 'mt_per', rownames(conf_file))]))
   
-  down_tr <- as.numeric(conf_file$V2[grep(pattern = 'down', rownames(conf_file))])
+  down_tr <- as.numeric(as.character(conf_file$V2[grep(pattern = 'down', rownames(conf_file))]))
   
-  up_tr <- as.numeric(conf_file$V2[grep(pattern = 'up', rownames(conf_file))])
+  up_tr <- as.numeric(as.character(conf_file$V2[grep(pattern = 'up', rownames(conf_file))]))
   
   mt_cssg <- as.character(conf_file$V2[grep(pattern = 'mt_cssg', rownames(conf_file))])
   
-  s_factor <- as.numeric(conf_file$V2[grep(pattern = 's_factor', rownames(conf_file))])
+  s_factor <- as.numeric(as.character(conf_file$V2[grep(pattern = 's_factor', rownames(conf_file))]))
 }
 
 #########################################################
