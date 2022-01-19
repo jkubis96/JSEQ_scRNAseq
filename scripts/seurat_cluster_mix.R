@@ -292,7 +292,6 @@ cells <- ggplot(df_cells, aes(x = cells, y = cell_num, fill = cells)) +
 
 
 ggsave(cells, filename = file.path(OUTPUT,'Cells.jpeg'), width = 10, height = 7, dpi = 600)
-rm(cells)
 
 svg(filename = file.path(OUTPUT,'Cells.svg'), width = 10, height = 7)
 cells

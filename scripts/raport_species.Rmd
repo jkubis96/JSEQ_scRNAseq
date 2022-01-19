@@ -297,7 +297,7 @@ dims <- as.data.frame(Elbow$data$stdev)
 ### ElbowPlot
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-Elbow
+Elbow + geom_vline(xintercept = dim, color = 'red')
 ```
 
 \
