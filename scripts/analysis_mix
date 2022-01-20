@@ -49,7 +49,7 @@ then
 
 	cd $INFASTP
 
-	fastp -i $R1_NAME -I $R2_NAME -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --length_required 20 --html $RESULT/QC_RAPORT.html 
+	fastp -i $R1_NAME -I $R2_NAME -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --poly_x_min_len 13 --length_required 20 --html $RESULT/QC_RAPORT.html 
 
 	gunzip -k R1_out.fastq.gz
 	gunzip -k R2_out.fastq.gz
