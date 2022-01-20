@@ -1,4 +1,4 @@
-#Before start you have to install required packages
+#Before start you have to install required packages 
 #Pipeline include Seurat version 3.1.5
 #You can use other versions of seurat but some functions may not work properly
 #Belowe script was adjusted for use with Seurat 4

@@ -1,4 +1,4 @@
-#Dockerfile for JSEQ_scRNAseq pipeline
+#Dockerfile for JSEQ_scRNAseq pipeline 
 FROM ubuntu:20.04
 
 WORKDIR /app

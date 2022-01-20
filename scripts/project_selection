@@ -1,5 +1,5 @@
 #!/bin/bash
-
+ 
 function select_analysis {
 
 echo 'Analysis of data for fastq analysis project [1]  counts / expression analysis project [2]:'

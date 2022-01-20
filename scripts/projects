@@ -1,6 +1,6 @@
 #!/bin/bash
 function merge_fq {
-
+ 
 
 fq=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
 for i in $fq;
