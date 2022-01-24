@@ -33,7 +33,7 @@ then
 
 	cd $INFASTP
 
-	fastp -i $R1_NAME -I $R2_NAME -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --disable_adapter_trimming --poly_x_min_len 13 --length_required 20 --html $RESULT/QC_RAPORT.html 
+	fastp -i $R1_NAME -I $R2_NAME -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --poly_x_min_len 20 --length_required 20 --html $RESULT/QC_RAPORT.html 
 
 	gunzip -k R1_out.fastq.gz
 	gunzip -k R2_out.fastq.gz
@@ -84,7 +84,7 @@ done;
 R2_FILE=$INFASTP'/'$R2_NAME_map
 
 
-STAR --outReadsUnmapped Fastx --outFilterMismatchNmax 10 --outFilterMismatchNoverLmax 0.3 --outFilterMismatchNoverReadLmax 1 --outFilterMatchNmin 0 --outFilterScoreMinOverLread 0.66 --outFilterMatchNminOverLread 0.66 --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outSAMtype BAM Unsorted --outFileNamePrefix $tmp --outStd Log  > $RESULT/Log.final.out 2>&1
+STAR --outReadsUnmapped Fastx --outFilterMismatchNmax 20 --outFilterMismatchNoverLmax 0.3 --outFilterMismatchNoverReadLmax 1 --outFilterMatchNmin 0 --outFilterScoreMinOverLread 0.33 --outFilterMatchNminOverLread 0.33 --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outSAMtype BAM Unsorted --outFileNamePrefix $tmp --outStd Log  > $RESULT/Log.final.out 2>&1
 
 
 

@@ -7,6 +7,7 @@
 
 #### NEW RELEASE: JSEQ® v2.1.1 
 ##### Changes:
+- new versions of mouse [Release M28 (GRCm39)] and human [Release 39 (GRCh38.p13)] genomes <br />
 - added configuration file <br />
 - JSEQ® clustering steps optymalized <br />
 - CSSG algorithm performance & resolution improved <br />
