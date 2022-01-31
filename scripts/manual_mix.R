@@ -60,13 +60,13 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
   s_factor <- as.numeric(as.character(conf_file$V2[grep(pattern = 's_factor', rownames(conf_file))]))
 }
 
-#########################################################
+###########################################################################################################################################################
 
 UMI_human <- readRDS('Seurat_object_human.rds')
 UMI_mice <- readRDS('Seurat_object_mice.rds')
 
 #Data ^ - for new manual analysis 
-#If you choose this option start from PART A of pipeline (code line 67-1026)
+#If you choose this option start from PART A of pipeline (code line 87-1168)
 
 UMI <- readRDS('Results.rds')
 
@@ -80,9 +80,9 @@ UMI <- readRDS('Results.rds')
 Idents(UMI) <- gsub(pattern = 'Old_name', replacement = 'New_name', x = Idents((UMI)))
 #				          	Write old name ^         Write new name ^
 
-#Go to PART B and generate new plots (code line 1027-1260)
+#Go to PART B and generate new plots (code line 1169-1422)
 
-##########################################################
+###########################################################################################################################################################
 
                                     #PART "A" OF PIPELINE FOR NEW ANALYSIS
 
@@ -123,7 +123,7 @@ dev.off()
 
 rm(UMI)
 
-####################################################################################
+###########################################################################################################################################################
 
 #Droplet content and QC human
 #Human
@@ -232,7 +232,7 @@ rm(QC_UMI)
 rm(QC_UMI_mice)
 rm(QC_UMI_human)
 
-####################################################################################
+###########################################################################################################################################################
 
 #Selecting right cells
 #It is the place where you can change thresholds for cells for further analysis
@@ -250,16 +250,16 @@ n_gen_mice <- max(as.numeric(UMI_mice@meta.data$nGenes))*0.75
 cells_number_mice <- length(Idents(UMI_mice))
 
 
-#####################################################################################
+###########################################################################################################################################################
 
 
 UMI <- merge(x = UMI_human, y = UMI_mice)
 UMI <- NormalizeData(UMI, normalization.method = "LogNormalize", scale.factor = 1e6)
 
-######################################################################################
+###########################################################################################################################################################
 
 
-#######################################################################################
+###########################################################################################################################################################
 
 n_gen <- mean(n_gen_human + n_gen_mice)
 UMI <- FindVariableFeatures(UMI, selection.method = "vst", nfeatures = n_gen, binning.method = 'equal_frequency')
@@ -280,7 +280,7 @@ plot2
 dev.off()
 rm(plot2)
 
-#####################################################################################
+###########################################################################################################################################################
 
 all.genes <- rownames(UMI)
 UMI <- ScaleData(UMI, features = all.genes)
@@ -319,7 +319,7 @@ Elbow + geom_vline(xintercept = dim, color = 'red')
 dev.off()
 rm(Elbow)
 
-#########################################################################################
+###########################################################################################################################################################
 
 UMI <- JackStraw(UMI, num.replicate = 10, dims = dim)
 UMI <- ScoreJackStraw(UMI, dims = 1:dim)
@@ -341,7 +341,7 @@ UMI <- FindNeighbors(UMI, dims = dim, reduction = 'pca', nn.method="rann")
 UMI <- FindClusters(UMI, resolution = 0.5, n.start = 10, n.iter = 1000)
 
 
-UMI <- RunUMAP(UMI, dims = dim, n.neighbors = 29, umap.method = "umap-learn")
+UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
 
 
 width <- 15 + (length(unique(Idents(UMI))))/7
@@ -358,14 +358,13 @@ mutual_plot
 dev.off()
 rm(mutual_plot)
 
-####################################################################################
+###########################################################################################################################################################
 
 
 
 #find markers for every cluster compared to all remaining cells, report only the positive ones
 
 print('Searching for cluster marker genes')
-
 
 UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.20, logfc.threshold = 0.25, test.use = 'MAST', base = exp(1))
 
@@ -374,14 +373,20 @@ if (sum(as.numeric(levels(UMI))) != sum(unique(as.integer(UMI.markers$cluster)-1
 }
 
 top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
-top_sig <- UMI.markers %>% group_by(cluster) %>% top_n(n = 100, wt = avg_logFC)
+
+if (length(markers_subclass) != 0) {
+  top10 <- top10[!top10$gene %in% markers_subclass, ]
+}
+
+top_sig <- UMI.markers %>% group_by(cluster) %>% top_n(n = 150, wt = avg_logFC)
 top_sig <- top_sig[top_sig$p_val < 0.001 ,] 
 
 if (mt_cssg == "exclude") {
   top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grep('t-', top_sig$gene)],]
+  top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grep('T-', top_sig$gene)],]
 }
 
-MAST_markers <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
+MAST_markers <- UMI.markers %>% group_by(cluster) %>% top_n(n = 20, wt = avg_logFC)
 
 write.table(MAST_markers, file = file.path(OUTPUT, "MAST_markers_clusters.csv"), sep = ',')
 
@@ -389,11 +394,11 @@ print('Cluster genes - DONE')
 
 ##Cells cluster naming with top genes (different between cell groups)
 
-##########################################################
+###########################################################################################################################################################
 ### Most variable genes select and cell subtypes nameing 
 
 
-##################################################################################
+###########################################################################################################################################################
 #Cells subtypes selection
 
 # Gene selection by split factor
@@ -568,7 +573,7 @@ stopCluster(cl)
 print('Single cell types marker list')
 print(pca_cluster_genes)
 
-###############################################################################
+###########################################################################################################################################################
 
 ##Cell nameing
 
@@ -615,10 +620,10 @@ for (cluster in 1:max(as.numeric(unique(UMI@active.ident)))) {
 rm(tmp)
 print('Naming - DONE')
 
-############################################
-#PCA Cluster average expression for nameing
+###########################################################################################################################################################
+#Cluster average expression for nameing
 
-#######################################################################################################
+###########################################################################################################################################################
 
 
 subset_num <- round(length(colnames(UMI))/10000)
@@ -709,7 +714,7 @@ if (round(length(colnames(UMI))) < 14999) {
   }
 }
 
-#################################################################################
+###########################################################################################################################################################
 
 print('Clusters naming')
 
@@ -718,7 +723,7 @@ cluster_nameing(matrix_a = average_expression, markers = markers_class)
 clust_names <- colnames(average_expression)
 
 
-##########################################
+###########################################################################################################################################################
 
 if (length(markers_subclass) != 0) {
   
@@ -780,7 +785,7 @@ if (length(markers_subclass) != 0) {
 subclass_marker_list_pheat <- rownames(exp_matrix)[toupper(rownames(exp_matrix)) %in% toupper(cell_names.2)]
 subclass_marker_list_pheat <- unique(c(subclass_marker_list_pheat, cell_names[!grepl('Bad',cell_names)]))
 
-#######################################################################################
+###########################################################################################################################################################
 #Repair subclass_names
 
 new.cluster.ids <- paste(clust_names, colnames(average_expression))
@@ -789,13 +794,13 @@ UMI <- RenameIdents(UMI, new.cluster.ids)
 
 print('Naming - DONE')
 
-#################################################################################
+###########################################################################################################################################################
 
 colnames(average_expression) <- new.cluster.ids
 dir.create(path = file.path(OUTPUT,'exp_matrix'))
 write.table(average_expression, file = file.path(OUTPUT, "exp_matrix/class_average_expression.csv"), sep = ',')
 
-########################NOWE#####################################################
+###########################################################################################################################################################
 
 #PCA plot and UMAP plot with names
 
@@ -849,7 +854,7 @@ new.names <- paste0(UMI@active.ident,' - ', firstup(tolower(cell_names)))
 Idents(UMI) <- new.names
 
 
-######################################################################################################################
+###########################################################################################################################################################
 
 
 #Average expression matrix populations
@@ -942,7 +947,8 @@ if (round(length(colnames(UMI))) < 14999) {
     
   }
 }
-#############################################################################################################################
+
+###########################################################################################################################################################
 
 print('Checking and renaming subtypes')
 
@@ -1024,7 +1030,7 @@ old.names <- as.character(colnames(second_matrix))
 second_matrix <- average_expression[subclass_marker_list,]
 colnames(second_matrix) <- as.character(old.names)
 
-################################################
+###########################################################################################################################################################
 #Renamed function
 
 second_matrix <- second_matrix[!colnames(second_matrix) %in% c('Bad', 'Unknow')]
@@ -1070,7 +1076,7 @@ Idents(UMI) <- Renamed_idents
 
 print('Checking - DONE')
 
-###############################################
+###########################################################################################################################################################
 
 print('QC of subtypes')
 
@@ -1084,7 +1090,7 @@ new.subnames <- new.subnames[!as.character(new.subnames) %in% as.character(renam
 bad.subnames <- subclass_names[as.character(subclass_names) %in% as.character(bad)]
 
 
-#############################################################################################################################
+###########################################################################################################################################################
 
 data <- as.data.frame(summary(as.factor(subclass_names), maxsum = length(unique(subclass_names))))
 colnames(data)[1] <- 'n'
@@ -1136,13 +1142,13 @@ bad.subnames <- unique(as.character(bad.subnames))
 UMI_unknow <- subset(UMI, idents = bad.subnames)
 
 bad_cells <- as.data.frame(GetAssayData(object = UMI_unknow, slot = 'counts'))
-colnames(bad_cells)[1:length(colnames(bad_cells))] <- 'Unknow'
+
 
 write.table(bad_cells, file = file.path(OUTPUT, "exp_matrix/unknow_cells_count_matrix.csv"), sep = ',')
 
 rm(bad_cells)
 
-#####################################################################################################
+###########################################################################################################################################################
 
 right.names <- unique(subclass_names[!as.character(subclass_names) %in% as.character(bad.subnames)])
 
@@ -1150,6 +1156,14 @@ right.names <- unique(subclass_names[!as.character(subclass_names) %in% as.chara
 UMI <- subset(UMI, idents = right.names)
 
 print('DONE')
+
+###########################################################################################################################################################
+#Subtype markers selection
+
+UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.20, logfc.threshold = 0.25, test.use = 'MAST')
+MAST_subtypes <- UMI.subtypes %>% group_by(cluster) %>% top_n(n = 20, wt = avg_logFC)
+write.table(MAST_subtypes, file = file.path(OUTPUT, "MAST_subtypes.csv"), sep = ',')
+
 
 
                                             #PART B OF PIPELINE - PLOTS SIZE ADJUSTING
@@ -1177,7 +1191,7 @@ dev.off()
 
 #Expression matrix cells
 
-#######################3
+###########################################################################################################################################################
 
 
 subset_num <- round(length(colnames(UMI))/1000)
@@ -1234,24 +1248,24 @@ if (round(length(colnames(UMI))) < 14999){
   names <- colnames(exp_matrix_obl_tmp)
   exp_stat <- data.frame(names,mean_expression, positive_expression_perc)
 }
-###############################################################################################################
+###########################################################################################################################################################
 
 width <- 25 + (length(unique(Idents(UMI))))/5
 height <- 20 + (length(unique(Idents(UMI))))/5
 
-cells <- ggplot(exp_stat, mapping = aes(x = mean_expression, y = positive_expression_perc, fill = names)) +
-  geom_violin() +
+cells <- ggplot(exp_stat, mapping = aes(x = mean_expression, y = positive_expression_perc, fill = names, color = names)) +
+  geom_jitter() +
   facet_wrap(names~.) +
   theme(legend.position = 'none')
 
-ggsave(cells, filename = file.path(OUTPUT,'violin_matrix.jpeg'), units = 'in', width = width, height = height, dpi = 600, limitsize = FALSE)
+ggsave(cells, filename = file.path(OUTPUT,'cells_heterogenity.jpeg'), units = 'in', width = width, height = height, dpi = 600, limitsize = FALSE)
 
-svg(filename = file.path(OUTPUT,'violin_matrix.svg'), width = width, height = height)
+svg(filename = file.path(OUTPUT,'cells_heterogenity.svg'), width = width, height = height)
 cells
 dev.off()
 rm(cells)
 
-################################################################################################################
+###########################################################################################################################################################
 
 
 exp_matrix <- GetAssayData(UMI, slot = 'data')
@@ -1263,7 +1277,7 @@ write(rownames(exp_matrix), file = file.path(OUTPUT, "exp_matrix/genes.tsv"))
 Matrix::writeMM(exp_matrix, file = file.path(OUTPUT, "exp_matrix/matrix.mtx"))
 
 
-################################################################################################################
+###########################################################################################################################################################
 #Average expression matrix populations
 
 rm(average_expression)
@@ -1364,7 +1378,7 @@ write.table(average_expression, file = file.path(OUTPUT, 'exp_matrix/average_exp
 saveRDS(UMI, file = file.path(OUTPUT, "Results.rds"))
 
 
-#######################################################################################
+###########################################################################################################################################################
 
 #Cell populations pheatmaps
 
@@ -1405,4 +1419,4 @@ dev.off()
 rm(pheat)
 
 
-#########################################################################################
+###########################################################################################################################################################

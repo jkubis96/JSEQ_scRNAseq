@@ -310,13 +310,13 @@ knitr::include_graphics(file.path(path_results,'JackStrawPlot.jpeg'), dpi = 600)
 
 \
 
-## UMAP presentation of the cells clusters
+## UMAP presentation of the cell clusters
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 knitr::include_graphics(file.path(path_results,'UMAP.jpeg'), dpi = 600)
 ```
 
-### MAST algorithm - clusters markers
+### MAST algorithm - cluster markers
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
 read.csv(file = file.path(path_results, "MAST_markers_clusters.csv"), header = T, sep = ',', row.names = 1)
@@ -328,7 +328,7 @@ read.csv(file = file.path(path_results, "MAST_markers_clusters.csv"), header = T
 ## Cells nameing
 
 
-### Cells subclasses
+### Cell subclasses
 
 \
 
@@ -356,7 +356,7 @@ knitr::include_graphics(file.path(path_results,'UMAP_with_DE_gene_class.jpeg'), 
 
 \
 
-### Cells subtypes
+### Cell subtypes
 
 \
 
@@ -401,7 +401,16 @@ UMAP
 
 \
 
-## Pheatmap of the cells subtypes with selected markers
+### MAST algorithm - subtype markers
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
+read.csv(file = file.path(path_results, "MAST_subtypes.csv"), header = T, sep = ',', row.names = 1)
+```
+
+\
+\
+
+## Pheatmap of the cell subtypes with selected markers
 ### log(CPM+1)
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
@@ -412,11 +421,11 @@ knitr::include_graphics(file.path(path_results,'pheatmap_cells_populations.jpeg'
 
 \
 
-### Cells subtypes heterogeneity - number of genes vs mean expression
+### Cell subtypes heterogeneity - number of genes vs mean expression
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
 
-knitr::include_graphics(file.path(path_results,'violin_matrix.jpeg'), dpi = 600)
+knitr::include_graphics(file.path(path_results,'cells_heterogenity.jpeg'), dpi = 600)
 
 ```
 
