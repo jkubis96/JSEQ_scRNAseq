@@ -1120,8 +1120,8 @@ print('DONE')
 ###########################################################################################################################################################
 #Subtype markers selection
 
-UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.20, logfc.threshold = 0.25, test.use = 'MAST')
-MAST_subtypes <- UMI.subtypes %>% group_by(cluster) %>% top_n(n = 20, wt = avg_logFC)
+UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10, logfc.threshold = 0.25, test.use = 'MAST')
+MAST_subtypes <- UMI.subtypes %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
 write.table(MAST_subtypes, file = file.path(OUTPUT, "MAST_subtypes.csv"), sep = ',')
 
 

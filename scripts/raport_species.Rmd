@@ -404,7 +404,9 @@ UMAP
 ### MAST algorithm - subtype markers
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
-read.csv(file = file.path(path_results, "MAST_subtypes.csv"), header = T, sep = ',', row.names = 1)
+markers <- read.csv(file = file.path(path_results, "MAST_subtypes.csv"), header = T, sep = ',', row.names = 1)
+markers <- markers[,colnames(markers) %in% c('p_val','avg_logFC', 'cluster', 'gene')]
+print(markers) 
 ```
 
 \
