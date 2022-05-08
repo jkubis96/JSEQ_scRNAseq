@@ -3,7 +3,7 @@
 function permission {
 
 echo ''
-echo 'Write [sudo] to give installation permission'
+echo -e '\033[1;36m Write [sudo] to give installation permission'
 echo ''
 
 read permission_sudo

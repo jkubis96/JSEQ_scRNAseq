@@ -2,7 +2,7 @@
  
 function select_analysis {
 
-echo 'Analysis of data for fastq analysis project [1]  counts / expression analysis project [2]:'
+echo -e '\033[1;36m Analysis of data for fastq analysis project [1]  counts / expression analysis project [2]:'
 read p 
 p=$(echo $p | tr '[:upper:]' '[:lower:]')
 
@@ -28,7 +28,7 @@ function select_project_seurat {
 
 INFASTP=$(pwd)/projects/*'exp'*
 
-select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
+select d in $INFASTP; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
 cd $d
 source config
 project_name=$project_name
@@ -49,7 +49,7 @@ function select_project_fastq {
 
 INFASTP=$(pwd)/projects/*'fq'*
 
-select d in $INFASTP; do test -n "$d" && break; echo ">>> Invalid Selection"; done
+select d in $INFASTP; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
 cd $d
 source config
 project_name=$project_name

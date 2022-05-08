@@ -19,6 +19,9 @@ cat $r1 > input_R1.fastq.gz
 cat $r2 > input_R2.fastq.gz
 rm $r1 $r2
 
+r1=
+r2=
+
 cd ..
 cd ..
 cd ..
@@ -28,8 +31,8 @@ cd ..
 
 function checkfq {
 		echo ''
-		echo 'Put fastq data into => projects/'$project_name_mod/'fast_data'
-		echo 'If you done it, push ENTER'
+		echo  -e '\033[1;36m Put fastq data into => projects/'$project_name_mod/'fast_data'
+		echo  -e '\033[1;36m If you done it, push ENTER'
 		read enter
 		
 		fast=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
@@ -42,9 +45,9 @@ done;
 if      [[ $r == *"R1"* ]] && [[ $r == *"R2"* ]];
 then
         echo ''
-		echo 'Project done'
+		echo -e "\033[0;32m Project done"
 		echo ''
-		echo 'Merge fastq file for Read1 and Read2 - if more than one'
+		echo  -e '\033[1;36m Merge fastq file for Read1 and Read2 - if more than one'
 		echo ''
 		merge_fq
 		echo ''
@@ -53,8 +56,8 @@ then
 		INDEXING
 		
 else
-        echo 'Fastq data not found'
-		echo 'Put data'
+        echo -e '\033[0;31m Fastq data not found'
+		echo -e '\033[0;31m Put data'
 		checkfq
 		
 fi
@@ -65,9 +68,9 @@ fi
 
 function checkseurat_1 {
 		echo ''
-		echo 'Put count genes matrix into => projects/'$project_name_mod/'sc_data'
-		echo 'Available matrix format .csv | .tsv | .txt'
-		echo 'If you done it, push ENTER'
+		echo  -e '\033[1;36m Put count genes matrix into => projects/'$project_name_mod/'sc_data'
+		echo  -e '\033[1;36m Available matrix format .csv | .tsv | .txt'
+		echo  -e '\033[1;36m If you done it, push ENTER'
 		read enter
 		
 		fast=$(pwd)/projects/$project_name_mod/sc_data/*
@@ -80,15 +83,18 @@ done;
 if      [[ $r == *".tsv"* ]]
 then
 
-        echo $(date) 'Data converting'
-		
+        echo  -e '\033[1;36m $(date) Data converting'
+	
 	format=tsv
+	con=NULL
+	null=NULL
 	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
+	
 	
 		echo ''
-		echo 'Project done'
-		echo 'Start SingleCell analysis'
+		echo -e "\033[0;32m Project done"
+		echo -e "\033[0;32m Start analysis"
 		echo ''
 	
 	
@@ -96,15 +102,17 @@ then
 	
 elif     [[ $r == *".csv"* ]] 
 then
-        echo $(date) 'Data converting'
+        echo  -e '\033[1;36m $(date) Data converting'
 	
 	format=csv
+	con=NULL
+	null=NULL
 	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
 	
 		echo ''
-		echo 'Project done'
-		echo 'Start SingleCell analysis'
+		echo -e "\033[0;32m Project done"
+		echo -e "\033[0;32m Start analysis"
 		echo ''
 	
 	jseq=$(pwd)/JSEQ
@@ -114,15 +122,17 @@ then
 elif    [[ $r == *".txt"* ]]
 then
         
-		echo $(date) 'Data converting'
+		echo  -e '\033[1;36m $(date) Data converting'
 		
 	format=txt
+	con=NULL
+	null=NULL
 	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
 		
 		echo ''
-		echo 'Project done'
-		echo 'Start SingleCell analysis'
+		echo -e "\033[0;32m Project done"
+		echo -e "\033[0;32m Start analysis"
 		echo ''
 	
 	
@@ -130,8 +140,8 @@ then
 		
 		
 else
-        echo 'Expression data not found'
-		echo 'Put data'
+        echo -e '\033[1;31m Expression data not found'
+		echo -e '\033[1;31m Put data'
 		checkseurat_1
 fi
 
@@ -141,9 +151,9 @@ fi
 
 function checkseurat_2 {
 		echo ''
-		echo 'Put normalized expression genes matrix into => projects/'$project_name_mod/'sc_data'
-		echo 'Available matrix format .csv | .tsv | .txt'
-		echo 'If you done it, push ENTER'
+		echo  -e '\033[1;36m Put normalized expression genes matrix into => projects/'$project_name_mod/'sc_data'
+		echo  -e '\033[1;36m Available matrix format .csv | .tsv | .txt'
+		echo  -e '\033[1;36m If you done it, push ENTER'
 		read enter
 		
 		fast=$(pwd)/projects/$project_name_mod/sc_data/*
@@ -156,15 +166,17 @@ done;
 if      [[ $r == *".tsv"* ]]
 then
 
-       echo $(date) 'Data converting'
+       echo -e '\033[1;36m $(date) Data converting'
 		
 	format=tsv
+	con=NULL
+	null=NULL
 	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
 	
 		echo ''
-		echo 'Project done'
-		echo 'Start SingleCell analysis'
+		echo -e "\033[0;32m Project done"
+		echo -e "\033[0;32m Start analysis"
 		echo ''
 		
 	
@@ -173,15 +185,17 @@ then
 elif     [[ $r == *".csv"* ]] 
 then
 
-        echo $(date) 'Data converting'
+        echo  -e '\033[1;36m $(date) Data converting'
 	
 	format=csv
+	con=NULL
+	null=NULL
 	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
 	
 		echo ''
-		echo 'Project done'
-		echo 'Start SingleCell analysis'
+		echo -e "\033[0;32m Project done"
+		echo -e "\033[0;32m Start analysis"
 		echo ''
 		
 	
@@ -190,15 +204,17 @@ then
 elif    [[ $r == *".txt"* ]]
 then
 
-       echo $(date) 'Data converting'
+       echo  -e '\033[1;36m $(date) Data converting'
 		
 	format=txt
+	con=NULL
+	null=NULL
 	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r)
+	Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
 	
 		echo ''
-		echo 'Project done'
-		echo 'Start SingleCell analysis'
+		echo -e "\033[0;32m Project done"
+		echo -e "\033[0;32m Start analysis"
 		echo ''
 		
 	
@@ -206,8 +222,8 @@ then
 		
 		
 else
-        echo 'Expression data not found'
-		echo 'Put data'
+        echo -e '\033[0;31m Expression data not found'
+		echo -e '\033[0;31m Put data'
 		checkseurat_2
 fi
 
@@ -217,10 +233,10 @@ fi
 
 function checkseurat_3 {
 		echo ''
-		echo 'Put genes name data as genes.tsv into => projects/'$project_name_mod/'sc_data'
-		echo 'Put barcodes data as barcodes.tsv into => projects/'$project_name_mod/'sc_data'
-		echo 'Put count matrix data as matrix.mtx into => projects/'$project_name_mod/'sc_data'
-		echo 'If you done it, push ENTER'
+		echo  -e '\033[1;36m Put genes name data as genes.tsv into => projects/'$project_name_mod/'sc_data'
+		echo  -e '\033[1;36m Put barcodes data as barcodes.tsv into => projects/'$project_name_mod/'sc_data'
+		echo  -e '\033[1;36m Put count matrix data as matrix.mtx into => projects/'$project_name_mod/'sc_data'
+		echo  -e '\033[1;36m If you done it, push ENTER'
 		read enter
 		
 		fast=$(pwd)/projects/$project_name_mod/sc_data/*
@@ -233,8 +249,8 @@ done;
 if      [[ $r == *"matrix"* ]] && [[ $r == *"genes"* ]] && [[ $r == *"barcodes"* ]];
 then
         echo ''
-		echo 'Project done'
-		echo 'Start SingleCell analysis'
+		echo -e "\033[0;32m Project done"
+		echo -e "\033[0;32m Start analysis"
 		echo ''
 		
 	
@@ -242,8 +258,8 @@ then
 		
 		
 else
-        echo 'Expression data not found'
-		echo 'Put data'
+        echo -e '\033[0;31m Expression data not found'
+		echo -e '\033[0;31m Put data'
 		checkseurat_3
 fi
 
@@ -251,24 +267,24 @@ fi
 		
 }
 function PARAMETRS_fq {
-echo 'Project name:' 
+echo  -e '\033[1;36m Project name:' 
 echo ''
 		read project_name
 		project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
-echo 'Enter operation paramets:'
+echo  -e '\033[1;36m Enter operation paramets:'
 echo ''
-echo 'ReadsLenght:'
+echo  -e '\033[1;36m ReadsLenght:'
 echo ''
         read READS_LENGHT
-echo 'Species [human/mice/mix]:'
+echo  -e '\033[1;36m Species [human/mice/mix/custom]:'
 echo ''
         read species
 		species=$(echo $species | tr '[:upper:]' '[:lower:]')
-echo 'Estimated number of cells'
+echo  -e '\033[1;36m Estimated number of cells'
 echo ''
 	read cell
 
-echo 'Choose marker set'
+echo  -e '\033[1;36m Choose marker set'
 echo ''
 
 marker_input=$(pwd)/requirements_file/*xlsx
@@ -279,15 +295,15 @@ marker_path=$m
 echo ''
 echo ''
 
-if [[ $READS_LENGHT -lt 300 && $READS_LENGHT -gt 0 ]] && [[ $species == 'human' || $species == 'mice' || $species == 'mix' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]];
+if [[ $READS_LENGHT -lt 300 && $READS_LENGHT -gt 0 ]] && [[ $species == 'human' || $species == 'mice' || $species == 'mix' || $species == 'custom' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]];
 then
 
-echo 'Parametrs correct'
+echo -e "\033[0;32m Parametrs correct"
 echo ''
 else
         echo ''
-		echo 'Wrong parametrs'
-		echo 'Write right parametrs'
+		echo -e '\033[0;31m Wrong parametrs'
+		echo -e '\033[0;31m Write right parametrs'
 		echo ''
 		PARAMETRS_fq
 		
@@ -296,22 +312,22 @@ fi
 }
 
 function PARAMETRS_se {
-echo 'Project name:' 
+echo  -e '\033[1;36m Project name:' 
 echo ''
 		read project_name
 		project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
-echo 'Enter operation paramets:'
+echo  -e '\033[1;36m Enter operation paramets:'
 echo ''
 
-echo 'Species [human/mice]:'
+echo  -e '\033[1;36m Species [human/mice/custom]:'
 echo ''
         read species
 		species=$(echo $species | tr '[:upper:]' '[:lower:]')
-echo 'Estimated number of cells'
+echo  -e '\033[1;36m Estimated number of cells'
 echo ''
 	read cell
 	
-echo 'Choose marker set'
+echo  -e '\033[1;36m Choose marker set'
 echo ''
 
 marker_input=$(pwd)/requirements_file/*xlsx
@@ -321,19 +337,19 @@ marker_path=$m
 echo ''
 echo ''
 
-echo 'Data format: count_matrix [1] | normalized_expression [2] | separate genes.tsv / names.tsv / matrix.mtx files [3]'
+echo  -e '\033[1;36m Data format: count_matrix [1] | normalized_expression [2] | separate genes.tsv / names.tsv / matrix.mtx files [3]'
 echo ''
 	read data
 
-if [[ $species == 'human' || $species == 'mice' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]] && [[ $data == '1' || $data == '2' || $data == '3' ]];
+if [[ $species == 'human' || $species == 'mice' || $species == 'custom' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]] && [[ $data == '1' || $data == '2' || $data == '3' ]];
 then
 
-echo 'Parametrs correct'
+echo -e "\033[0;32m Parametrs correct"
 echo ''
 else
         echo ''
-		echo 'Wrong parametrs'
-		echo 'Write right parametrs'
+		echo -e '\033[0;31m Wrong parametrs'
+		echo -e '\033[0;31m Write right parametrs'
 		echo ''
 		PARAMETRS_se
 		
@@ -357,7 +373,7 @@ fi
 
 function PROJECT {
 
-echo 'Create project for fastq data [1] or counts / expression data  [2]:'
+echo  -e '\033[1;36m Create project for fastq data [1] or counts / expression data  [2]:'
 read p 
 p=$(echo $p | tr '[:upper:]' '[:lower:]')
 
@@ -370,9 +386,9 @@ then
 		mkdir -p projects/$project_name_mod/results
 		mkdir -p projects/$project_name_mod/sc_data
 		echo ''
-		echo 'Complete'
+		echo -e "\033[0;32m Complete"
 		echo ''
-        echo 'Next step =>'
+        echo  -e '\033[1;36m Next step =>'
 		echo ''
 		
 		echo project_name=$project_name > $(pwd)/projects/$project_name_mod/config
@@ -395,9 +411,9 @@ then
 		mkdir -p projects/$project_name_mod/results
 		mkdir -p projects/$project_name_mod/fast_data
 		echo ''
-		echo 'Complete'
+		echo -e "\033[0;32m Complete"
 		echo ''
-        echo 'Next step =>'
+        echo  -e '\033[1;36m Next step =>'
 		echo ''
 		
 		echo project_name=$project_name > $(pwd)/projects/$project_name_mod/config

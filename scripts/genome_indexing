@@ -1,17 +1,58 @@
 #!/bin/bash 
 
+#ref fiile generate
+
+function create_ref {
+cpu=$(grep -c ^processor /proc/cpuinfo)
+cpu=$cpu-2
+DIR=$(pwd)/genome/$species/index/$READS_LENGHT 
+GENOME=$(pwd)/genome/$species
+
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/picard/build/libs/picard.jar CreateSequenceDictionary \
+        REFERENCE=$(pwd)/genome/$species/genome.fa \
+        OUTPUT=$(pwd)/genome/$species/genome.dict
+
+}
+
+
+function rna_intervals {
+
+SCRIPTS_EXTRACT=$(pwd)/setup
+java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar CreateIntervalsFiles \
+        REDUCED_GTF=$(pwd)/genome/$species/reduced_annotation.gtf \
+        SEQUENCE_DICTIONARY=$(pwd)/genome/$species/genome.dict \
+        O=$(pwd)/genome/$species/ \
+        PREFIX='/annotation'
+}
+
+#########################################################################################################################
+
 
 function GENOME {
 
-echo 'Enter the species [human/mice/mix]:'
+echo -e '\033[1;36m Enter the species [human/mice/mix/custom]:'
 echo ''
 
 read species
+#config
+source $(pwd)/requirements_file/genome.conf
+human_genome=$human_genome
+human_annotation=$human_annotation
+
+mice_genome=$mice_genome
+mice_annotation=$mice_annotation
+
+custom_genome=$custom_genome
+custom_annotation=$custom_annotation
+
 species=$(echo $species | tr '[:upper:]' '[:lower:]')
-source=$(pwd)/scripts/merge_genome.py
-input_mice=$(pwd)/genome/$species/correct_annotation_mice.gtf
-input_human=$(pwd)/genome/$species/correct_annotation_human.gtf
-output_mix=$(pwd)/genome/$species/annotation_mix.gtf
+source=$(pwd)/scripts
+input_mice=$(pwd)/genome/$species/annotation_mice.gtf
+input_human=$(pwd)/genome/$species/annotation_human.gtf
+output_mix=$(pwd)/genome/$species/annotation.gtf
+CHECK=$(pwd)/genome
 
 
 if [[ $species == 'human' ]]
@@ -20,14 +61,26 @@ then
         mkdir -p genome
 		mkdir -p genome/$species
         cd genome/$species
-        wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.annotation.gtf.gz -O annotation.gtf.gz
-	gunzip annotation.gtf.gz
-	cat annotation.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct_annotation.gtf
-	rm annotation.gtf
-	wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/GRCh38.primary_assembly.genome.fa.gz -O genome.fa.gz
-	gunzip genome.fa.gz
-	cd ..
-	cd ..
+        wget ${human_annotation} -O annotation.gtf.gz
+		gunzip annotation.gtf.gz
+		wget ${human_genome} -O genome.fa.gz
+		gunzip genome.fa.gz
+		
+		cd ..
+		cd ..
+		
+		echo -e "\033[0;34m $(date) Creating genome reference files"
+		create_ref  
+	
+		Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+		
+		echo -e "\033[0;34m $(date) Generating of the intervals"
+		rna_intervals
+		
+		echo -e "\033[0;32m $(date) Process DONE!"
+
+		
+		
 	
 start
 
@@ -37,61 +90,134 @@ then
         mkdir -p genome/$species
         cd genome/$species
 		
-        wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M28/gencode.vM28.annotation.gtf.gz -O annotation.gtf.gz
-	gunzip annotation.gtf.gz
-	cat annotation.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct_annotation.gtf
-	rm annotation.gtf
-	wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M28/GRCm39.primary_assembly.genome.fa.gz -O genome.fa.gz
-	gunzip genome.fa.gz
-	cd ..
-	cd ..
+        wget ${mice_annotation} -O annotation.gtf.gz
+		gunzip annotation.gtf.gz
+		wget ${mice_genome} -O genome.fa.gz
+		gunzip genome.fa.gz
+		
+		cd ..
+		cd ..
+		
+		echo -e "\033[0;34m $(date) Creating genome reference files"
+		create_ref  
+	
+		Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+		
+		echo -e "\033[0;34m $(date) Generating of the intervals"
+		rna_intervals
+		
+		echo -e "\033[0;32m $(date) Process DONE!"
+
 
 start
 
+
 elif [[ $species == 'mix' ]]
-then
+then	
+		
+		
 		mkdir -p genome
 		mkdir -p genome/$species
         cd genome/$species
         
-		wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.annotation.gtf.gz -O annotation_human.gtf.gz
-	gunzip annotation_human.gtf.gz
-	cat annotation_human.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct_annotation_human.gtf
-	rm annotation_human.gtf
-	wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/GRCh38.primary_assembly.genome.fa.gz -O genome_human.fa.gz
-	gunzip genome_human.fa.gz
+		
+		if  [[ -f $CHECK/human/genome.fa ]];
+		then
+		cp $CHECK/human/genome.fa genome_human.fa
+		cp $CHECK/human/annotation.gtf annotation_human.gtf
+		
+		else
+		
+		
+		wget ${human_annotation} -O annotation_human.gtf.gz
+		gunzip annotation_human.gtf.gz
+		wget ${human_genome} -O genome_human.fa.gz
+		gunzip genome_human.fa.gz
+		
+		fi
+		
+		sed -e 's/>/>human_/g' genome_human.fa > renamed_genome_human.fa
 	
-	sed -e 's/>/>human/g' genome_human.fa > renamed_genome_human.fa
+
+		if  [[ -f $CHECK/mice/genome.fa ]];
+		then
+		cp $CHECK/mice/genome.fa genome_mice.fa
+		cp $CHECK/mice/annotation.gtf annotation_mice.gtf
+		
+		else
+		
+		
+		wget ${mice_annotation} -O annotation_mice.gtf.gz
+		gunzip annotation_mice.gtf.gz
+		wget ${mice_genome} -O genome_mice.fa.gz
+		gunzip genome_mice.fa.gz
+		
+		fi
+		
+		sed -e 's/>/>mice_/g' genome_mice.fa > renamed_genome_mice.fa
 	
+		cat renamed_genome_human.fa renamed_genome_mice.fa > genome.fa
 	
-		wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M28/gencode.vM28.annotation.gtf.gz -O annotation_mice.gtf.gz
-	gunzip annotation_mice.gtf.gz
-	cat annotation_mice.gtf | grep -E '3prime_overlapping_ncRNA|antisense|bidirectional_promoter_lncRNA|IG_C_gene|IG_C_pseudogene|IG_D_gene|IG_J_gene|IG_J_pseudogene|IG_pseudogene|IG_V_gene|IG_V_pseudogene|lincRNA|macro_lncRNA|miRNA|misc_RNA|Mt_rRNA|Mt_tRNA|non_coding|polymorphic_pseudogene|processed_pseudogene|processed_transcript|protein_coding|pseudogene|ribozyme|rRNA|scaRNA|scRNA|sense_intronic|sense_overlapping|snoRNA|snRNA|sRNA|TEC|transcribed_processed_pseudogene|transcribed_unitary_pseudogene|transcribed_unprocessed_pseudogene|translated_processed_pseudogene|TR_C_gene|TR_D_gene|TR_J_gene|TR_J_pseudogene|TR_V_gene|TR_V_pseudogene|unitary_pseudogene|unprocessed_pseudogene|vaultRNA' > correct_annotation_mice.gtf
-	rm annotation_mice.gtf
-	wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M28/GRCm39.primary_assembly.genome.fa.gz -O genome_mice.fa.gz
-	gunzip genome_mice.fa.gz
+		echo $(date) 'Annotations merging'
+		
+		rm renamed_genome_human.fa
+		rm renamed_genome_mice.fa
+		rm genome_human.fa
+		rm genome_mice.fa
+		
+		cd ..
+		cd ..
+		
+		python3 $source/merge_genome.py $input_mice $input_human $output_mix
+		
+		echo -e "\033[0;34m $(date) Creating genome reference files"
+		create_ref  
 	
-	sed -e 's/>/>mice/g' genome_mice.fa > renamed_genome_mice.fa
+		Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+		
+		echo -e "\033[0;34m $(date) Generating of the intervals"
+		rna_intervals
+		
+		echo -e "\033[0;32m $(date) Process DONE!"
+		
 	
+
+		
 	
-	cat renamed_genome_human.fa renamed_genome_mice.fa > genome_mix.fa
+start
+
+elif [[ $species == 'custom' ]]
+then
+		mkdir -p genome
+        mkdir -p genome/$species
+        cd genome/$species
+		
+        wget ${custom_annotation} -O annotation.gtf.gz
+		gunzip annotation.gtf.gz
+		wget ${custom_genome} -O genome.fa.gz
+		gunzip genome.fa.gz
+		
+		cd ..
+		cd ..
+		
+		echo -e "\033[0;34m $(date) Creating genome reference files"
+		create_ref  
 	
-	
-	python3 $source $input_mice $input_human $output_mix
-	
-	rm correct_annotation_human.gtf
-	rm correct_annotation_mice.gtf
-	rm renamed_genome_human.fa
-	rm renamed_genome_mice.fa
-	rm genome_human.fa
-	rm genome_mice.fa
-	cd ..
-	cd ..
-	
-	
+		Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+		
+		echo -e "\033[0;34m $(date) Generating of the intervals"
+		rna_intervals
+		
+		echo -e "\033[0;32m $(date) Process DONE!"
+
+		
+start
+
 fi
 
 }
+
+
 
 function index_file {
 
@@ -117,7 +243,7 @@ function INDEXING {
 index_file
 
 echo ''
-echo $(date) 'Genome indexing start...'
+echo -e "\033[0;34m $(date) Genome indexing start..."
 echo ''
 
 
@@ -125,7 +251,7 @@ if [[ $check_index != $READS_LENGHT ]]
 then
 
 echo ''
-echo 'Start indexing'
+echo -e "\033[0;34m Start indexing"
 echo ''
 
 mkdir -p genome/$species/index/$READS_LENGHT 
@@ -133,13 +259,17 @@ cpu=$(grep -c ^processor /proc/cpuinfo)
 cpu=$cpu-2
 DIR=$(pwd)/genome/$species/index/$READS_LENGHT 
 GENOME=$(pwd)/genome/$species
-lenght=$READS_LENGHT-1
+lenght=$READS_LENGHT
 
-STAR --runThreadN $cpu  --runMode genomeGenerate --genomeDir $DIR  --genomeFastaFiles $GENOME/*.fa  --sjdbGTFfile $GENOME/*.gtf --sjdbOverhang $lenght
+mem=$(($(getconf _PHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))
+mem=$[$mem * 1000000]
+
+STAR --runThreadN $cpu  --runMode genomeGenerate --genomeDir $DIR  --genomeFastaFiles $GENOME/*.fa  --sjdbGTFfile $GENOME/correct_annotation.gtf --limitGenomeGenerateRAM $mem --sjdbOverhang $lenght
+
+echo -e "\033[0;32m $(date) Genome indexing done"
+
 
 echo ''
-echo $(date) 'Genome indexing done'
-echo 'You can run analysis'
 echo ''
 
 start
@@ -148,17 +278,16 @@ elif [[ $check_index == $READS_LENGHT ]]
 then	
 	
 echo ''
-echo 'Index' $READS_LENGHT 'for' $species 'already exist'
-echo 'You can run analysis'
+echo -e "\033[0;34m Index' $READS_LENGHT 'for' $species 'already exist"
+echo -e "\033[0;34m You can run analysis"
 echo ''
 
+species=
 
 start
 
 fi
 
 }
-
-
 
 

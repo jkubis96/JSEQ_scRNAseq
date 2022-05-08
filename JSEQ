@@ -2,18 +2,18 @@
 
 echo ''
 
-echo 'Welcome in the JSEQ® scRNAseq pipeline which was prepared at Institute of Bioorganic Chemistry, Polish Academy of Sciences in Poznań'
+echo -e '\033[1;33m Welcome in the JSEQ® scRNAseq pipeline which was prepared at Institute of Bioorganic Chemistry, Polish Academy of Sciences in Poznań'
 
-echo 'All information and references you can check in the file JSEQ manual on my GitHub'
+echo -e '\033[1;33m All information and references you can check in the file JSEQ manual on my GitHub'
 
-echo 'Contact: jkubis@ibch.poznan.pl or jakub.kubis1996@gmail.com'
+echo -e '\033[1;33m Contact: jkubis@ibch.poznan.pl or jakub.kubis1996@gmail.com'
 
 echo ''
 echo ''
 
-echo 'Choose JSEQ working directory location:'
-echo 'Local [local]'
-echo 'Docker container [docker]'
+echo -e '\033[1;36m Choose JSEQ working directory location:'
+echo -e '\033[1;36m Local [local]'
+echo -e '\033[1;36m Docker container [docker]'
 echo ''
 	
 
@@ -21,13 +21,13 @@ echo ''
 function start {
 
 echo ''
-echo 'Choose JSEQ function:'
-echo '-local installation [install]'
-echo '-download RefGenome (GENCODE) [genome]'
-echo '-creat new project [project]'
-echo '-start analysis [analysis]'
+echo -e '\033[1;36m Choose JSEQ function:'
+echo -e '\033[1;36m -local installation [install]'
+echo -e '\033[1;36m -download RefGenome (GENCODE) [genome]'
+echo -e '\033[1;36m -creat new project [project]'
+echo -e '\033[1;36m -start analysis [analysis]'
 echo ''
-echo 'Choose function:'
+echo -e '\033[1;36m Choose function:'
 echo ''
 	read s
 	s=$(echo $s | tr '[:upper:]' '[:lower:]')
@@ -40,21 +40,21 @@ then
         cd $(pwd)/setup
         source $source
 		permission 
-		echo $(date) 'Python installing and libraries...'
+		echo -e '\033[0;34m $(date) Python installing and libraries...'
 		python >> $log_install 2>&1
-		echo $(date) 'R installing and libraries...'
+		echo -e '\033[0;34m $(date) R installing and libraries...'
 		r_base >> $log_install 2>&1
-		echo $(date) 'JAVA installing...'
+		echo -e '\033[0;34m $(date) JAVA installing...'
 		java >> $log_install 2>&1
-		echo $(date) 'SAMtools installing...'
+		echo -e '\033[0;34m $(date) SAMtools installing...'
 		SAMtools >> $log_install 2>&1
-		echo $(date) 'STAR installing...'
+		echo -e '\033[0;34m $(date) STAR installing...'
 		STAR >> $log_install 2>&1
-		echo $(date) 'fastp installing and libraries...'
+		echo -e '\033[0;34m $(date) fastp installing and libraries...'
 		fastp >> $log_install 2>&1
-		echo $(date) 'dropSEQtools installing...'
+		echo -e '\033[0;34m $(date) dropSEQtools installing...'
 		DropSeq >> $log_install 2>&1
-		echo $(date) 'picard installing...'
+		echo -e '\033[0;34m $(date) picard installing...'
 		picard >> $log_install 2>&1
         cd ..
 		echo ''
@@ -81,104 +81,99 @@ then
 		source $source/project_selection
 		select_analysis
 		
-		function experiment_selection {
-if [[ $d  == *'fq'* && $species  == 'human' ]] || [[ $d  == *'fq'* && $species  == 'mice' ]]
+function experiment_selection {
+		if [[ $d  == *'fq'* && $species  == 'human' ]] || [[ $d  == *'fq'* && $species  == 'mice' ]] || [[ $d  == *'fq'* && $species  == 'custom' ]];
 then
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
-		
         source=$(pwd)/scripts
 		source $source/analysis_species
 		echo ''
-		echo 'Process start...'
+		echo -e "\033[0;34m Process start..."
 		echo ''
-		echo $(date) 'Trimming of the adapters and quality control of the reads'
-		TRIMMING > $log 2>&1
-		echo $(date) 'Starting of the mapping process'
-		STAR_MAPPING >> $log 2>&1
-		echo $(date) 'Creating the whitelist'
+		echo -e "\033[1;33m WARNING! Depending on data set volume and data heterogeneity a whole analysis can last even several hours" 
+		echo ''
+		echo -e "\033[0;34m $(date) Trimming of the adapters and quality control of the reads"
+		directory >> $log 2>&1
+		TRIMMING >> $log 2>&1
+		echo -e "\033[0;34m $(date) UMIs and barcodes extraction"
 		whitelist >> $log 2>&1
-		echo $(date) 'UMIs and barcodes extraction'
-		umi_extract >> $log 2>&1
-		merge_reads >> $log 2>&1
-		barcodes >> $log 2>&1
-		echo $(date) 'Creating genome reference files'
-		create_ref >> $log 2>&1
-		reduce_annotation_gtf >> $log 2>&1
-		create_ref_annotation >> $log 2>&1
-		echo $(date) 'Mapping of the reads to the exonic regions'
+		echo -e "\033[0;34m $(date) Starting of the mapping process"
+		STAR_MAPPING >> $log 2>&1
+		echo -e "\033[0;34m $(date) Adding UMI and barcode tags to bam file"
+		add_tags >> $log 2>&1	
+		echo -e "\033[0;34m $(date) Annotation to transcriptome regions"
 		dropSEQ >> $log 2>&1
-		echo $(date) 'Detecting and repairing substitution errors in the cell barcodes'
+		echo -e "\033[0;34m $(date) Detecting and repairing substitution errors in the cell barcodes"
 		final_exon >> $log 2>&1
-		echo $(date) 'Detecting and repairing barcode indexes synthesis errors'
+		echo -e "\033[0;34m $(date) Detecting and repairing barcode indexes synthesis errors"
 		completed_bam >> $log 2>&1
-		echo $(date) 'Generating of the intervals'
-		rna_intervals >> $log 2>&1
-		echo $(date) 'Creating list of count'
+		echo -e "\033[0;34m $(date) Creating count statistics"
+		umi_extract >> $log 2>&1
 		umi_expression >> $log 2>&1
-		echo $(date) 'Creating metrics of the genetics parts content'
+		echo -e "\033[0;34m $(date) Creating RNA metrics"
 		scRNAmetrics >> $log 2>&1
 		metric_plot >> $log 2>&1
-		echo $(date) 'Creating matrix of counts'
+		echo -e "\033[0;34m $(date) Creating matrix of counts"
 		convert_mtx_umi >> $log 2>&1
-		echo $(date) 'Counts analysis and creating report'
+		echo -e "\033[0;34m $(date) Counts analysis and creating report"
 		seurat >> $log 2>&1
 		echo ''
-		echo 'Process completed. Check '$project_name_mode" for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
+		echo -e "\033[0;32m Process completed"
+		echo ''
+		echo -e "\033[1;33m Check $project_name_mode for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 		echo ''
 		
-elif	[[ $d  == *'_fq'* ]] && [[ $species  == 'mix' ]]
+elif
+		[[ $d  == *'_fq'* ]] && [[ $species  == 'mix' ]];
 then
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
         source=$(pwd)/scripts
 		source $source/analysis_mix
 		echo ''
-		echo 'Process start...'
+		echo -e "\033[0;34m Process start..."
 		echo ''
-		echo $(date) 'Trimming of the adapters and quality control of the reads'
+		echo -e "\033[1;33m WARNING! Depending on data set volume and data heterogeneity a whole analysis can last even several hours" 
+		echo ''
+		echo -e "\033[0;34m $(date) Trimming of the adapters and quality control of the reads"
 		directory >> $log 2>&1
 		TRIMMING >> $log 2>&1
-		echo $(date) 'Starting of the mapping process'
-		STAR_MAPPING >> $log 2>&1
-		echo $(date) 'Creating the whitelist'
+		echo -e "\033[0;34m $(date) UMIs and barcodes extraction"
 		whitelist >> $log 2>&1
-		echo $(date) 'UMIs and barcodes extraction'
-		umi_extract >> $log 2>&1
-		merge_reads >> $log 2>&1
-	    barcodes >> $log 2>&1
-		echo $(date) 'Creating genome reference files'
-		create_ref >> $log 2>&1
-		reduce_annotation_gtf >> $log 2>&1
-		create_ref_annotation >> $log 2>&1
-		echo $(date) 'Mapping of the reads to the exonic regions'
+		echo -e "\033[0;34m $(date) Starting of the mapping process"
+		STAR_MAPPING >> $log 2>&1
+		echo -e "\033[0;34m $(date) Adding UMI and barcode tags to bam file"
+		add_tags >> $log 2>&1			
+		echo -e "\033[0;34m $(date) Annotation to transcriptome regions"
 		dropSEQ >> $log 2>&1
-		echo $(date) 'Detecting and repairing substitution errors in the cell barcodes'
+		echo -e "\033[0;34m $(date) Detecting and repairing substitution errors in the cell barcodes"
 		final_exon >> $log 2>&1
-		echo $(date) 'Detecting and repairing barcode indexes synthesis errors'
+		echo -e "\033[0;34m $(date) Detecting and repairing barcode indexes synthesis errors"
 		completed_bam >> $log 2>&1
-		echo $(date) 'Generating of the intervals'
-		rna_intervals >> $log 2>&1
-		echo $(date) 'Dividing combined scingle cell data to mice and human experiments analysis'
+		echo -e "\033[0;34m $(date) Dividing combined scingle cell data to mice and human experiments analysis"
 		filtr_mice >> $log 2>&1
 		filtr_human >> $log 2>&1
-		echo $(date) 'Creating list of count'
+		echo -e "\033[0;34m $(date) Creating count statistics"
+		umi_extract >> $log 2>&1
 		umi_expression_mice >> $log 2>&1
 		umi_expression_human >> $log 2>&1
-		echo $(date) 'Creating metrics of the genetics parts content'
+		echo -e "\033[0;34m $(date) Creating metrics of the genetics parts content"
 		scRNAmetrics_mice >> $log 2>&1
 		scRNAmetrics_human >> $log 2>&1
 		metric_plot_mice >> $log 2>&1
 		metric_plot_human >> $log 2>&1
-		echo $(date) 'Creating matrix of counts'
+		echo -e "\033[0;34m $(date) Creating matrix of counts"
 		convert_mtx_umi_mice >> $log 2>&1
 		convert_mtx_umi_human >> $log 2>&1
-		echo $(date) 'Counts analysis and creating report'		
+		echo -e "\033[0;34m $(date) Counts analysis and creating report"	
 		seurat_mix >> $log 2>&1
 		echo ''
-		echo 'Process completed. Check '$project_name_mode" for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
+		echo -e "\033[0;32m Process completed"
+		echo ''
+		echo -e "\033[1;33m Check $project_name_mode for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 		echo ''
 		
-elif	[[ $species  == 'human' && $d  == *'_exp'* ]] || [[ $species  == 'mice' && $d  == *'_exp'* ]] || [[ $species  == 'mix' && $d  == *'_exp'* ]]
+elif	[[ $species  == 'human' && $d  == *'_exp'* ]] || [[ $species  == 'mice' && $d  == *'_exp'* ]] || [[ $species  == 'mix' && $d  == *'_exp'* ]] || [[ $species  == 'custom' && $d  == *'_exp'* ]]
 then
 
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
@@ -186,15 +181,20 @@ then
 		source=$(pwd)/scripts
 		source $source/seurat_analysis
 		echo ''
-		echo 'Process start...'
+		echo -e "\033[0;34m Process start..."
+		echo ''
+		echo -e "\033[1;33m WARNING! Depending on data set volume and data heterogeneity a whole analysis can last even several hours" 
 		echo ''
 		echo $(date) 'Counts / expression analysis and creating report'	
 		seurat_start >> $log 2>&1
-		echo 'Process completed. Check '$project_name_mode" for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
+		echo ''
+		echo -e "\033[0;32m Process completed"
+		echo ''
+		echo -e "\033[1;33m Check $project_name_mode for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 		echo ''
 else
         echo ''
-		echo 'Experiment failed - check all the data from project'
+		echo -e "\033[0;31m Experiment failed - check all the data from project"
 		echo ''
 		start
 fi
@@ -212,9 +212,9 @@ fi
 function container {
 
 echo ''
-echo 'Choose function:'
-echo '-docker container installation [install]'
-echo '-start container [start]'
+echo -e '\033[1;36m Choose function:'
+echo -e '\033[1;36m -docker container installation [install]'
+echo -e '\033[1;36m -start container [start]'
 echo ''
 		read con
 		con=$(echo $con | tr '[:upper:]' '[:lower:]')
@@ -225,7 +225,7 @@ then
 	log_install=$(pwd)/setup/install.log.out
 	
 	cd setup
-	echo $(date) 'Localhost env preparing...'
+	echo -e '\033[0;31m $(date) Localhost env preparing...'
 	wget -O DropSeq.zip https://github.com/broadinstitute/Drop-seq/releases/download/v2.4.0/Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
 	unzip DropSeq >> $log_install 2>&1
 	mv Drop-seq_tools-2.4.0 DropSeq >> $log_install 2>&1
@@ -237,7 +237,7 @@ then
 	cd ..
 	cd ..
 	
-	echo $(date) 'Docker build starting...'
+	echo -e '\033[0;31m $(date) Docker build starting...'
 	docker build -t jseq -f Dockerfile .
 	id=$(docker images --format "{{.ID}}" jseq)
 	echo $id

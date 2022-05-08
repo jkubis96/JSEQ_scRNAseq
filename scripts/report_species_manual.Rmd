@@ -1,0 +1,474 @@
+--- 
+title: "JSEQ® REPORT"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r include=FALSE}
+
+library(Seurat)
+library(tidyverse)
+library(patchwork)
+library(gridExtra)
+library(grid)
+library(knitr)
+library(viridis)
+
+
+```
+
+\
+
+### **The report was generated in JSEQ® single-cell analysis pipeline**
+##### **For more information go to https://github.com/jkubis96/JSEQ_scRNAseq and read JSEQ_manual.pdf**
+
+\
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+{  
+
+functions <- '../../../scripts/functions.R'
+cssg <- '../../../scripts/cssg.R'
+source(functions, local = T)
+source(cssg, local = T)
+path_results <- file.path(getwd(), 'manual_results')
+
+UMI <- readRDS(file = file.path(path_results, "Results.rds"))
+cells_number <- length(UMI@active.ident)
+
+}
+
+```
+
+### **The cell content analysis**
+
+\
+
+##### **The number of the genes and counts per the cell**
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+if (file.exists(file.path(path_results,'counts~genes.svg'))) {
+  
+knitr::include_graphics(file.path(path_results,'counts~genes.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('counts~genes.svg'), dpi = 600) 
+  
+}
+
+```
+
+\
+
+##### **The ratio of the number of genes to the number of counts**
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+if (file.exists(file.path(path_results,'counts~genes_QC.svg'))) {
+  
+knitr::include_graphics(file.path(path_results,'counts~genes_QC.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('counts~genes_QC.svg'), dpi = 600) 
+  
+}
+
+```
+
+
+\
+
+##### **The percent of the ribosomal and mitochondrial genes [%]**
+
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+
+if (file.exists(file.path(path_results,'Ribo~Mito.svg'))) {
+  
+knitr::include_graphics(file.path(path_results,'Ribo~Mito.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('Ribo~Mito.svg'), dpi = 600) 
+  
+}
+
+```
+
+
+\
+
+### **The quality control of the cells**
+
+\
+
+##### **Number of the counts**
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+
+if (file.exists(file.path(path_results, 'DropletQC.svg'))) {
+  
+knitr::include_graphics(file.path(path_results, 'DropletQC.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('DropletQC.svg'), dpi = 600) 
+  
+}
+
+```
+
+\
+
+##### **The content of the mitochondrial genes**
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+if (file.exists(file.path(path_results, 'MitoQC.svg'))) {
+  
+knitr::include_graphics(file.path(path_results, 'MitoQC.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('MitoQC.svg'), dpi = 600) 
+  
+}
+
+```
+
+
+\
+
+##### **The content of the ribosomal genes**
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+if (file.exists(file.path(path_results, 'RiboQC.svg'))) {
+  
+knitr::include_graphics(file.path(path_results, 'RiboQC.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('RiboQC.svg'), dpi = 600) 
+  
+}
+
+```
+
+
+\
+\
+
+##### **Top of the high variable genes in the data set**
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+top20 <- head(VariableFeatures(UMI), 20)
+top20
+
+```
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1}
+
+plot1 <- VariableFeaturePlot(UMI)
+LabelPoints(plot = plot1, points = top20, repel = TRUE)
+
+
+```
+
+\
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+
+Elbow <- ElbowPlot(UMI, ndims = 50)
+
+dims <- as.data.frame(Elbow$data$stdev)
+
+#select the most variable reduction
+
+{
+  dim <- 1
+  score <- c()
+  element <- 0
+  for (i in dims$`Elbow$data$stdev`) {
+    element <- element + 1
+    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1] & element < 50 | i-i*0.02 > dims$`Elbow$data$stdev`[element+2] & element < 49 | i-i*0.02 > dims$`Elbow$data$stdev`[element+3] & element < 48 | i-i*0.02 > dims$`Elbow$data$stdev`[element+4] & element < 47) {
+      dim <- dim + 1
+    } else 
+      break
+  }
+  dim <- as.numeric(dim)
+}
+
+
+```
+
+
+\
+
+### **Analysis parameter selection**
+
+\
+
+##### **The cut off for the number of the principal components**
+
+\
+
+##### **ElbowPlot**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1}
+Elbow + geom_vline(xintercept = dim, color = 'red')
+```
+
+\
+
+##### **JackStrawPlot for `r dim` PCs**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+if (file.exists(file.path(path_results, 'JackStrawPlot.svg'))) {
+  
+knitr::include_graphics(file.path(path_results, 'JackStrawPlot.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('JackStrawPlot.svg'), dpi = 600) 
+  
+}
+
+```
+
+\
+
+### **The results for the cells grouping**
+##### **The UMAP processing and presentation of the cell clusters**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+if (file.exists(file.path(path_results, 'UMAP.svg'))) {
+  
+knitr::include_graphics(file.path(path_results, 'UMAP.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('UMAP.svg'), dpi = 600) 
+  
+}
+
+```
+
+##### **The cluster selected markers**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
+
+if (file.exists(file.path(path_results, 'subclasses_marker_report.csv'))) {
+  
+markers <- read.csv(file = file.path(path_results, "subclasses_marker_report.csv"), header = T, sep = ',', row.names = 1)
+  
+} else {
+  
+markers <- read.csv(file = file.path("subclasses_marker_report.csv"), header = T, sep = ',', row.names = 1)
+  
+}
+
+knitr::kable(markers, align = "l")
+
+```
+
+\
+\
+
+### **The cluster classification and naming via the markers**
+
+\
+
+##### **The cell subclasses**
+
+\
+
+##### **The PC plot**
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+if (file.exists(file.path(path_results, 'PCA_DimPlot_class.svg'))) {
+  
+knitr::include_graphics(file.path(path_results, 'PCA_DimPlot_class.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('PCA_DimPlot_class.svg'), dpi = 600) 
+  
+}
+
+```
+
+\
+
+##### **The UMAP plot**
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+if (file.exists(file.path(path_results, 'UMAP_with_DE_gene_class.svg'))) {
+  
+knitr::include_graphics(file.path(path_results, 'UMAP_with_DE_gene_class.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('UMAP_with_DE_gene_class.svg'), dpi = 600) 
+  
+}
+
+```
+
+\
+
+### **The presentation of the subtypes obtained using the CSSG algorithm**
+
+\
+
+##### **The quality control of the cell subtypes**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+
+if (file.exists(file.path(path_results, 'cells_type_threshold.svg'))) {
+  
+knitr::include_graphics(file.path(path_results, 'cells_type_threshold.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('cells_type_threshold.svg'), dpi = 600) 
+  
+}
+
+```
+
+\
+
+##### **The PC plot**
+
+\
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1}
+
+PCA <- DimPlot(UMI, reduction = "pca")
+PCA <- plotly::ggplotly(PCA, height = 800, width=800)
+PCA <- PCA %>% plotly::layout(showlegend = FALSE)
+PCA 
+
+```
+
+\
+
+##### **The UMAP plot**
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1}
+
+UMAP <- DimPlot(UMI, reduction = "umap")
+UMAP <- plotly::ggplotly(UMAP, height = 800, width=1400)
+UMAP <- UMAP %>% plotly::layout(legend = list(x = 1.1)) 
+UMAP
+
+```
+
+
+\
+
+### **The subtypes selected markers**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
+
+if (file.exists(file.path(path_results, 'subtypes_marker_report.csv'))) {
+  
+markers <- read.csv(file = file.path(path_results, "subtypes_marker_report.csv"), header = T, sep = ',', row.names = 1)
+  
+} else {
+  
+markers <- read.csv(file = file.path("subtypes_marker_report.csv"), header = T, sep = ',', row.names = 1)
+  
+}
+
+markers <- markers[,colnames(markers) %in% c('p_val','avg_logFC', 'cluster', 'gene')]
+knitr::kable(markers, align = "l")
+
+```
+
+\
+\
+
+##### **The heatmap of the cell subtypes with specific markers**
+###### **The expression normalization by log(CPM+1)**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
+
+if (file.exists(file.path(path_results, 'pheatmap_cells_populations.svg'))) {
+  
+knitr::include_graphics(file.path(path_results, 'pheatmap_cells_populations.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('pheatmap_cells_populations.svg'), dpi = 600) 
+  
+}
+
+```
+
+\
+
+### **The cell subtypes heterogeneity - number of genes vs mean expression**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
+
+if (file.exists(file.path(path_results, 'cells_heterogenity.svg'))) {
+  
+knitr::include_graphics(file.path(path_results, 'cells_heterogenity.svg'), dpi = 600)
+  
+} else {
+  
+knitr::include_graphics(file.path('cells_heterogenity.svg'), dpi = 600) 
+  
+}
+
+```
+
+
+\
+\
+
+## **Disclaimer**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+cat('The analysis was performed through the non-profit and open-source pipeline JSEQ®. Pipeline belongs to the part of the JBioSystem project in which we create complex software for bioinformatics analysis. Remember in silico analysis can not be taken for granted and must be validated in vitro or in vivo. For more information go to GitHub or contact us. The JSEQ® was created in the Department of Molecular Neurobiology, Institute of Bioorganic Chemistry, Polish Academy of Sciences')
+
+```
+\
+\

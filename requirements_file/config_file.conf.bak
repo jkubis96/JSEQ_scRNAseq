@@ -5,11 +5,11 @@ mt_per:25
 
 ## Down threshold for genes per cell [default 500 genes/cell]
 
-down:500
+down:100
 
 ## Up threshold for genes per cell [default NA]
 
-up:NA
+up:6000
 
 #Subtypes selection [CSSG]
 ## Mitochondrial genes in subtype creation (exclude, include) [default Exclude]
