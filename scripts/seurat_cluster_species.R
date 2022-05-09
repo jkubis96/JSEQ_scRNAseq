@@ -290,10 +290,10 @@ dev.off()
 print('Searching for cluster marker genes')
 
 
-UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10, test.use = 'wilcox',  logfc.threshold = 0.10, base = exp(1))
+UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10, test.use = 'MAST')
 
 if (sum(as.numeric(levels(UMI))) != sum(unique(as.integer(UMI.markers$cluster)-1))) {
-  UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.001 , logfc.threshold = 0.10, test.use = 'wilcox',  base = exp(1))
+  UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.001 , logfc.threshold = 0.10)
 }
 
 top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
@@ -503,14 +503,14 @@ print('DONE')
 #Subtype markers selection
 
 
-UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.20, logfc.threshold = 0.25, test.use = 'wilcox',  base = exp(1))
+UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.20, logfc.threshold = 0.25, test.use = 'MAST')
 
 if (length(unique(Idents(UMI))) != length(unique(UMI.subtypes$cluster))) {
-  UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10 , logfc.threshold = 0.25, test.use = 'wilcox',  base = exp(1))
+  UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10 , logfc.threshold = 0.25, test.use = 'MAST')
 } 
 
 if (length(unique(Idents(UMI))) != length(unique(UMI.subtypes$cluster))) {
-  UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.001 , logfc.threshold = 0.25, test.use = 'wilcox',  base = exp(1))
+  UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.001 , logfc.threshold = 0.25, test.use = 'MAST')
 }
 
 subtypes_marker <- UMI.subtypes %>% group_by(cluster) %>% top_n(n = 1000, wt = avg_logFC)

@@ -143,7 +143,7 @@ then
 		echo ''
 		echo -e "\033[1;33m WARNING! Depending on data set volume and data heterogeneity a whole analysis can last even several hours" 
 		echo ''
-		echo $(date) 'Counts / expression analysis and creating report'	
+		echo -e "\033[0;34m $(date) Counts analysis and creating report"	
 		seurat_start >> $log 2>&1
 		echo ''
 		echo -e "\033[0;32m Process completed"

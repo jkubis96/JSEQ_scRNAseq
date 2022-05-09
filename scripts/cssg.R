@@ -139,9 +139,9 @@ CSSG_markers <- function(cells_wide_df, markers_df, max_combine, loss_pval) {
         perc1 <- perc1/length(res_df[1,])
         last_df <- data.frame(perc0, perc1)
         rownames(last_df) <- rownames(res_df)
-        up_tr_q <- quantile(last_df$perc1, 0.75)
+        up_tr_q <- quantile(last_df$perc1, 0.66)
         last_df <- last_df[last_df$perc1 >= up_tr_q,]
-        down_tr_q <- quantile(last_df$perc0, 0.25) 
+        down_tr_q <- quantile(last_df$perc0, 0.33) 
         last_df <- last_df[last_df$perc0 <= down_tr_q,]
       
 
@@ -244,10 +244,10 @@ CSSG_markers <- function(cells_wide_df, markers_df, max_combine, loss_pval) {
         }
         
           if (exists('complete_df') == FALSE) {
-            complete_df <- last_df[last_df$`loss_pval` <= quantile(last_df$`loss_pval`, 0.25),]
+            complete_df <- last_df[last_df$`loss_pval` <= quantile(last_df$`loss_pval`, 0.3),]
             complete_df$cluster <- cluster
           } else {
-            last_df <- last_df[last_df$`loss_pval` <= quantile(last_df$`loss_pval`, 0.25),]
+            last_df <- last_df[last_df$`loss_pval` <= quantile(last_df$`loss_pval`, 0.3),]
             last_df$cluster <- cluster
             complete_df <- rbind(complete_df, last_df)
           }
