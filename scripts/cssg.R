@@ -216,14 +216,14 @@ CSSG_markers <- function(cells_wide_df, markers_df, max_combine, loss_pval) {
           
           if (final_df$perc0[order(final_df$perc0, decreasing = FALSE)][1] < as.numeric(loss_pval)) {
             last_df <- rbind(last_df, final_df)
-            last_df$het <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*0.5))/(str_count(string = rownames(last_df), pattern = ' ') + 1)))
-			last_df$het_adj <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*0.5))/(str_count(string = rownames(last_df), pattern = ' ') + 1))) - (last_df$perc0*2)
+            last_df$het <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*1.25))/(str_count(string = rownames(last_df), pattern = ' ') + 1)))
+			last_df$het_adj <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*1.25))/(str_count(string = rownames(last_df), pattern = ' ') + 1))) - (last_df$perc0*2)
             last_df <- last_df[, !colnames(last_df) %in% 'perc1']
             colnames(last_df) <- c('loss_pval','hf', 'adj_hf')
             test = FALSE
           } else if (final_df$perc0[order(final_df$perc0, decreasing = FALSE)][1] >= low & final_df$perc1[order(final_df$perc1, decreasing = TRUE)][1] <= up) {
-            last_df$het <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*0.5))/(str_count(string = rownames(last_df), pattern = ' ') + 1)))
-			last_df$het_adj <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*0.5))/(str_count(string = rownames(last_df), pattern = ' ') + 1))) - (last_df$perc0*2)
+            last_df$het <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*1.25))/(str_count(string = rownames(last_df), pattern = ' ') + 1)))
+			last_df$het_adj <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*1.25))/(str_count(string = rownames(last_df), pattern = ' ') + 1))) - (last_df$perc0*2)
             last_df <- last_df[, !colnames(last_df) %in% 'perc1']
             colnames(last_df) <- c('loss_pval','hf', 'adj_hf')
             test = FALSE
