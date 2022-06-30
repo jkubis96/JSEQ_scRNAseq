@@ -673,7 +673,6 @@ heterogenity_stats <- function(seurat_project) {
 
 hd_cluster_factors <- function(seurat_object, markers_cssg) {
   
-  install.packages(setdiff('umap', rownames(installed.packages())))  
   library(umap)
   
   for (cluster in unique(Idents(seurat_object))) {
