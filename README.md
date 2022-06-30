@@ -5,17 +5,6 @@
 </p>
 
 
-#### NEW RELEASE: JSEQ® v2.1.1 
-##### Changes:
-- new versions of mouse [Release M28 (GRCm39)] and human [Release 39 (GRCh38.p13)] genomes <br />
-- added configuration file <br />
-- JSEQ® clustering steps optymalized <br />
-- CSSG algorithm performance & resolution improved <br />
-- improved charts auto-adjusting <br />
-- added charts saving in vector format <br />
-- adjusted JSEQ results for Seurat v4 compatibility <br />
-
-<br />
 
 ### Authors: Jakub Kubiś & Maciej Figiel
 <div align="center">
@@ -43,7 +32,7 @@
 
 <div align="justify"> Therefore, we have constructed the JSEQ® bioinformatics pipeline to perform all basic single-cell sequencing analysis and moreover determine higher resolution cell composition by the combinatorial CSSG algorithm involving a great number of iterations of cell cluster specific gene arrays to adjust gene combination to each cluster, where each gene occures in a part of cells inside the cluster and combination of them explain the entire cluster. Our pipeline aids to precisely discover the heterogeneity of cells and help determine cell populations particularly vulnerable to brain diseases. The pipeline was developed and tested on publicly available data of 812 945 cells from several mouse brain regions, including the orbitofrontal, entorhinal, auditory and motor cortex, hypothalamus, thalamus, cerebellum, and human brain organoids. </div>
 
-### Pipeline pathway
+### Pipeline workflow
 
 <p align="center">
 <img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/pipeline.png?raw=true" alt="drawing" width="900" />
