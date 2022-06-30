@@ -72,6 +72,8 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
 }
 
 
+UMI@meta.data$orig.ident   <- make.unique(as.character(names(Idents(UMI))))
+
 ###########################################################################################################################################################
 
 #Create Ribo and Mito percent stats
@@ -183,6 +185,7 @@ UMI <- subset(UMI, subset = nGenes > down_tr & nGenes <= n_gen & MitoPercent < m
 n_gen <- max(as.numeric(UMI@meta.data$nGenes))*0.95
 cells_number <- length(Idents(UMI))
 
+
 ###########################################################################################################################################################
 #Cells_stats
 
@@ -274,6 +277,7 @@ UMI <- FindClusters(UMI, resolution = 0.5, n.start = 10, n.iter = 1000)
 UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
 
 
+
 width <- 15 + (length(unique(Idents(UMI))))/7
 
 
@@ -339,6 +343,7 @@ colnames(tmp) <- UMI@active.ident
 marker_df <- heterogenity_select(cells_wide_df = tmp, marker_df = top_sig, heterogenity_factor = s_factor, p_val =  m_val, max_genes =  max_genes, select_stat = 'p_val')
 
 CSSG_df <- CSSG_markers(cells_wide_df = tmp, markers_df = marker_df$marker_df, max_combine = max_combine, loss_pval = loss_pval)
+hd_factors <- hd_cluster_factors(UMI, CSSG_df)
 
 write.table(CSSG_df, file = file.path(OUTPUT, "CSSG_marker.csv"), sep = ',')
 
@@ -531,6 +536,17 @@ dev.off()
 svg(file.path(OUTPUT, "UMAP_with_DE_gene_subtypes.svg"), width = width, height = 15)
 DimPlot(UMI, reduction = "umap", raster = FALSE) 
 dev.off()
+
+htmlwidgets::saveWidget(plotly::ggplotly(DimPlot(UMI, reduction = "umap", raster = FALSE)) , file.path(OUTPUT, "UMAP_with_DE_gene_subtypes.html"))
+
+
+HDMAP <- hdmap_cordinates(UMI, hd_factors)
+
+hd_map_plot <- plotly::ggplotly(DimPlotFactor(HDMAP))
+
+htmlwidgets::saveWidget(hd_map_plot, file.path(OUTPUT, "HDMAP_subtypes.html"))
+
+write.table(HDMAP, file = file.path(OUTPUT, "hdmap_cordinates.csv"), sep = ',')
 
 
 #Create Expression Matrix

@@ -268,7 +268,7 @@ name_repairing <- function(seurat_project, average_expression, markers_class, ma
     
     for (col in 1:length(colnames(second_matrix))) {
       second_matrix <- as.data.frame(second_matrix[order(second_matrix[,col], decreasing = T), ,drop = F])
-      if (second_matrix[1,col] == 0 & grepl('Unknow', as.character(colnames(second_matrix)[col]))) {
+      if ((lengths(gregexpr("\\W+", as.character(colnames(second_matrix)[col]))) + 1 == 4) & grepl('Unknow', as.character(colnames(second_matrix)[col]))) {
        
         mark <- c()
         for (change in markers_subclass) {
@@ -284,7 +284,7 @@ name_repairing <- function(seurat_project, average_expression, markers_class, ma
       } else if (second_matrix[1,col] == 0) {
         renamed_old.2 <- c(renamed_old.2, colnames(second_matrix)[col])
         renamed_new.2 <- c(renamed_new.2, 'BAD!')
-      } else if (!grepl(toupper(rownames(second_matrix)[1]), colnames(second_matrix)[col]) & !grepl('Bad!', colnames(second_matrix)[col])) {
+      } else if (!grepl(toupper(rownames(second_matrix)[1]), colnames(second_matrix)[col]) & !grepl('Unknow', colnames(second_matrix)[col])) {
         renamed_old.2 <- unique(c(renamed_old.2, colnames(second_matrix)[col]))
         mark <- c()
         for (change in markers_subclass) {
@@ -668,3 +668,100 @@ heterogenity_stats <- function(seurat_project) {
   
   return(exp_stat)
 }
+
+
+
+hd_cluster_factors <- function(seurat_object, markers_cssg) {
+  
+  install.packages(setdiff('umap', rownames(installed.packages())))  
+  library(umap)
+  
+  for (cluster in unique(Idents(seurat_object))) {
+    
+    
+
+    tmp_cssg <- markers_cssg[markers_cssg$cluster %in% cluster,]
+    
+    tmp_cssg <- tmp_cssg[order(tmp_cssg$adj_hf, decreasing = TRUE),]
+    tmp_cssg <- tmp_cssg[tmp_cssg$loss_pval == min(tmp_cssg$loss_pval),]
+
+    gen_cor <- c()
+    for (i in 1:nrow(tmp_cssg)) {
+      gen_cor <- c(gen_cor, gsub(' ', '', strsplit(rownames(tmp_cssg)[i], split = ' ')[[1]]))
+    }
+    
+    gen_cor <- unique(gen_cor)
+    
+    seurat_object_sub <- subset(seurat_object, idents = cluster, features = gen_cor)
+    
+    tmp <- as.data.frame(GetAssayData(seurat_object_sub, slot = 'data'))
+
+    
+    tmp_df <- umap(t(as.data.frame(tmp)), method = 'umap-learn')$layout
+    colnames(tmp_df) <- c('x', 'y')
+    tmp_df <- as.data.frame(tmp_df)
+    tmp_df$BARCODES <- rownames(tmp_df)
+    
+    if (exists('df_factor') == TRUE) {
+      df_factor <- rbind(df_factor, tmp_df)
+      
+      
+    }
+    else {
+      df_factor <- tmp_df
+      
+      
+    }
+  
+  }
+
+  return(df_factor)
+}
+
+
+hdmap_cordinates <- function(seurat_object, fUMAP) {
+  
+  
+  HDMAP <- as.data.frame(seurat_object@reductions$umap@cell.embeddings)
+  HDMAP$idents <- Idents(seurat_object)
+  HDMAP$BARCODES <- rownames(HDMAP) 
+  
+  HDMAP$UMAP_1 <- (HDMAP$UMAP_1 - min(HDMAP$UMAP_1)) / (max(HDMAP$UMAP_1) - min(HDMAP$UMAP_1)) * 1000
+  HDMAP$UMAP_2 <- (HDMAP$UMAP_2 - min(HDMAP$UMAP_2)) / (max(HDMAP$UMAP_2) - min(HDMAP$UMAP_2)) * 1000
+  
+  agg_umap <- aggregate(HDMAP[,1:2], by = list(HDMAP[,3]), FUN = mean)
+  colnames(agg_umap) <- c('idents', 'avg_UMAP1', 'avg_UMAP2')
+  
+  
+  
+  HDMAP <- merge(HDMAP, agg_umap, by = 'idents', all = T)
+  
+  HDMAP <- merge(HDMAP, fUMAP, by = 'BARCODES',all.x = TRUE)
+  
+  HDMAP$HDMAP_1 <- HDMAP$avg_UMAP1 + HDMAP$x
+  HDMAP$HDMAP_2 <- HDMAP$avg_UMAP2 + HDMAP$y
+  
+  
+  return(HDMAP)
+  
+}
+
+
+
+DimPlotFactor <- function(HDMAP) {
+  
+  
+  plot <- ggplot() +
+    geom_point(mapping = aes(x = HDMAP$HDMAP_1  , y = HDMAP$HDMAP_2 , color = HDMAP$idents)) +
+    xlab('HDMAP_1') +
+    ylab('HDMAP_2') +
+    labs(colour="Cell subtypes") +
+    theme_classic()
+  
+  
+  return(plot)
+  
+}
+
+
+

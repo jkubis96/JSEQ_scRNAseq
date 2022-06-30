@@ -139,10 +139,9 @@ CSSG_markers <- function(cells_wide_df, markers_df, max_combine, loss_pval) {
         perc1 <- perc1/length(res_df[1,])
         last_df <- data.frame(perc0, perc1)
         rownames(last_df) <- rownames(res_df)
-        up_tr_q <- quantile(last_df$perc1, 0.66)
+        up_tr_q <- quantile(last_df$perc1, 0.75)
         last_df <- last_df[last_df$perc1 >= up_tr_q,]
-        down_tr_q <- quantile(last_df$perc0, 0.33) 
-        last_df <- last_df[last_df$perc0 <= down_tr_q,]
+
       
 
         res_df <- res_df[rownames(res_df) %in% rownames(last_df),]
@@ -197,17 +196,17 @@ CSSG_markers <- function(cells_wide_df, markers_df, max_combine, loss_pval) {
           up_tr_q <- quantile(final_df$perc1, 0.75)
           final_df_up <- final_df[final_df$perc1 >= up_tr_q,]
           final_df_up <- final_df_up[order(final_df_up$perc1,decreasing = TRUE),]
-		  final_df_up <- final_df_up[1:as.numeric(max_combine),]
+		      final_df_up <- final_df_up[1:as.numeric(max_combine),]
           final_df_up <- drop_na(final_df_up)
 		  
-		  down_tr_q <- quantile(final_df$perc0, 0.25) 
+		      down_tr_q <- quantile(final_df$perc0, 0.25) 
           final_df_down <- final_df[final_df$perc0 <= down_tr_q,]
           final_df_down <- final_df_down[order(final_df_down$perc0,decreasing = FALSE),]
           final_df_down <- final_df_down[1:as.numeric(max_combine),]
           final_df_down <- drop_na(final_df_down)
          
-		  duplicated_rows <- rownames(final_df_up) %in% rownames(final_df_down)
-		  final_df <- rbind(final_df_up[!duplicated_rows,], final_df_down)
+		      duplicated_rows <- rownames(final_df_up) %in% rownames(final_df_down)
+		      final_df <- rbind(final_df_up[!duplicated_rows,], final_df_down)
 		  
           res_df <- res_df_multi
           res_df <- res_df[rownames(res_df) %in% rownames(final_df),]
@@ -217,13 +216,13 @@ CSSG_markers <- function(cells_wide_df, markers_df, max_combine, loss_pval) {
           if (final_df$perc0[order(final_df$perc0, decreasing = FALSE)][1] < as.numeric(loss_pval)) {
             last_df <- rbind(last_df, final_df)
             last_df$het <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*1.25))/(str_count(string = rownames(last_df), pattern = ' ') + 1)))
-			last_df$het_adj <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*1.25))/(str_count(string = rownames(last_df), pattern = ' ') + 1))) - (last_df$perc0*2)
+			      last_df$het_adj <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*1.25))/(str_count(string = rownames(last_df), pattern = ' ') + 1))) - (last_df$perc0*2)
             last_df <- last_df[, !colnames(last_df) %in% 'perc1']
             colnames(last_df) <- c('loss_pval','hf', 'adj_hf')
             test = FALSE
           } else if (final_df$perc0[order(final_df$perc0, decreasing = FALSE)][1] >= low & final_df$perc1[order(final_df$perc1, decreasing = TRUE)][1] <= up) {
             last_df$het <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*1.25))/(str_count(string = rownames(last_df), pattern = ' ') + 1)))
-			last_df$het_adj <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*1.25))/(str_count(string = rownames(last_df), pattern = ' ') + 1))) - (last_df$perc0*2)
+			      last_df$het_adj <- (1- ((last_df$perc1 + ((1-(last_df$perc1 + last_df$perc0))*1.25))/(str_count(string = rownames(last_df), pattern = ' ') + 1))) - (last_df$perc0*2)
             last_df <- last_df[, !colnames(last_df) %in% 'perc1']
             colnames(last_df) <- c('loss_pval','hf', 'adj_hf')
             test = FALSE
@@ -237,17 +236,16 @@ CSSG_markers <- function(cells_wide_df, markers_df, max_combine, loss_pval) {
       
           
           
-          #TEST 
           
           
           
         }
         
           if (exists('complete_df') == FALSE) {
-            complete_df <- last_df[last_df$`loss_pval` <= quantile(last_df$`loss_pval`, 0.3),]
+            complete_df <- last_df[last_df$`loss_pval` <= quantile(last_df$`loss_pval`, 0.25),]
             complete_df$cluster <- cluster
           } else {
-            last_df <- last_df[last_df$`loss_pval` <= quantile(last_df$`loss_pval`, 0.3),]
+            last_df <- last_df[last_df$`loss_pval` <= quantile(last_df$`loss_pval`, 0.25),]
             last_df$cluster <- cluster
             complete_df <- rbind(complete_df, last_df)
           }

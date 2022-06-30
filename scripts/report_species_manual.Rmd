@@ -402,6 +402,22 @@ UMAP
 
 \
 
+##### **The HDMAP plot**
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1}
+
+hd_map <- read.csv(file = file.path(path_results, "hdmap_cordinates.csv"), header = T, sep = ',', row.names = 1)
+HDMAP <- plotly::ggplotly(DimPlotFactor(hd_map), height = 800, width=1400)
+HDMAP <- HDMAP %>% plotly::layout(legend = list(x = 1.1)) 
+HDMAP
+
+
+```
+
+\
+
 ### **The subtypes selected markers**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
