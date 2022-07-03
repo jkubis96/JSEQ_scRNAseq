@@ -102,10 +102,10 @@ RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/genome_indexing
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/merge_genome.py
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/project_selection
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/projects
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_mix.Rmd
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_species.Rmd
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_mix_manual.Rmd
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_species_manual.Rmd
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/report_mix.Rmd
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/report_species.Rmd
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/report_mix_manual.Rmd
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/report_species_manual.Rmd
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/rna_metrics.R
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_analysis
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_cluster_mix.R
