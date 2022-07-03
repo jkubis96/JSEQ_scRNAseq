@@ -40,22 +40,20 @@ then
         cd $(pwd)/setup
         source $source
 		permission 
-		echo -e '\033[0;34m $(date) Python installing and libraries...'
+		echo -e "\033[0;34m $(date) Python installing and libraries..."
 		python >> $log_install 2>&1
-		echo -e '\033[0;34m $(date) R installing and libraries...'
+		echo -e "\033[0;34m $(date) R installing and libraries..."
 		r_base >> $log_install 2>&1
-		echo -e '\033[0;34m $(date) JAVA installing...'
+		echo -e "\033[0;34m $(date) JAVA installing..."
 		java >> $log_install 2>&1
-		echo -e '\033[0;34m $(date) SAMtools installing...'
+		echo -e "\033[0;34m $(date) SAMtools installing..."
 		SAMtools >> $log_install 2>&1
-		echo -e '\033[0;34m $(date) STAR installing...'
+		echo -e "\033[0;34m $(date) STAR installing..."
 		STAR >> $log_install 2>&1
-		echo -e '\033[0;34m $(date) fastp installing and libraries...'
+		echo -e "\033[0;34m $(date) fastp installing and libraries..."
 		fastp >> $log_install 2>&1
-		echo -e '\033[0;34m $(date) dropSEQtools installing...'
+		echo -e "\033[0;34m $(date) dropSEQtools installing..."
 		DropSeq >> $log_install 2>&1
-		echo -e '\033[0;34m $(date) picard installing...'
-		picard >> $log_install 2>&1
         cd ..
 		echo ''
 		echo "Installing completed. Before run the JSEQ check the install.log file in setup directory for some errors."
@@ -225,19 +223,15 @@ then
 	log_install=$(pwd)/setup/install.log.out
 	
 	cd setup
-	echo -e '\033[0;31m $(date) Localhost env preparing...'
+	echo -e "\033[0;31m $(date) Localhost env preparing..."
 	wget -O DropSeq.zip https://github.com/broadinstitute/Drop-seq/releases/download/v2.4.0/Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
 	unzip DropSeq >> $log_install 2>&1
 	mv Drop-seq_tools-2.4.0 DropSeq >> $log_install 2>&1
 	rm -r DropSeq.zip >> $log_install 2>&1
-	git clone https://github.com/broadinstitute/picard.git >> $log_install 2>&1
-	cd picard 
-	./gradlew shadowJar >> $log_install 2>&1
-	
-	cd ..
+
 	cd ..
 	
-	echo -e '\033[0;31m $(date) Docker build starting...'
+	echo -e "\033[0;31m $(date) Docker build starting..."
 	docker build -t jseq -f Dockerfile .
 	id=$(docker images --format "{{.ID}}" jseq)
 	echo $id

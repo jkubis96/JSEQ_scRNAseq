@@ -122,15 +122,3 @@ rm -r DropSeq.zip
 
 }
 
-#download picard scripts
-
-function picard {
-
-git clone https://github.com/broadinstitute/picard.git --branch 2.26.5
-cd picard
-./gradlew shadowJar
-cd ..
-
-}
-
-

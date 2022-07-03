@@ -9,7 +9,7 @@ ENV LANG en_US.utf8
 RUN apt-get update
 RUN apt-get install -y sudo
 RUN sudo apt-get install -y git
-RUN git clone https://github.com/jkubis96/JSEQ_scRNAseq.git
+RUN git clone https://github.com/jkubis96/JSEQ_scRNAseq.git --branch v2.3.1
 
 RUN sudo apt-get update
 
@@ -90,37 +90,30 @@ RUN cd JSEQ_scRNAseq/setup \
 	&& rm -r DropSeq.zip \
 	&& sudo chmod +rwx DropSeq
 
-RUN cd JSEQ_scRNAseq/setup \
-	&& git clone https://github.com/broadinstitute/picard.git --branch 2.26.5
-	
-
-RUN cd JSEQ_scRNAseq/setup/picard \
-	&& sudo chmod +rwx ../picard \
-	&& sudo chmod +x gradlew \
-	&& ./gradlew shadowJar
 
 
 RUN sudo apt-get update -y
 
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/analysis_mix
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/analysis_species
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/barcodes_aligment.py
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/convert_mtx_umi.py
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/converter.R
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/functions.R
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/genome_indexing
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/merge_genome.py
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/merge_reads.py
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/project_selection
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/projects
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_mix.Rmd
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_species.Rmd
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_mix_manual.Rmd
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/raport_species_manual.Rmd
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/rna_metrics.R
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_analysis
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_cluster_mix.R
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/seurat_cluster_species.R
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/rna_metrics.R
-RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/umi_extract.py
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/add_tags.py
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/manual_species.R
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/manual_mix.R
 
 RUN mkdir $(pwd)/JSEQ_scRNAseq/projects
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/projects
