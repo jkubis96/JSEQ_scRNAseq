@@ -725,8 +725,10 @@ hdmap_cordinates <- function(seurat_object, fUMAP) {
   HDMAP$idents <- Idents(seurat_object)
   HDMAP$BARCODES <- rownames(HDMAP) 
   
-  HDMAP$UMAP_1 <- (HDMAP$UMAP_1 - min(HDMAP$UMAP_1)) / (max(HDMAP$UMAP_1) - min(HDMAP$UMAP_1)) * 1000
-  HDMAP$UMAP_2 <- (HDMAP$UMAP_2 - min(HDMAP$UMAP_2)) / (max(HDMAP$UMAP_2) - min(HDMAP$UMAP_2)) * 1000
+  HDMAP$UMAP_1 <- (HDMAP$UMAP_1 - min(HDMAP$UMAP_1)) / (max(HDMAP$UMAP_1) - min(HDMAP$UMAP_1)) *100
+  HDMAP$UMAP_2 <- (HDMAP$UMAP_2 - min(HDMAP$UMAP_2)) / (max(HDMAP$UMAP_2) - min(HDMAP$UMAP_2)) *100
+  
+
   
   agg_umap <- aggregate(HDMAP[,1:2], by = list(HDMAP[,3]), FUN = mean)
   colnames(agg_umap) <- c('idents', 'avg_UMAP1', 'avg_UMAP2')
@@ -736,6 +738,9 @@ hdmap_cordinates <- function(seurat_object, fUMAP) {
   HDMAP <- merge(HDMAP, agg_umap, by = 'idents', all = T)
   
   HDMAP <- merge(HDMAP, fUMAP, by = 'BARCODES',all.x = TRUE)
+  
+  HDMAP$x <- (HDMAP$x - min(HDMAP$x)) / (max(HDMAP$x) - min(HDMAP$x)) 
+  HDMAP$y <- (HDMAP$y - min(HDMAP$y)) / (max(HDMAP$y) - min(HDMAP$y)) 
   
   HDMAP$HDMAP_1 <- HDMAP$avg_UMAP1 + HDMAP$x
   HDMAP$HDMAP_2 <- HDMAP$avg_UMAP2 + HDMAP$y
