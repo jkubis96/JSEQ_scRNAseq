@@ -10,6 +10,7 @@ read permission_sudo
 
 $permission_sudo apt-get update
 $permission_sudo apt-get upgrade
+$permission_sudo apt-get install unzip
 
 }
 
