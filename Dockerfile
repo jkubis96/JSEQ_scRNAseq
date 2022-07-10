@@ -38,6 +38,7 @@ RUN sudo apt-get -y install libhdf5-serial-dev
 RUN sudo apt-get -y install h5utils
 RUN sudo apt-get -y install hdf5-tools
 RUN sudo apt-get -y install hdf5-helpers
+RUN sudo apt-get -y install unzip
 RUN sudo apt-get -y install r-cran-httr=1.4.1-1ubuntu1
 RUN sudo apt-get -y install r-cran-leiden=0.3.3+dfsg-1
 RUN sudo apt-get -y install r-cran-igraph=1.2.4.2-2build1

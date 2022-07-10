@@ -221,12 +221,13 @@ echo ''
 
 if [[ $con == 'install' ]]
 then
-
-	sudo apt-get install unzip
 	
 	log_install=$(pwd)/setup/install.log.out
 	
-	cd setup
+	sudo apt-get install unzip >> $log_install 2>&1
+	
+	cd setup 
+	
 	echo -e "\033[0;31m $(date) Localhost env preparing..."
 	wget -O DropSeq.zip https://github.com/broadinstitute/Drop-seq/releases/download/v2.4.0/Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
 	unzip DropSeq >> $log_install 2>&1
