@@ -5,14 +5,8 @@
 function create_ref {
 cpu=$(grep -c ^processor /proc/cpuinfo)
 cpu=$cpu-2
-DIR=$(pwd)/genome/$species/index/$READS_LENGHT 
-GENOME=$(pwd)/genome/$species
 
-
-SCRIPTS_EXTRACT=$(pwd)/setup
-java -jar $SCRIPTS_EXTRACT/picard/build/libs/picard.jar CreateSequenceDictionary \
-        REFERENCE=$(pwd)/genome/$species/genome.fa \
-        OUTPUT=$(pwd)/genome/$species/genome.dict
+samtools dict $(pwd)/genome/$species/genome.fa > $(pwd)/genome/$species/genome.dict 
 
 }
 
