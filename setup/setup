@@ -91,7 +91,11 @@ $permission_sudo apt-get -y install samtools
 
 function STAR {
 
-$permission_sudo apt -y install rna-star
+
+wget http://archive.ubuntu.com/ubuntu/pool/universe/r/rna-star/rna-star_2.7.3a+dfsg-1build2_amd64.deb 
+$permission_sudo dpkg -i rna-star_2.7.3a+dfsg-1build2_amd64.deb 
+rm rna-star_2.7.3a+dfsg-1build2_amd64.deb
+
 
 }
 
@@ -100,12 +104,11 @@ $permission_sudo apt -y install rna-star
 
 function fastp {
 
-git clone https://github.com/OpenGene/fastp.git --branch v0.22.0
 
-cd fastp
-make fastp
-$permission_sudo apt -y install fastp
-cd ..
+wget http://archive.ubuntu.com/ubuntu/pool/universe/f/fastp/fastp_0.20.0+dfsg-1build1_amd64.deb 
+$permission_sudo sudo dpkg -i fastp_0.20.0+dfsg-1build1_amd64.deb 
+rm fastp_0.20.0+dfsg-1build1_amd64.deb
+	
 }
 
 #download DropSeq scripts
