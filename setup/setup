@@ -83,7 +83,7 @@ $permission_sudo apt -y install default-jdk
 
 function SAMtools {
 
-$permission_sudo apt-get -y install samtools=1.10-3
+$permission_sudo apt-get -y install samtools
 
 }
 
@@ -91,12 +91,8 @@ $permission_sudo apt-get -y install samtools=1.10-3
 
 function STAR {
 
-	$permission_sudo apt-get update
-        git clone https://github.com/alexdobin/STAR.git --branch STAR_2.5.0a
-        cd STAR/source
-        make STAR
-        cd ..
-		$permission_sudo apt -y install rna-star
+$permission_sudo apt -y install rna-star
+
 }
 
 

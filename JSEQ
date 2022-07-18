@@ -224,7 +224,7 @@ then
 	
 	log_install=$(pwd)/setup/install.log.out
 	
-	sudo apt-get install unzip >> $log_install 2>&1
+	sudo apt-get -y install unzip >> $log_install 2>&1
 	
 	cd setup 
 	

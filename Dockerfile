@@ -64,14 +64,9 @@ RUN sudo -i Rscript $(pwd)/JSEQ_scRNAseq/setup/r_req.R
 RUN sudo apt -y install default-jdk
 
 
-RUN sudo apt-get -y install samtools=1.10-3
+RUN sudo apt-get -y install samtools
 
-RUN sudo apt-get update
-RUN chmod +rwx $(pwd)/JSEQ_scRNAseq/setup
-RUN cd JSEQ_scRNAseq/setup \
-	&& git clone https://github.com/alexdobin/STAR.git --branch STAR_2.5.0a
-RUN cd JSEQ_scRNAseq/setup/STAR/source \
-	&& make STAR
+
 RUN sudo apt -y install rna-star
 
 
