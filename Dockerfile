@@ -65,14 +65,14 @@ RUN sudo apt -y install default-jdk
 RUN sudo apt-get install wget
 
 RUN cd JSEQ_scRNAseq/setup \
-	&& wget https://ubuntu.pkgs.org/20.04/ubuntu-universe-amd64/samtools_1.10-3_amd64.deb.html
+	&& wget http://ports.ubuntu.com/pool/universe/s/samtools/samtools_1.10-3_arm64.deb
 RUN cd JSEQ_scRNAseq/setup/ \
 	&& sudo dpkg -i samtools_1.10-3_amd64.deb \
 	&& rm samtools_1.10-3_amd64.deb
 
 
 RUN cd JSEQ_scRNAseq/setup \
-	&& wget https://ubuntu.pkgs.org/20.04/ubuntu-universe-arm64/rna-star_2.7.3a+dfsg-1build2_arm64.deb.html
+	&& wget http://archive.ubuntu.com/ubuntu/pool/universe/r/rna-star/rna-star_2.7.3a+dfsg-1build2_amd64.deb
 RUN cd JSEQ_scRNAseq/setup/ \
 	&& sudo dpkg -i rna-star_2.7.3a+dfsg-1build2_amd64.deb \
 	&& rm rna-star_2.7.3a+dfsg-1build2_amd64.deb
@@ -80,7 +80,7 @@ RUN cd JSEQ_scRNAseq/setup/ \
 
 
 RUN cd JSEQ_scRNAseq/setup \
-	&& wget https://ubuntu.pkgs.org/20.04/ubuntu-universe-arm64/fastp_0.20.0+dfsg-1build1_arm64.deb.html
+	&& wget http://archive.ubuntu.com/ubuntu/pool/universe/f/fastp/fastp_0.20.0+dfsg-1build1_amd64.deb
 RUN cd JSEQ_scRNAseq/setup/ \
 	&& sudo dpkg -i fastp_0.20.0+dfsg-1build1_arm64.deb \
 	&& rm fastp_0.20.0+dfsg-1build1_arm64.deb
