@@ -65,10 +65,7 @@ RUN sudo apt -y install default-jdk
 RUN sudo apt-get install wget
 RUN sudo apt-get update
 
-RUN cd JSEQ_scRNAseq/setup \
-	&& wget http://archive.ubuntu.com/ubuntu/pool/universe/s/samtools/samtools_1.7-1_amd64.deb \
-	&& sudo dpkg -i samtools_1.7-1_amd64.deb \
-	&& rm samtools_1.7-1_amd64.deb
+RUN sudo apt-get install -y samtools
 
 
 RUN cd JSEQ_scRNAseq/setup \
