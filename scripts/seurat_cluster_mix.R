@@ -365,6 +365,8 @@ UMI <- FindClusters(UMI, resolution = 0.5, n.start = 10, n.iter = 1000)
 
 UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
 
+UMAP_coordinates <- as.data.frame(UMI@reductions$umap@cell.embeddings)
+cluster_idents <- as.data.frame(Idents(UMI))
 
 width <- 15 + (length(unique(Idents(UMI))))/7
 
@@ -410,11 +412,7 @@ if (mt_cssg == "exclude") {
 
 subclasses_marker <- UMI.markers %>% group_by(cluster) %>% top_n(n = 1000, wt = avg_logFC)
 
-write.table(subclasses_marker, file = file.path(OUTPUT, "markers_clusters.csv"), sep = ',')
-
 subclasses_marker_report <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
-
-write.table(subclasses_marker_report, file = file.path(OUTPUT, "subclasses_marker_report.csv"), sep = ',')
 
 print('Cluster genes - DONE')
 
@@ -501,6 +499,27 @@ part_name_2 <- toupper(part_name_2)
 Tmp_idents_species <- paste(part_name_1, part_name_2)
 Idents(UMI) <- Tmp_idents_species
 
+meta_data <- as.data.frame(Idents(UMI))
+meta_data$idents <- rownames(meta_data)
+colnames(meta_data) <- c('subclass', 'idents')
+UMAP_coordinates$idents <- rownames(UMAP_coordinates)
+cluster_idents$idents <- rownames(cluster_idents)
+meta_data <- merge(meta_data, UMAP_coordinates, by = 'idents')
+meta_data <- merge(meta_data, cluster_idents, by = 'idents')
+colnames(meta_data)[5] <- 'cluster'
+
+
+marker_cell_names <- meta_data[c('cluster', 'subclass')] %>% 
+  distinct()
+
+
+subclasses_marker <- merge(subclasses_marker, marker_cell_names, by = 'cluster')
+
+write.table(subclasses_marker, file = file.path(OUTPUT, "markers_clusters.csv"), sep = ',')
+
+subclasses_marker_report <- merge(subclasses_marker_report, marker_cell_names, by = 'cluster')
+
+write.table(subclasses_marker_report, file = file.path(OUTPUT, "subclasses_marker_report.csv"), sep = ',')
 
 width <- 20 + (length(unique(Idents(UMI))))/5
 
@@ -543,6 +562,15 @@ print('Checking and renaming subtypes')
 
 renamed_list  <- name_repairing(UMI, average_expression, markers_class, markers_subclass, species)
 Idents(UMI) <- renamed_list$Renamed_idents
+
+idents_subtypes <- as.data.frame(Idents(UMI))
+idents_subtypes$idents <- rownames(idents_subtypes)
+colnames(idents_subtypes) <- c('subtypes', 'idents')
+meta_data <- merge(meta_data, idents_subtypes, by = 'idents')
+meta_data$subtypes[grep(pattern = 'BAD!', meta_data$subtypes)] <- '-'
+meta_data$subtypes[grep(pattern = 'Bad!', meta_data$subtypes)] <- '-'
+
+write.table(meta_data, file = file.path(OUTPUT, "meta_data.csv"), sep = ',')
 
 print('Checking - DONE')
 

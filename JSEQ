@@ -93,7 +93,6 @@ then
 		echo -e "\033[1;33m WARNING! Depending on data set volume and data heterogeneity a whole analysis can last even several hours" 
 		echo ''
 		echo -e "\033[0;34m $(date) Trimming of the adapters and quality control of the reads"
-		directory >> $log 2>&1
 		TRIMMING >> $log 2>&1
 		echo -e "\033[0;34m $(date) UMIs and barcodes extraction"
 		whitelist >> $log 2>&1

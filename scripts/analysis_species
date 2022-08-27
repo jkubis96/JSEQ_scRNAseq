@@ -14,9 +14,9 @@ barcode_length=$barcode_length
 RESULT=$(pwd)/projects/$project_name_mode/results/
 ADAPTERS=$(pwd)/requirements_file/Adapters.fa
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
+CHECK=$(pwd)/projects/$project_name_mode
 
-
-if ! [[ -f $INFASTP/R1_out_exctracted.fastq.gz ]];
+if ! [[ -f $CHECK/fast_data/R1_out_exctracted.fastq.gz || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	for i in $INFASTP/*.fastq.gz;
@@ -68,9 +68,9 @@ fi
 
 function whitelist {
 
-CHECK=$(pwd)/projects/$project_name_mode/tmp
+CHECK=$(pwd)/projects/$project_name_mode
 
-if ! [[ -f $CHECK/whitelist_barcodes.csv ]];
+if ! [[ -f $CHECK/tmp/whitelist_barcodes.csv || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	source $(pwd)/requirements_file/barcodes
@@ -139,9 +139,9 @@ function STAR_MAPPING {
 
 echo Mapping Start
 
-CHECK=$(pwd)/projects/$project_name_mode/tmp
+CHECK=$(pwd)/projects/$project_name_mode
 
-if ! [[ -f $CHECK/Aligned.sortedByCoord.out.bam ]];
+if ! [[ -f $CHECK/tmp/Aligned.out.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 
@@ -172,7 +172,7 @@ then
 
 	R2_FILE=$INFASTP'/'$R2_NAME_map
 
-	STAR --outReadsUnmapped Fastx --outFilterMismatchNmax 20 --outSAMtype BAM SortedByCoordinate --outFilterMultimapNmax 20 --outFilterMismatchNoverLmax 0.3 --outFilterMismatchNoverReadLmax 1 --outFilterMatchNmin 0 --outFilterScoreMinOverLread 0.33 --outFilterMatchNminOverLread 0.33  --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outFileNamePrefix $tmp --outStd Log  > $RESULT/Log.final.out 2>&1
+	STAR --outReadsUnmapped Fastx --outFilterMismatchNmax 20 --outSAMtype BAM Unsorted --outFilterMultimapNmax 20 --outFilterMismatchNoverLmax 0.3 --outFilterMismatchNoverReadLmax 1 --outFilterMatchNmin 0 --outFilterScoreMinOverLread 0.33 --outFilterMatchNminOverLread 0.33  --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outFileNamePrefix $tmp --outStd Log  > $RESULT/Log.final.out 2>&1
 
 else 
 
@@ -185,9 +185,9 @@ fi
 
 function add_tags {
 
-CHECK=$(pwd)/projects/$project_name_mode/tmp
+CHECK=$(pwd)/projects/$project_name_mode
 
-if ! [[ -f $CHECK/final.bam ]];
+if ! [[ -f $CHECK/tmp/final.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	source $(pwd)/requirements_file/barcodes
@@ -244,9 +244,9 @@ fi
 
 function final_exon {
 
-CHECK=$(pwd)/projects/$project_name_mode/tmp
+CHECK=$(pwd)/projects/$project_name_mode
 
-if ! [[ -f $CHECK/gene_exon_tagged_error.bam ]];
+if ! [[ -f $CHECK/tmp/gene_exon_tagged_error.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
 	cpu=$(grep -c ^processor /proc/cpuinfo)
 	cpu=$[$cpu-2]
@@ -272,9 +272,9 @@ function completed_bam {
 
 
 
-CHECK=$(pwd)/projects/$project_name_mode/results
+CHECK=$(pwd)/projects/$project_name_mode
 
-if ! [[ -f $CHECK/Completed.bam ]];
+if ! [[ -f $CHECK/results/Completed.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	tmp=$(pwd)/projects/$project_name_mode/tmp
@@ -310,9 +310,9 @@ fi
 ##EXPRESSION FILE AND STATS
 function umi_extract {
 
-CHECK=$(pwd)/projects/$project_name_mode/tmp
+CHECK=$(pwd)/projects/$project_name_mode
 
-if ! [[ -f $CHECK/selected_cells.sc ]];
+if ! [[ -f $CHECK/tmp/selected_cells.sc || -f $CHECK/sc_data/matrix.mtx ]];
 then
 	tmp=$(pwd)/projects/$project_name_mode/tmp
 	results=$(pwd)/projects/$project_name_mode/results
@@ -332,9 +332,9 @@ fi
 
 function umi_expression {
 
-CHECK=$(pwd)/projects/$project_name_mode/tmp
+CHECK=$(pwd)/projects/$project_name_mode
 
-if ! [[ -f $CHECK/umi_expression.tsv ]];
+if ! [[ -f $CHECK/tmp/umi_expression.tsv || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	SCRIPTS_EXTRACT=$(pwd)/setup
@@ -361,9 +361,9 @@ fi
 
 function scRNAmetrics {
 
-CHECK=$(pwd)/projects/$project_name_mode/tmp
+CHECK=$(pwd)/projects/$project_name_mode
 
-if ! [[ -f $CHECK/scRNAmetrics.txt ]];
+if ! [[ -f $CHECK/tmp/scRNAmetrics.txt || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	SCRIPTS_EXTRACT=$(pwd)/setup
@@ -445,7 +445,20 @@ Rscript $SCRIPTS_EXTRACT/seurat_cluster_species.R $PATH_PROJECT $MARKERS $specie
 
 cp $SCRIPTS_EXTRACT/manual_species.R $PATH_PROJECT/results
 mv $PATH_PROJECT/results/manual_species.R $PATH_PROJECT/results/manual_analysis.R 
-	
+
+
+CHECK=$(pwd)/projects/$project_name_mode/sc_data
+if [[ -f $CHECK/matrix.mtx ]];
+then	
+rm -rf $PATH_PROJECT/tmp
+rm -rf $PATH_PROJECT/fast_data/R1_out_exctracted.fastq.gz
+rm -rf $PATH_PROJECT/fast_data/R2_out_extracted.fastq
+rm -rf $PATH_PROJECT/fast_data/R2_out.fastq.gz
+rm -rf $PATH_PROJECT/results/HDMAP_subtypes_files
+rm -rf $PATH_PROJECT/results/UMAP_with_DE_gene_subtypes_files
+
+
+fi
 
 
 }

@@ -32,7 +32,7 @@ cd ..
 function checkfq {
 		echo ''
 		echo  -e '\033[1;36m Put fastq data into => projects/'$project_name_mod/'fast_data'
-		echo  -e '\033[1;36m If you done it, push ENTER'
+		echo  -e '\033[1;36m If you did it, push ENTER'
 		read enter
 		
 		fast=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
@@ -70,7 +70,7 @@ function checkseurat_1 {
 		echo ''
 		echo  -e '\033[1;36m Put count genes matrix into => projects/'$project_name_mod/'sc_data'
 		echo  -e '\033[1;36m Available matrix format .csv | .tsv | .txt'
-		echo  -e '\033[1;36m If you done it, push ENTER'
+		echo  -e '\033[1;36m If you did it, push ENTER'
 		read enter
 		
 		fast=$(pwd)/projects/$project_name_mod/sc_data/*
@@ -153,7 +153,7 @@ function checkseurat_2 {
 		echo ''
 		echo  -e '\033[1;36m Put normalized expression genes matrix into => projects/'$project_name_mod/'sc_data'
 		echo  -e '\033[1;36m Available matrix format .csv | .tsv | .txt'
-		echo  -e '\033[1;36m If you done it, push ENTER'
+		echo  -e '\033[1;36m If you did it, push ENTER'
 		read enter
 		
 		fast=$(pwd)/projects/$project_name_mod/sc_data/*
@@ -236,7 +236,7 @@ function checkseurat_3 {
 		echo  -e '\033[1;36m Put genes name data as genes.tsv into => projects/'$project_name_mod/'sc_data'
 		echo  -e '\033[1;36m Put barcodes data as barcodes.tsv into => projects/'$project_name_mod/'sc_data'
 		echo  -e '\033[1;36m Put count matrix data as matrix.mtx into => projects/'$project_name_mod/'sc_data'
-		echo  -e '\033[1;36m If you done it, push ENTER'
+		echo  -e '\033[1;36m If you did it, push ENTER'
 		read enter
 		
 		fast=$(pwd)/projects/$project_name_mod/sc_data/*

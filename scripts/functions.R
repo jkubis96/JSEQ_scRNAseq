@@ -320,7 +320,7 @@ name_repairing <- function(seurat_project, average_expression, markers_class, ma
   
   if (species == 'human') {
     part_name_2 <- toupper(part_name_2)
-  } else if (species %in% c('mice', 'custom', 'mix')) {
+  } else {
     
     part_name_2 <- str_to_title(part_name_2)
   }
