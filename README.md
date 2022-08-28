@@ -8,7 +8,7 @@
 
 ### Authors: Jakub Kubiś & Maciej Figiel
 
-<div align="right">
+<div align="left">
  Institute of Bioorganic Chemistry<br />
  Polish Academy of Sciences<br />
  Department of Molecular Neurobiology<br />
@@ -22,6 +22,7 @@
 
 <div align="justify"> The JSEQ_scRNAseq® was developed for high-resolution single-cell data analysis </div>
 
+<br />
 
 <p align="center">
 <img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/sc.png?raw=true" alt="drawing" width="600" />
