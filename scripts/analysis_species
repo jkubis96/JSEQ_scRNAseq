@@ -257,7 +257,6 @@ then
 			O=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged_error.bam \
 			OUTPUT_REPORT=$(pwd)/projects/$project_name_mode/tmp/beadSubstitutionReport.txt \
 			OUTPUT_SUMMARY=$(pwd)/projects/$project_name_mode/tmp/beadSubstitutionSummary.txt \
-			MIN_UMIS_PER_CELL=10 \
 			NUM_THREADS=$cpu
 else 
 
@@ -292,7 +291,6 @@ then
 			OUTPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam \
 			OUTPUT_STATS=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats.txt \
 			SUMMARY=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats_summary.txt \
-			MIN_UMIS_PER_CELL=10 \
 			NUM_BARCODES=$[$cell*1,25] \
 			PRIMER_SEQUENCE=$smart \
 			NUM_THREADS=$cpu
