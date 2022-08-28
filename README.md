@@ -1,4 +1,4 @@
-## JSEQ® - single cell sequencing analysis tools
+## JSEQ® - single cell sequencing analysis tool
 
 <p align="right">
 <img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/logo_jbs.PNG?raw=true" alt="drawing" width="250" />
@@ -8,7 +8,7 @@
 
 ### Authors: Jakub Kubiś & Maciej Figiel
 
-<div align="center">
+<div align="right">
  Institute of Bioorganic Chemistry<br />
  Polish Academy of Sciences<br />
  Department of Molecular Neurobiology<br />
@@ -17,19 +17,17 @@
 
 <br />
 
-## Description
+### Description
 
 
 <div align="justify"> The JSEQ_scRNAseq® was developed for high-resolution single-cell data analysis </div>
 
-<br />
-
-#### The single-cell method performance: A) libraries preparing  B) sequencing and analysis 
 
 <p align="center">
 <img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/sc.png?raw=true" alt="drawing" width="600" />
 </p>
 
+##### The single-cell method performance: A) libraries preparing  B) sequencing and analysis 
 *Created in BioRender
 
 <br />
@@ -39,7 +37,7 @@
 </br>
 
 
-## Installation
+### Installation
 
 #### Download:
 
@@ -75,7 +73,7 @@ install
 
 <br />
 
-## Usage 
+### Usage 
 
 <div align="justify"> For all JSEQ features and how to use it in your analysis see JSEQ_manual.pdf  </div>
 
@@ -83,7 +81,7 @@ install
 #### Pipeline workflow
 
 <p align="center">
-<img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/pipeline.png?raw=true" alt="drawing" width="600" />
+<img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/pipeline.png?raw=true" alt="drawing" width="800" />
 </p>
 
 ##### The JSEQ® pipeline was prepared and tested on AMD Ryzen Threadripper 24-Core, RAM 256GB, Ubuntu 20.04 LTS. For more information, I invite you to familiarize yourself with the manual.
