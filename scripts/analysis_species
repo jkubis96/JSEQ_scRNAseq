@@ -117,7 +117,7 @@ then
 
 	echo 'Cells detected - ' $cell
 
-	rm R1_out.fastq.gz R2_out.fastq
+	rm R1_out.fastq.gz
 	
 	cd ..
 	cd ..
