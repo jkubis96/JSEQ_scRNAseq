@@ -8,7 +8,7 @@
 
 ### Authors: Jakub Kubiś & Maciej Figiel
 
-<div align="left">
+<div align="center">
  Institute of Bioorganic Chemistry<br />
  Polish Academy of Sciences<br />
  Department of Molecular Neurobiology<br />
@@ -28,7 +28,7 @@
 <img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/sc.png?raw=true" alt="drawing" width="600" />
 </p>
 
-##### The single-cell method performance: A) libraries preparing  B) sequencing and analysis 
+#### The single-cell method performance: A) libraries preparing  B) sequencing and analysis 
 *Created in BioRender
 
 <br />
