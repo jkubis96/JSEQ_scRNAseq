@@ -426,7 +426,7 @@ then
 	SCRIPTS_EXTRACT=$(pwd)/setup
 	java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
 			INPUT=$(pwd)/projects/$project_name_mode/results/mice/FiltredMice.bam\
-			OUTPUT=$(pwd)/projects/$project_name_mode/tmp/mice/scRNAmetrics.txt\
+			OUTPUT=$(pwd)/projects/$project_name_mode/results/mice/scRNAmetrics.txt\
 			ANNOTATIONS_FILE=$(pwd)/genome/$species/correct_annotation.refFlat \
 			CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/selected_cells.sc \
 			RIBOSOMAL_INTERVALS=$(pwd)/genome/$species/annotation.rRNA.intervals
@@ -448,7 +448,7 @@ CHECK=$(pwd)/projects/$project_name_mode/mice_sc_data
 if ! [[ -f $CHECK/matrix.mtx ]];
 then
 
-	path_metric_mice=$(pwd)/projects/$project_name_mode/tmp/mice
+	path_metric_mice=$(pwd)/projects/$project_name_mode/results/mice
 	path_result_mice=$(pwd)/projects/$project_name_mode/results/mice
 
 	SCRIPTS_EXTRACT=$(pwd)/scripts
@@ -530,7 +530,7 @@ then
 	SCRIPTS_EXTRACT=$(pwd)/setup
 	java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
 			INPUT=$(pwd)/projects/$project_name_mode/results/human/FiltredHuman.bam\
-			OUTPUT=$(pwd)/projects/$project_name_mode/tmp/human/scRNAmetrics.txt\
+			OUTPUT=$(pwd)/projects/$project_name_mode/results/human/scRNAmetrics.txt\
 			ANNOTATIONS_FILE=$(pwd)/genome/$species/correct_annotation.refFlat \
 			CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/selected_cells.sc \
 			RIBOSOMAL_INTERVALS=$(pwd)/genome/$species/annotation.rRNA.intervals
@@ -553,7 +553,7 @@ CHECK=$(pwd)/projects/$project_name_mode/human_sc_data
 if ! [[ -f $CHECK/matrix.mtx ]];
 then
 
-	path_metric_human=$(pwd)/projects/$project_name_mode/tmp/human
+	path_metric_human=$(pwd)/projects/$project_name_mode/results/human
 	path_result_human=$(pwd)/projects/$project_name_mode/results/human
 
 

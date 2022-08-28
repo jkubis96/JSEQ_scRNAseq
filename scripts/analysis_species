@@ -222,9 +222,9 @@ fi
 
 function dropSEQ {
 
-CHECK=$(pwd)/projects/$project_name_mode/tmp
+CHECK=$(pwd)/projects/$project_name_mode
 
-if ! [[ -f $CHECK/gene_exon_tagged.bam ]];
+if ! [[ -f $CHECK/tmp/gene_exon_tagged.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	SCRIPTS_EXTRACT=$(pwd)/setup
@@ -369,7 +369,7 @@ then
 	SCRIPTS_EXTRACT=$(pwd)/setup
 	java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
 			INPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam\
-			OUTPUT=$(pwd)/projects/$project_name_mode/tmp/scRNAmetrics.txt\
+			OUTPUT=$(pwd)/projects/$project_name_mode/results/scRNAmetrics.txt\
 			ANNOTATIONS_FILE=$(pwd)/genome/$species/correct_annotation.refFlat \
 			CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/selected_cells.sc \
 			RIBOSOMAL_INTERVALS=$(pwd)/genome/$species/annotation.rRNA.intervals
@@ -390,7 +390,7 @@ CHECK=$(pwd)/projects/$project_name_mode/sc_data
 if ! [[ -f $CHECK/matrix.mtx ]];
 then
 
-	path_metric=$(pwd)/projects/$project_name_mode/tmp
+	path_metric=$(pwd)/projects/$project_name_mode/results
 	path_result=$(pwd)/projects/$project_name_mode/results
 
 	SCRIPTS_EXTRACT=$(pwd)/scripts
