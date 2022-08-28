@@ -38,7 +38,7 @@ data <- args[10]
 functions <- file.path(getwd(), 'functions.R')
 source(functions)
 
-path_tmp <- file.path(path, 'tmp')
+path_tmp <- file.path(path, 'results')
 
 UMI <- readRDS(file = file.path(path_results, "Results.rds"))
 cells_number <- length(UMI@active.ident)
