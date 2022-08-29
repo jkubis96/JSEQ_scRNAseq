@@ -17,19 +17,7 @@
 
 <br />
 
-### Description
-
-
-<div align="justify"> The JSEQ_scRNAseq® was developed for high-resolution single-cell data analysis </div>
-
-<br />
-
-<p align="center">
-<img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/sc.png?raw=true" alt="drawing" width="600" />
-</p>
-
-#### The single-cell method performance: A) libraries preparing  B) sequencing and analysis 
-*Created in BioRender
+## Description
 
 <br />
 
@@ -37,8 +25,17 @@
 
 </br>
 
+### The process of single-cell method performance: A) libraries preparing  B) sequencing and analysis 
+*Created in BioRender
 
-### Installation
+<p align="center">
+<img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/main/setup/fig/sc.png?raw=true" alt="drawing" width="600" />
+</p>
+
+
+
+
+## Installation
 
 #### Download:
 
@@ -74,7 +71,7 @@ install
 
 <br />
 
-### Usage 
+## Usage 
 
 <div align="justify"> For all JSEQ features and how to use it in your analysis see JSEQ_manual.pdf  </div>
 
