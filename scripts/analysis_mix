@@ -611,10 +611,8 @@ rm -rf $PATH_PROJECT/tmp
 rm -rf $PATH_PROJECT/fast_data/R1_out_exctracted.fastq.gz
 rm -rf $PATH_PROJECT/fast_data/R2_out_extracted.fastq
 rm -rf $PATH_PROJECT/fast_data/R2_out.fastq.gz
-rm -rf $PATH_PROJECT/results/mice/HDMAP_subtypes_files
-rm -rf $PATH_PROJECT/results/mice/UMAP_with_DE_gene_subtypes_files
-rm -rf $PATH_PROJECT/results/human/HDMAP_subtypes_files
-rm -rf $PATH_PROJECT/results/human/UMAP_with_DE_gene_subtypes_files
+rm -rf $PATH_PROJECT/results/HDMAP_subtypes_files
+rm -rf $PATH_PROJECT/results/UMAP_with_DE_gene_subtypes_files
 
 fi
 
