@@ -52,6 +52,8 @@ args <- commandArgs()
   
   p_bin <- as.numeric(as.character(conf_file$V2[grep(pattern = 'p_bin', rownames(conf_file))]))
   
+  if(length(data) == 0) {data = 3}
+  
 }
 
 ###########################################################################################################################################################
@@ -211,7 +213,11 @@ rm(cells)
 
 ###########################################################################################################################################################
 
-UMI <- NormalizeData(UMI, normalization.method = "LogNormalize", scale.factor = 1e6)
+if (data == 2) {
+  UMI@assays$RNA@data <- UMI@assays$RNA@counts
+} else {
+  UMI <- NormalizeData(UMI, normalization.method = "LogNormalize", scale.factor = 1e6)
+}
 
 
 ###########################################################################################################################################################

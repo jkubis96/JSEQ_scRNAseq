@@ -236,18 +236,18 @@ then
 	cd ..
 	
 	echo -e "\033[0;31m $(date) Docker build starting..."
-	docker build -t jseq -f Dockerfile .
+	sudo docker build -t jseq -f Dockerfile .
 	id=$(docker images --format "{{.ID}}" jseq)
 	echo $id
 	echo id=$id > $(pwd)/setup/docker_id
-	docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq $id
+	sudo docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq $id
 
 elif [[ $con == 'start' ]]
 then
 
     source $(pwd)/setup/docker_id
 	id=$id
-	docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq $id
+	sudo docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq $id
 	
 	
 else 

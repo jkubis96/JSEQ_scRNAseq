@@ -70,6 +70,12 @@ library(stringr)
   
   p_bin <- as.numeric(as.character(conf_file$V2[grep(pattern = 'p_bin', rownames(conf_file))]))
   
+  conf_data <- read.csv(file = '../config', header = F, sep = '=', row.names = 1)
+  
+  data <- as.numeric(as.character(conf_data$V2[grep(pattern = 'data', rownames(conf_file))]))
+  
+  if(length(data) == 0) {data = 3}
+  
 }
       
 #Fill species name [mice/human/custom] !!!:
@@ -81,7 +87,7 @@ library(stringr)
       UMI <- readRDS('Seurat_object.rds')
       
   #Data ^ - for new manual analysis 
-      #If you choose this option start from PART A of pipeline (code line 103-539)
+      #If you choose this option start from PART A of pipeline (code line 103-547)
       
       UMI <- readRDS('Results.rds')
       
@@ -95,7 +101,7 @@ library(stringr)
 Idents(UMI) <- gsub(pattern = 'Old_name', replacement = 'New_name', x = Idents((UMI)))
                   #Write old name ^           Write new name ^
 
-#Go to PART B and generate new plots (code line 540-662)
+#Go to PART B and generate new plots (code line 548-670)
 
 ###########################################################################################################################################################
       
@@ -207,9 +213,11 @@ cells_number <- length(Idents(UMI))
 
 ###########################################################################################################################################################
 
-UMI <- NormalizeData(UMI, normalization.method = "LogNormalize", scale.factor = 1e6)
-
-
+if (data == 2) {
+  UMI@assays$RNA@data <- UMI@assays$RNA@counts
+} else {
+  UMI <- NormalizeData(UMI, normalization.method = "LogNormalize", scale.factor = 1e6)
+}
 
 ###########################################################################################################################################################
 
