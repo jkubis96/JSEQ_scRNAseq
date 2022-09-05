@@ -55,6 +55,15 @@ cd JSEQ_scRNAseq
 ./JSEQ
 ```
 
+* if you see 'Permission denied' try:
+
+```
+cd ..
+chmod -R u+r+x JSEQ_scRNAseq/
+cd JSEQ_scRNAseq
+./JSEQ
+```
+
 #### Choose installation destination [local / docker]:
 
 * before choosing 'docker' make sure that you have docker on your device
