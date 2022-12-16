@@ -13,6 +13,7 @@ echo -e '\033[1;36m Choose JSEQ function:'
 echo -e '\033[1;36m -download RefGenome [genome]'
 echo -e '\033[1;36m -creat new project [project]'
 echo -e '\033[1;36m -start analysis [analysis]'
+echo -e '\033[1;36m -quit [q]'
 echo ''
 echo -e '\033[1;36m Choose function:'
 echo ''
@@ -159,6 +160,10 @@ fi
 
 experiment_selection
 
+elif [[ $s == 'q' ]]
+then
+        exit
+		
 else
         start
 fi
