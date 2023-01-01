@@ -11,7 +11,7 @@ cluster_nameing <- function(matrix_a, markers) {
   colname <- colnames(matrix_a)
   rownames(matrix_a) <- make.unique(toupper(rownames(matrix_a)), sep = '')
   
-   if (length(markers_subclass) != 0) {
+   if (length(markers) != 0) {
   
   list.markers <- c()
   for (l.marker in markers) {
