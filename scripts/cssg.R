@@ -139,8 +139,9 @@ CSSG_markers <- function(cells_wide_df, markers_df, max_combine, loss_pval) {
         perc1 <- perc1/length(res_df[1,])
         last_df <- data.frame(perc0, perc1)
         rownames(last_df) <- rownames(res_df)
-        up_tr_q <- quantile(last_df$perc1, 0.75)
+        up_tr_q <- quantile(last_df$perc1, 0.6)
         last_df <- last_df[last_df$perc1 >= up_tr_q,]
+       
 
       
 
@@ -192,14 +193,40 @@ CSSG_markers <- function(cells_wide_df, markers_df, max_combine, loss_pval) {
             
             
           final_df <- final_df[!duplicated(final_df$duplicates),]
+          
+          #remove similar combination
+
+          
+          run = 0
+          while(TRUE) {
+            final_df <- final_df[order(final_df$perc1,decreasing = TRUE),]
+            vec <- strsplit(rownames(final_df), split = ' ')
+            
+            run = run + 1
+            check <- function(x) {
+              ret = x %in% vec[[run]]
+              ret = length(ret[ret == TRUE])/length(vec[[1]]) <= 0.33
+              
+              return(ret)
+
+            }
+            
+            vec = lapply(vec, FUN = check)
+            vec[1] = TRUE
+            final_df = final_df[unlist(vec),]
+            break
+
+          }
+          
+          
           final_df <- final_df[,!colnames(final_df) %in% 'duplicates']
-          up_tr_q <- quantile(final_df$perc1, 0.75)
+          up_tr_q <- quantile(final_df$perc1, 0.6)
           final_df_up <- final_df[final_df$perc1 >= up_tr_q,]
           final_df_up <- final_df_up[order(final_df_up$perc1,decreasing = TRUE),]
 		      final_df_up <- final_df_up[1:as.numeric(max_combine),]
           final_df_up <- drop_na(final_df_up)
 		  
-		      down_tr_q <- quantile(final_df$perc0, 0.25) 
+		      down_tr_q <- quantile(final_df$perc0, 0.3) 
           final_df_down <- final_df[final_df$perc0 <= down_tr_q,]
           final_df_down <- final_df_down[order(final_df_down$perc0,decreasing = FALSE),]
           final_df_down <- final_df_down[1:as.numeric(max_combine),]

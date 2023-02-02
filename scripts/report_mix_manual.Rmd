@@ -191,7 +191,8 @@ top20
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
 plot1 <- VariableFeaturePlot(UMI)
-LabelPoints(plot = plot1, points = top20, repel = TRUE)
+LabelPoints(plot = plot1, points = top20, repel = TRUE) +
+theme(legend.position = 'none') 
 
 
 ```

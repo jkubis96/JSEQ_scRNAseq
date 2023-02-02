@@ -112,12 +112,27 @@ dev.off()
 ###########################################################################################################################################################
 
 #Droplet content and QC
-n_gen <- UMI@meta.data$nGenes[UMI@meta.data$nGenes > down_tr]
+mean1 <- mean(sort(UMI@meta.data$nGenes))
+
+set1 <- UMI@meta.data$nGenes[UMI@meta.data$nGenes <= mean1]
+set2 <- UMI@meta.data$nGenes[UMI@meta.data$nGenes > mean1]
+
+set1.1 <- set1[set1 <= mean(set1)]
+set2.1 <- set2[set2 > mean(set2)]
+
+
 
 if (is.na(up_tr)) {
-  n_gen <- as.numeric(mean(n_gen))*2 + 1.5*IQR(as.numeric(UMI@meta.data$nGenes))
+  n_gen <- mean(set2.1) + sd(set2.1)
 } else {
   n_gen <- up_tr
+}
+
+
+if (is.na(down_tr)) {
+  down_tr <- mean(set1.1) -  sd(set1.1)
+} else {
+  down_tr <- down_tr
 }
 
 QC_UMI <- data.frame()
@@ -141,10 +156,13 @@ QC_UMI$Ribo_Status[QC_UMI$RiboPercent > 0] <- '> 0 %'
 
 DQC <- ggplot()+
   geom_point(QC_UMI, mapping = aes(x = nGenes, y = nGenes, color = nGenes_Status))+
-  ylab("Number of genes for each cells") +
-  xlab("Number of genes for each cells")+
+  ylab("Number of genes for each cell") +
+  xlab("Number of genes for each cell")+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='Droplet content')
+  geom_vline(xintercept = down_tr, color = 'green') + annotate("text", x=down_tr - 40 , y=as.integer(round(max(QC_UMI$nGenes) / 1.3)), label= as.character(paste0('> ', as.character(round(down_tr)))) , angle=90) +
+  geom_vline(xintercept = n_gen, color = 'red') + annotate("text", x=n_gen - 40  , y=as.integer(round(max(QC_UMI$nGenes) / 1.3)), label= as.character(paste0('< ', as.character(round(n_gen)))), angle=90) +
+  labs(color='Droplet content') +
+  theme_classic()
  
 
 svg(filename = file.path(OUTPUT,'DropletQC.svg'), width = 10, height = 7)
@@ -157,7 +175,8 @@ MQC <- ggplot()+
   ylab("% MitoRNA") +
   xlab("% MitoRNA")+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='% Content threshold')
+  labs(color='% Content threshold') +
+  theme_classic()
 
 
 svg(filename = file.path(OUTPUT,'MitoQC.svg'), width = 10, height = 7)
@@ -170,7 +189,8 @@ RQC <- ggplot()+
   ylab("% RiboRNA") +
   xlab("% RiboRNA")+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  labs(color='% Content threshold') 
+  labs(color='% Content threshold') +
+  theme_classic()
 
 
 svg(filename = file.path(OUTPUT,'RiboQC.svg'),  width = 10, height = 7)

@@ -60,7 +60,9 @@ chceck_fq <- grepl("_fq", metrics_human)
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 if (chceck_fq == TRUE){
+  
 cat('**The knee plot for computed discovery the right cells and user defined number of cells based [UMI/BARCODE]**')
+  
 }
 ```
 
@@ -366,7 +368,8 @@ top20
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
 plot1 <- VariableFeaturePlot(UMI)
-LabelPoints(plot = plot1, points = top20, repel = TRUE)
+LabelPoints(plot = plot1, points = top20, repel = TRUE) +
+theme(legend.position = 'none') 
 
 
 ```

@@ -80,6 +80,7 @@ then
 		echo ''
 		echo -e "\033[1;33m Check $project_name_mode for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 		echo ''
+		start
 		
 elif
 		[[ $d  == *'_fq'* ]] && [[ $species  == 'mix' ]];
@@ -130,6 +131,7 @@ then
 		echo ''
 		echo -e "\033[1;33m Check $project_name_mode for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 		echo ''
+		start
 		
 elif	[[ $species  == 'human' && $d  == *'_exp'* ]] || [[ $species  == 'mice' && $d  == *'_exp'* ]] || [[ $species  == 'mix' && $d  == *'_exp'* ]] || [[ $species  == 'custom' && $d  == *'_exp'* ]]
 then

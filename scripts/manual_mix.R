@@ -79,7 +79,7 @@ UMI_human <- readRDS('Seurat_object_human.rds')
 UMI_mice <- readRDS('Seurat_object_mice.rds')
 
 #Data ^ - for new manual analysis 
-#If you choose this option start from PART A of pipeline (code line 100-561)
+#If you choose this option start from PART A of pipeline (code line 100-644)
 
 UMI <- readRDS('Results.rds')
 
@@ -93,7 +93,7 @@ UMI <- readRDS('Results.rds')
 Idents(UMI) <- gsub(pattern = 'Old_name', replacement = 'New_name', x = Idents((UMI)))
 #				          	Write old name ^         Write new name ^
 
-#Go to PART B and generate new plots (code line 562-684)
+#Go to PART B and generate new plots (code line 645-767)
 
 ###########################################################################################################################################################
 
@@ -128,12 +128,27 @@ rm(UMI)
 
 #Droplet content and QC human
 #Human
-n_gen_human <- UMI_human@meta.data$nGenes[UMI_human@meta.data$nGenes > down_tr]
+mean1 <- mean(sort(UMI_human@meta.data$nGenes))
+
+set1 <- UMI_human@meta.data$nGenes[UMI_human@meta.data$nGenes <= mean1]
+set2 <- UMI_human@meta.data$nGenes[UMI_human@meta.data$nGenes > mean1]
+
+set1.1 <- set1[set1 <= mean(set1)]
+set2.1 <- set2[set2 > mean(set2)]
+
+
 
 if (is.na(up_tr)) {
-  n_gen_human <- as.numeric(mean(n_gen_human))*2 + 1.5*IQR(as.numeric(UMI_human@meta.data$nGenes))
+  n_gen_human <- mean(set2.1) + sd(set2.1)
 } else {
   n_gen_human <- up_tr
+}
+
+
+if (is.na(down_tr)) {
+  down_tr_human <- mean(set1.1) -  sd(set1.1)
+} else {
+  down_tr_human <- down_tr
 }
 
 QC_UMI_human <- data.frame()
@@ -154,13 +169,40 @@ QC_UMI_human$Ribo_Status[QC_UMI_human$RiboPercent == 0] <- '0%'
 QC_UMI_human$Ribo_Status[QC_UMI_human$RiboPercent > 0] <- '> 0 %'
 QC_UMI_human$species <- 'Human'
 
+DQC_human <- ggplot()+
+  geom_point(QC_UMI_human, mapping = aes(x = nGenes, y = nGenes, color = nGenes_Status))+
+  ylab("Number of genes for each cell") +
+  xlab("Number of genes for each cell")+
+  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
+  geom_vline(xintercept = down_tr_human, color = 'green') + annotate("text", x=down_tr_human - 40 , y=as.integer(round(max(QC_UMI_human$nGenes) / 1.3)), label= as.character(paste0('> ', as.character(round(down_tr_human)))) , angle=90) +
+  geom_vline(xintercept = n_gen_human, color = 'red') + annotate("text", x=n_gen_human - 40  , y=as.integer(round(max(QC_UMI_human$nGenes) / 1.3)), label= as.character(paste0('< ', as.character(round(n_gen_human)))), angle=90) +
+  theme(legend.position = 'none') +
+  ggtitle('Human') +
+  theme_classic()
+
 #Mouse
-n_gen_mice <- UMI_mice@meta.data$nGenes[UMI_mice@meta.data$nGenes > down_tr]
+
+mean1 <- mean(sort(UMI_mice@meta.data$nGenes))
+
+set1 <- UMI_mice@meta.data$nGenes[UMI_mice@meta.data$nGenes <= mean1]
+set2 <- UMI_mice@meta.data$nGenes[UMI_mice@meta.data$nGenes > mean1]
+
+set1.1 <- set1[set1 <= mean(set1)]
+set2.1 <- set2[set2 > mean(set2)]
+
+
 
 if (is.na(up_tr)) {
-  n_gen_mice <- as.numeric(mean(n_gen_mice))*2 + 1.5*IQR(as.numeric(UMI_mice@meta.data$nGenes))
+  n_gen_mice <- mean(set2.1) + sd(set2.1)
 } else {
   n_gen_mice <- up_tr
+}
+
+
+if (is.na(down_tr)) {
+  down_tr_mice <- mean(set1.1) -  sd(set1.1)
+} else {
+  down_tr_mice <- down_tr
 }
 
 
@@ -183,15 +225,22 @@ QC_UMI_mice$Ribo_Status[QC_UMI_mice$RiboPercent > 0] <- '> 0 %'
 QC_UMI_mice$species <- 'Mouse'
 
 
-QC_UMI <- rbind(QC_UMI_mice, QC_UMI_human)
-
-DQC <- ggplot()+
-  geom_point(QC_UMI, mapping = aes(x = nGenes, y = nGenes, color = nGenes_Status))+
-  ylab("Number of genes for each cells") +
-  xlab("Number of genes for each cells")+
+DQC_mice <- ggplot()+
+  geom_point(QC_UMI_mice, mapping = aes(x = nGenes, y = nGenes, color = nGenes_Status))+
+  ylab("Number of genes for each cell") +
+  xlab("Number of genes for each cell")+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
+  geom_vline(xintercept = down_tr_mice, color = 'green') + annotate("text", x=down_tr_mice - 40 , y=as.integer(round(max(QC_UMI_mice$nGenes) / 1.3)), label= as.character(paste0('> ', as.character(round(down_tr_mice)))) , angle=90) +
+  geom_vline(xintercept = n_gen_mice, color = 'red') + annotate("text", x=n_gen_mice - 40  , y=as.integer(round(max(QC_UMI_mice$nGenes) / 1.3)), label= as.character(paste0('< ', as.character(round(n_gen_mice)))), angle=90) +
   labs(color='Droplet content') +
-  facet_grid(.~QC_UMI$species)
+  ggtitle('Mouse') +
+  theme_classic()
+
+
+
+DQC <- DQC_human + DQC_mice
+
+QC_UMI <- rbind(QC_UMI_mice, QC_UMI_human)
 
 svg(filename = file.path(OUTPUT,'DropletQC.svg'), width = 10, height = 7)
 DQC
@@ -204,7 +253,9 @@ MQC <- ggplot()+
   xlab("% MitoRNA")+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
   labs(color='% Content threshold') +
-  facet_grid(.~QC_UMI$species)
+  facet_grid(.~QC_UMI$species) +
+  theme_classic()
+
 
 svg(filename = file.path(OUTPUT,'MitoQC.svg'), width = 10, height = 7)
 MQC
@@ -217,7 +268,9 @@ RQC <- ggplot()+
   xlab("% RiboRNA")+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
   labs(color='% Content threshold') +
-  facet_grid(.~QC_UMI$species)
+  facet_grid(.~QC_UMI$species) +
+  theme_classic()
+
 
 svg(filename = file.path(OUTPUT,'RiboQC.svg'),  width = 10, height = 7)
 RQC
@@ -232,13 +285,13 @@ rm(QC_UMI_human)
 #Selecting right cells
 #It is the place where you can change thresholds for cells for further analysis
 
-UMI_human <- subset(UMI_human, subset = nGenes > down_tr & nGenes <= n_gen_human & MitoPercent < mt_per)
+UMI_human <- subset(UMI_human, subset = nGenes > down_tr_human & nGenes <= n_gen_human & MitoPercent < mt_per)
 #TRESHOLDS:					                          LOWER ^               UPPER ^              MITOGENES ^
 
 n_gen_human <- max(as.numeric(UMI_human@meta.data$nGenes))*0.95
 cells_number_human <- length(Idents(UMI_human))
 
-UMI_mice <- subset(UMI_mice, subset = nGenes > down_tr & nGenes <= n_gen_mice & MitoPercent < mt_per)
+UMI_mice <- subset(UMI_mice, subset = nGenes > down_tr_mice & nGenes <= n_gen_mice & MitoPercent < mt_per)
 #TRESHOLDS:					                        LOWER ^             UPPER ^              MITOGENES ^
 
 n_gen_mice <- max(as.numeric(UMI_mice@meta.data$nGenes))*0.95
