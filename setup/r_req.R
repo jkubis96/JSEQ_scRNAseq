@@ -9,8 +9,6 @@ install.packages('textclean', version = "0.9.3", dependencies = TRUE, ask = FALS
 install.packages('ape', version = '5.4.1', dependencies = TRUE, ask = FALSE)
 install.packages('umap', dependencies = TRUE, ask = FALSE)
 
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager", dependencies = TRUE, ask = FALSE)
 BiocManager::install("MAST", ask = FALSE)
 
 
