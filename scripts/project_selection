@@ -28,19 +28,26 @@ function select_project_seurat {
 
 INFASTP=$(pwd)/projects/*'exp'*
 
-select d in $INFASTP; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
-cd $d
-source config
-project_name=$project_name
-project_name_mode=$project_name_mode 
-READS_LENGHT=$READS_LENGHT 
-species=$species 
-cell=$cell
-marker_path=$marker_path
+select d in $INFASTP Back; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
 
-cd ..
+if [ $d == Back ]
+then
 
-cd ..
+	start
+
+else
+	cd $d
+	source config
+	project_name=$project_name
+	project_name_mode=$project_name_mode 
+	READS_LENGHT=$READS_LENGHT 
+	species=$species 
+	cell=$cell
+	marker_path=$marker_path
+
+	cd ..
+
+	cd ..
 
 }
 
@@ -49,18 +56,25 @@ function select_project_fastq {
 
 INFASTP=$(pwd)/projects/*'fq'*
 
-select d in $INFASTP; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
-cd $d
-source config
-project_name=$project_name
-project_name_mode=$project_name_mode 
-READS_LENGHT=$READS_LENGHT 
-species=$species 
-cell=$cell
-marker_path=$marker_path
+select d in $INFASTP Back; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
 
-cd ..
+if [ $d == Back ]
+then
 
-cd ..
+	start
+
+else
+	cd $d
+	source config
+	project_name=$project_name
+	project_name_mode=$project_name_mode 
+	READS_LENGHT=$READS_LENGHT 
+	species=$species 
+	cell=$cell
+	marker_path=$marker_path
+
+	cd ..
+
+	cd ..
 
 }

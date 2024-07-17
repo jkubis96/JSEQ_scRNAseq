@@ -9,13 +9,13 @@ echo ''
 function start {
 
 echo ''
-echo -e '\033[1;36m Select JSEQ_scRNAseq function:'
-echo -e '\033[1;36m -download RefGenome [genome]'
-echo -e '\033[1;36m -creat new project [project]'
-echo -e '\033[1;36m -start analysis [analysis]'
-echo -e '\033[1;36m -quit [q]'
+echo -e '\033[1;36m Select option:'
+echo -e '\033[1;36m  -> Download RefGenome [genome]'
+echo -e '\033[1;36m  -> Creat new project [project]'
+echo -e '\033[1;36m  -> Start analysis [analysis]'
+echo -e '\033[1;36m  -> Quit [q]'
 echo ''
-echo -e '\033[1;36m Select function:'
+echo -e '\033[1;36m Select option:'
 echo ''
 	read s
 	s=$(echo $s | tr '[:upper:]' '[:lower:]')
