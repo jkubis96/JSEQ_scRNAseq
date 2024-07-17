@@ -262,97 +262,118 @@ else
 		echo -e '\033[0;31m Put data'
 		checkseurat_3
 fi
-
-	
 		
 }
+
+
 function PARAMETRS_fq {
-echo  -e '\033[1;36m Project name:' 
+echo -e '\033[1;36m Project name:' 
+echo -e '\033[1;36m If quit [q]:'
+
 echo ''
 		read project_name
 		project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
-echo  -e '\033[1;36m Enter operation paramets:'
-echo ''
-echo  -e '\033[1;36m ReadsLenght:'
-echo ''
-        read READS_LENGHT
-echo  -e '\033[1;36m Species [human/mice/custom]:'
-echo ''
-        read species
-		species=$(echo $species | tr '[:upper:]' '[:lower:]')
-echo  -e '\033[1;36m Estimated number of cells'
-echo ''
-	read cell
 
-echo  -e '\033[1;36m Select marker set'
-echo ''
-
-marker_input=$(pwd)/requirements_file/*xlsx
-
-select m in $marker_input; do test -n "$m" && break; echo ">>> Invalid Selection"; done
-marker_path=$m
-
-echo ''
-echo ''
-
-if [[ $READS_LENGHT -lt 300 && $READS_LENGHT -gt 0 ]] && [[ $species == 'human' || $species == 'mice' || $species == 'custom' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]];
+if [ $project_name == q ]
 then
 
-echo -e "\033[0;32m Parametrs correct"
-echo ''
+	start
+
 else
-        echo ''
-		echo -e '\033[0;31m Wrong parametrs'
-		echo -e '\033[0;31m Write right parametrs'
-		echo ''
-		PARAMETRS_fq
-		
+
+	echo  -e '\033[1;36m Enter operation paramets:'
+	echo ''
+	echo  -e '\033[1;36m ReadsLenght:'
+	echo ''
+			read READS_LENGHT
+	echo  -e '\033[1;36m Species [human/mice/custom]:'
+	echo ''
+			read species
+			species=$(echo $species | tr '[:upper:]' '[:lower:]')
+	echo  -e '\033[1;36m Estimated number of cells'
+	echo ''
+		read cell
+
+	echo  -e '\033[1;36m Select marker set'
+	echo ''
+
+	marker_input=$(pwd)/requirements_file/*xlsx
+
+	select m in $marker_input; do test -n "$m" && break; echo ">>> Invalid Selection"; done
+	marker_path=$m
+
+	echo ''
+	echo ''
+
+	if [[ $READS_LENGHT -lt 300 && $READS_LENGHT -gt 0 ]] && [[ $species == 'human' || $species == 'mice' || $species == 'custom' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]];
+	then
+
+	echo -e "\033[0;32m Parametrs correct"
+	echo ''
+	else
+			echo ''
+			echo -e '\033[0;31m Wrong parametrs'
+			echo -e '\033[0;31m Write right parametrs'
+			echo ''
+			PARAMETRS_fq
+
+	fi
+
 fi
 
 }
 
 function PARAMETRS_se {
-echo  -e '\033[1;36m Project name:' 
+echo -e '\033[1;36m Project name:' 
+echo -e '\033[1;36m If quit [q]:'
 echo ''
 		read project_name
 		project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
-echo  -e '\033[1;36m Enter operation paramets:'
-echo ''
 
-echo  -e '\033[1;36m Species [human/mice/custom]:'
-echo ''
-        read species
-		species=$(echo $species | tr '[:upper:]' '[:lower:]')
-echo  -e '\033[1;36m Estimated number of cells'
-echo ''
-	read cell
-	
-echo  -e '\033[1;36m Select marker set'
-echo ''
-
-marker_input=$(pwd)/requirements_file/*xlsx
-
-select m in $marker_input; do test -n "$m" && break; echo ">>> Invalid Selection"; done
-marker_path=$m
-echo ''
-echo ''
-
-echo  -e '\033[1;36m Data format: count_matrix [1] | normalized_expression [2] | separate genes.tsv / names.tsv / matrix.mtx files [3]'
-echo ''
-	read data
-
-if [[ $species == 'human' || $species == 'mice' || $species == 'custom' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]] && [[ $data == '1' || $data == '2' || $data == '3' ]];
+if [ $project_name == q ]
 then
 
-echo -e "\033[0;32m Parametrs correct"
-echo ''
+	start
+
 else
-        echo ''
-		echo -e '\033[0;31m Wrong parametrs'
-		echo -e '\033[0;31m Write right parametrs'
-		echo ''
-		PARAMETRS_se
+
+	echo  -e '\033[1;36m Enter operation paramets:'
+	echo ''
+
+	echo  -e '\033[1;36m Species [human/mice/custom]:'
+	echo ''
+			read species
+			species=$(echo $species | tr '[:upper:]' '[:lower:]')
+	echo  -e '\033[1;36m Estimated number of cells'
+	echo ''
+		read cell
 		
+	echo  -e '\033[1;36m Select marker set'
+	echo ''
+
+	marker_input=$(pwd)/requirements_file/*xlsx
+
+	select m in $marker_input; do test -n "$m" && break; echo ">>> Invalid Selection"; done
+	marker_path=$m
+	echo ''
+	echo ''
+
+	echo  -e '\033[1;36m Data format: count_matrix [1] | normalized_expression [2] | separate genes.tsv / names.tsv / matrix.mtx files [3]'
+	echo ''
+		read data
+
+	if [[ $species == 'human' || $species == 'mice' || $species == 'custom' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]] && [[ $data == '1' || $data == '2' || $data == '3' ]];
+	then
+
+	echo -e "\033[0;32m Parametrs correct"
+	echo ''
+	else
+			echo ''
+			echo -e '\033[0;31m Wrong parametrs'
+			echo -e '\033[0;31m Write right parametrs'
+			echo ''
+			PARAMETRS_se
+	fi
 fi
 
 }

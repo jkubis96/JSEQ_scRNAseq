@@ -27,110 +27,127 @@ java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar CreateIntervalsFiles \
 function GENOME {
 
 echo -e '\033[1;36m Enter the species [human/mice/custom]:'
+echo -e '\033[1;36m If quit [q]:'
 echo ''
 
 read species
-#config
-source $(pwd)/requirements_file/genome.conf
-human_genome=$human_genome
-human_annotation=$human_annotation
-
-mice_genome=$mice_genome
-mice_annotation=$mice_annotation
-
-custom_genome=$custom_genome
-custom_annotation=$custom_annotation
-
-species=$(echo $species | tr '[:upper:]' '[:lower:]')
-source=$(pwd)/scripts
-input_mice=$(pwd)/genome/$species/annotation_mice.gtf
-input_human=$(pwd)/genome/$species/annotation_human.gtf
 
 
-if [[ $species == 'human' ]]
+if [ $species == q ]
 then
 
-        mkdir -p genome
-		mkdir -p genome/$species
-        cd genome/$species
-        wget ${human_annotation} -O annotation.gtf.gz
-		gunzip annotation.gtf.gz
-		wget ${human_genome} -O genome.fa.gz
-		gunzip genome.fa.gz
-		
-		cd ..
-		cd ..
-		
-		echo -e "\033[0;34m $(date) Creating genome reference files"
-		create_ref  
+	start
+
+else
 	
-		Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
-		
-		echo -e "\033[0;34m $(date) Generating of the intervals"
-		rna_intervals
-		
-		echo -e "\033[0;32m $(date) Process DONE!"
 
-		
-		
-	
-start
+	#config
+	source $(pwd)/requirements_file/genome.conf
+	human_genome=$human_genome
+	human_annotation=$human_annotation
 
-elif [[ $species == 'mice' ]]
-then
-		mkdir -p genome
-        mkdir -p genome/$species
-        cd genome/$species
-		
-        wget ${mice_annotation} -O annotation.gtf.gz
-		gunzip annotation.gtf.gz
-		wget ${mice_genome} -O genome.fa.gz
-		gunzip genome.fa.gz
-		
-		cd ..
-		cd ..
-		
-		echo -e "\033[0;34m $(date) Creating genome reference files"
-		create_ref  
-	
-		Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
-		
-		echo -e "\033[0;34m $(date) Generating of the intervals"
-		rna_intervals
-		
-		echo -e "\033[0;32m $(date) Process DONE!"
+	mice_genome=$mice_genome
+	mice_annotation=$mice_annotation
+
+	custom_genome=$custom_genome
+	custom_annotation=$custom_annotation
+
+	species=$(echo $species | tr '[:upper:]' '[:lower:]')
+	source=$(pwd)/scripts
+	input_mice=$(pwd)/genome/$species/annotation_mice.gtf
+	input_human=$(pwd)/genome/$species/annotation_human.gtf
 
 
-start
+	if [[ $species == 'human' ]]
+	then
+
+			mkdir -p genome
+			mkdir -p genome/$species
+			cd genome/$species
+			wget ${human_annotation} -O annotation.gtf.gz
+			gunzip annotation.gtf.gz
+			wget ${human_genome} -O genome.fa.gz
+			gunzip genome.fa.gz
+			
+			cd ..
+			cd ..
+			
+			echo -e "\033[0;34m $(date) Creating genome reference files"
+			create_ref  
+		
+			Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+			
+			echo -e "\033[0;34m $(date) Generating of the intervals"
+			rna_intervals
+			
+			echo -e "\033[0;32m $(date) Process DONE!"
+
+			
+			
+		
+	start
+
+	elif [[ $species == 'mice' ]]
+	then
+			mkdir -p genome
+			mkdir -p genome/$species
+			cd genome/$species
+			
+			wget ${mice_annotation} -O annotation.gtf.gz
+			gunzip annotation.gtf.gz
+			wget ${mice_genome} -O genome.fa.gz
+			gunzip genome.fa.gz
+			
+			cd ..
+			cd ..
+			
+			echo -e "\033[0;34m $(date) Creating genome reference files"
+			create_ref  
+		
+			Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+			
+			echo -e "\033[0;34m $(date) Generating of the intervals"
+			rna_intervals
+			
+			echo -e "\033[0;32m $(date) Process DONE!"
+
+
+	start
 
 
 
-elif [[ $species == 'custom' ]]
-then
-		mkdir -p genome
-        mkdir -p genome/$species
-        cd genome/$species
+	elif [[ $species == 'custom' ]]
+	then
+			mkdir -p genome
+			mkdir -p genome/$species
+			cd genome/$species
+			
+			wget ${custom_annotation} -O annotation.gtf.gz
+			gunzip annotation.gtf.gz
+			wget ${custom_genome} -O genome.fa.gz
+			gunzip genome.fa.gz
+			
+			cd ..
+			cd ..
+			
+			echo -e "\033[0;34m $(date) Creating genome reference files"
+			create_ref  
 		
-        wget ${custom_annotation} -O annotation.gtf.gz
-		gunzip annotation.gtf.gz
-		wget ${custom_genome} -O genome.fa.gz
-		gunzip genome.fa.gz
-		
-		cd ..
-		cd ..
-		
-		echo -e "\033[0;34m $(date) Creating genome reference files"
-		create_ref  
-	
-		Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
-		
-		echo -e "\033[0;34m $(date) Generating of the intervals"
-		rna_intervals
-		
-		echo -e "\033[0;32m $(date) Process DONE!"
+			Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+			
+			echo -e "\033[0;34m $(date) Generating of the intervals"
+			rna_intervals
+			
+			echo -e "\033[0;32m $(date) Process DONE!"
 
-		
-start
+			
+	start
+
+	else
+
+	GENOME
+
+	fi 
 
 fi
 
