@@ -274,7 +274,7 @@ echo ''
 		read project_name
 		project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
 
-if [ $project_name == q ]
+if [ -n $project_name ] && [ $project_name == q ]
 then
 
 	start
@@ -330,7 +330,7 @@ echo ''
 		read project_name
 		project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
 
-if [ $project_name == q ]
+if [ -n $project_name ] && [ $project_name == q ]
 then
 
 	start

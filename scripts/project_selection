@@ -30,7 +30,7 @@ INFASTP=$(pwd)/projects/*'exp'*
 
 select d in $INFASTP Back; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
 
-if [ $d == Back ]
+if [ -n $d ] && [ $d == Back ]
 then
 
 	start
@@ -60,7 +60,7 @@ INFASTP=$(pwd)/projects/*'fq'*
 
 select d in $INFASTP Back; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
 
-if [ $d == Back ]
+if [ -n $d ] && [ $d == Back ]
 then
 
 	start
