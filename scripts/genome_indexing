@@ -32,8 +32,14 @@ echo ''
 
 read species
 
+if [ -z $species ] 
+then
 
-if [ -n $species ] && [ $species == q ]
+species=_
+
+fi
+
+if [ $species == q ]
 then
 
 	start

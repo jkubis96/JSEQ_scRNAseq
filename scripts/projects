@@ -274,7 +274,15 @@ echo ''
 		read project_name
 		project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
 
-if [ -n $project_name ] && [ $project_name == q ]
+
+if [ -z $project_name ] 
+then
+
+project_name=_
+
+fi
+
+if [ $project_name == q ]
 then
 
 	start
@@ -330,7 +338,14 @@ echo ''
 		read project_name
 		project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
 
-if [ -n $project_name ] && [ $project_name == q ]
+if [ -z $project_name ] 
+then
+
+project_name=_
+
+fi
+
+if [ $project_name == q ]
 then
 
 	start
