@@ -1,5 +1,9 @@
 #!/bin/bash
 
+##################################################################################################
+
+## DropSeq library barcodes [Default]
+
 barcode_start=1
 barcode_end=12
 umi_start=13
@@ -10,3 +14,35 @@ barcode_length=$[$barcode_end-$barcode_start+1]
 umi_length=$[$umi_end-$umi_start+1]
 
 barcode='(?P<cell_1>.{'$barcode_length'})(?P<umi_1>.{'$umi_length'})'
+
+##################################################################################################
+
+## 10x v3 library barcodes
+
+# barcode_start=1
+# barcode_end=16
+# umi_start=17
+# umi_end=28
+
+
+# barcode_length=$[$barcode_end-$barcode_start+1]
+# umi_length=$[$umi_end-$umi_start+1]
+
+# barcode='(?P<cell_1>.{'$barcode_length'})(?P<umi_1>.{'$umi_length'})'
+
+
+
+##################################################################################################
+
+## 10x v2 library barcodes
+
+# barcode_start=1
+# barcode_end=16
+# umi_start=17
+# umi_end=26
+
+
+# barcode_length=$[$barcode_end-$barcode_start+1]
+# umi_length=$[$umi_end-$umi_start+1]
+
+# barcode='(?P<cell_1>.{'$barcode_length'})(?P<umi_1>.{'$umi_length'})'

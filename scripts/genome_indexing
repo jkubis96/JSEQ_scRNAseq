@@ -26,7 +26,7 @@ java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar CreateIntervalsFiles \
 
 function GENOME {
 
-echo -e '\033[1;36m Enter the species [human/mice/mix/custom]:'
+echo -e '\033[1;36m Enter the species [human/mice/custom]:'
 echo ''
 
 read species
@@ -45,8 +45,6 @@ species=$(echo $species | tr '[:upper:]' '[:lower:]')
 source=$(pwd)/scripts
 input_mice=$(pwd)/genome/$species/annotation_mice.gtf
 input_human=$(pwd)/genome/$species/annotation_human.gtf
-output_mix=$(pwd)/genome/$species/annotation.gtf
-CHECK=$(pwd)/genome
 
 
 if [[ $species == 'human' ]]
@@ -106,79 +104,6 @@ then
 start
 
 
-elif [[ $species == 'mix' ]]
-then	
-		
-		
-		mkdir -p genome
-		mkdir -p genome/$species
-        cd genome/$species
-        
-		
-		if  [[ -f $CHECK/human/genome.fa ]];
-		then
-		cp $CHECK/human/genome.fa genome_human.fa
-		cp $CHECK/human/annotation.gtf annotation_human.gtf
-		
-		else
-		
-		
-		wget ${human_annotation} -O annotation_human.gtf.gz
-		gunzip annotation_human.gtf.gz
-		wget ${human_genome} -O genome_human.fa.gz
-		gunzip genome_human.fa.gz
-		
-		fi
-		
-		sed -e 's/>/>human_/g' genome_human.fa > renamed_genome_human.fa
-	
-
-		if  [[ -f $CHECK/mice/genome.fa ]];
-		then
-		cp $CHECK/mice/genome.fa genome_mice.fa
-		cp $CHECK/mice/annotation.gtf annotation_mice.gtf
-		
-		else
-		
-		
-		wget ${mice_annotation} -O annotation_mice.gtf.gz
-		gunzip annotation_mice.gtf.gz
-		wget ${mice_genome} -O genome_mice.fa.gz
-		gunzip genome_mice.fa.gz
-		
-		fi
-		
-		sed -e 's/>/>mice_/g' genome_mice.fa > renamed_genome_mice.fa
-	
-		cat renamed_genome_human.fa renamed_genome_mice.fa > genome.fa
-	
-		echo $(date) 'Annotations merging'
-		
-		rm renamed_genome_human.fa
-		rm renamed_genome_mice.fa
-		rm genome_human.fa
-		rm genome_mice.fa
-		
-		cd ..
-		cd ..
-		
-		python3 $source/merge_genome.py $input_mice $input_human $output_mix
-		
-		echo -e "\033[0;34m $(date) Creating genome reference files"
-		create_ref  
-	
-		Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
-		
-		echo -e "\033[0;34m $(date) Generating of the intervals"
-		rna_intervals
-		
-		echo -e "\033[0;32m $(date) Process DONE!"
-		
-	
-
-		
-	
-start
 
 elif [[ $species == 'custom' ]]
 then

@@ -1,5 +1,4 @@
-library(Seurat) 
-library(patchwork)
+library(Seurat)
 library(tidyverse)
 library(doSNOW)
 library(foreach)
@@ -48,7 +47,7 @@ args <- commandArgs()
   
   max_combine <- as.numeric(as.character(conf_file$V2[grep(pattern = 'max_combine', rownames(conf_file))]))
   
-  loss_pval <- as.numeric(as.character(conf_file$V2[grep(pattern = 'loss_pval', rownames(conf_file))]))
+  loss_val <- as.numeric(as.character(conf_file$V2[grep(pattern = 'loss_val', rownames(conf_file))]))
   
   p_bin <- as.numeric(as.character(conf_file$V2[grep(pattern = 'p_bin', rownames(conf_file))]))
   
@@ -112,28 +111,23 @@ dev.off()
 ###########################################################################################################################################################
 
 #Droplet content and QC
-mean1 <- mean(sort(UMI@meta.data$nGenes))
 
-set1 <- UMI@meta.data$nGenes[UMI@meta.data$nGenes <= mean1]
-set2 <- UMI@meta.data$nGenes[UMI@meta.data$nGenes > mean1]
-
-set1.1 <- set1[set1 <= mean(set1)]
-set2.1 <- set2[set2 > mean(set2)]
-
+tmp <- outlires(UMI@meta.data$nGenes)
 
 
 if (is.na(up_tr)) {
-  n_gen <- mean(set2.1) + sd(set2.1)
+  n_gen <- max(tmp) - 1
 } else {
   n_gen <- up_tr
 }
 
 
 if (is.na(down_tr)) {
-  down_tr <- mean(set1.1) -  sd(set1.1)
+  down_tr <- min(tmp) + 1
 } else {
   down_tr <- down_tr
 }
+
 
 QC_UMI <- data.frame()
 QC_UMI <- as.data.frame(UMI$nGenes)
@@ -323,10 +317,11 @@ dev.off()
 print('Searching for cluster marker genes')
 
 
-UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10, test.use = 'MAST')
+UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10, test.use = 'MAST',  logfc.threshold = 0.10)
 
-if (sum(as.numeric(levels(UMI))) != sum(unique(as.integer(UMI.markers$cluster)-1))) {
-  UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.001 , logfc.threshold = 0.10)
+
+if (length(unique(levels(UMI))) != length(unique(UMI.markers$cluster)) || TRUE %in% unique(as.data.frame(summary(UMI.markers$cluster))$`summary(UMI.markers$cluster)` < 20) ) {
+  UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.01 , logfc.threshold = 0.01, test.use = 'MAST')
 }
 
 top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
@@ -337,6 +332,7 @@ if (length(markers_subclass) != 0) {
 
 
 top_sig <- UMI.markers
+
 
 if (mt_cssg == "exclude") {
   top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grepl('t-', top_sig$gene)],]
@@ -368,7 +364,7 @@ colnames(tmp) <- UMI@active.ident
 
 marker_df <- heterogenity_select(cells_wide_df = tmp, marker_df = top_sig, heterogenity_factor = s_factor, p_val =  m_val, max_genes =  max_genes, select_stat = 'p_val')
 
-CSSG_df <- CSSG_markers(cells_wide_df = tmp, markers_df = marker_df$marker_df, max_combine = max_combine, loss_pval = loss_pval)
+CSSG_df <- CSSG_markers(cells_wide_df = tmp, markers_df = marker_df$marker_df, max_combine = max_combine, loss_val = loss_val)
 hd_factors <- hd_cluster_factors(UMI, CSSG_df)
 
 write.table(CSSG_df, file = file.path(OUTPUT, "CSSG_marker.csv"), sep = ',')
@@ -574,14 +570,11 @@ print('DONE')
 #Subtype markers selection
 
 
-UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.20, logfc.threshold = 0.25, test.use = 'MAST')
+UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10, test.use = 'MAST',  logfc.threshold = 0.10)
 
-if (length(unique(Idents(UMI))) != length(unique(UMI.subtypes$cluster))) {
-  UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10 , logfc.threshold = 0.25, test.use = 'MAST')
-} 
 
-if (length(unique(Idents(UMI))) != length(unique(UMI.subtypes$cluster))) {
-  UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.001 , logfc.threshold = 0.25, test.use = 'MAST')
+if (length(unique(levels(UMI))) != length(unique(UMI.subtypes$cluster)) || TRUE %in% unique(as.data.frame(summary(UMI.subtypes$cluster))$`summary(UMI.subtypes$cluster)` < 20) ) {
+  UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.01 , logfc.threshold = 0.05, test.use = 'MAST')
 }
 
 subtypes_marker <- UMI.subtypes %>% group_by(cluster) %>% top_n(n = 1000, wt = avg_logFC)
@@ -589,6 +582,7 @@ write.table(subtypes_marker, file = file.path(OUTPUT, "markers_subtypes.csv"), s
 
 subtypes_marker_report <- UMI.subtypes %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
 write.table(subtypes_marker_report, file = file.path(OUTPUT, "subtypes_marker_report.csv"), sep = ',')
+
 
 
 ###########################################################################################################################################################
@@ -712,11 +706,8 @@ if (species %in% c('human','mice', 'custom')) {
   rmarkdown::render(input = file.path(getwd(), 'scripts/report_species.Rmd'), 
                     output_format = 'html_document', output_dir = OUTPUT, 
                     output_file = 'Report')
-} else if (species == 'mix') {
-  rmarkdown::render(input = file.path(getwd(), 'scripts/report_mix.Rmd'), 
-                    output_format = 'html_document', output_dir = OUTPUT, 
-                    output_file = 'Report')
 } else {
+
   quit()
   n
 }

@@ -9,7 +9,7 @@ ENV LANG en_US.utf8
 RUN apt-get update
 RUN apt-get install -y sudo
 RUN sudo apt-get install -y git
-RUN git clone https://github.com/jkubis96/JSEQ_scRNAseq.git --branch v2.3.1
+RUN git clone https://github.com/jkubis96/JSEQ_scRNAseq.git --branch v2.3.2
 
 RUN sudo apt-get update
 
@@ -21,7 +21,9 @@ RUN pip3 install biopython==1.78
 RUN pip3 install umi_tools==1.0.1
 RUN pip3 install numba
 RUN pip3 install umap-learn==0.5.1
+RUN pip3 install gdown
 
+RUN sudo apt-get update
 
 
 RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common
@@ -29,6 +31,7 @@ RUN sudo apt-get update
 RUN sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
 RUN sudo add-apt-repository 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/'
 RUN sudo apt-get update
+RUN sudo apt-get install -y libtbb-dev
 RUN sudo apt-get -y install r-base=3.6.3-2
 RUN sudo apt-get install -y curl
 RUN sudo apt-get -y install openssl
@@ -39,6 +42,9 @@ RUN sudo apt-get -y install h5utils
 RUN sudo apt-get -y install hdf5-tools
 RUN sudo apt-get -y install hdf5-helpers
 RUN sudo apt-get -y install unzip
+
+
+
 RUN sudo apt-get -y install r-cran-httr=1.4.1-1ubuntu1
 RUN sudo apt-get -y install r-cran-leiden=0.3.3+dfsg-1
 RUN sudo apt-get -y install r-cran-igraph=1.2.4.2-2build1
@@ -49,16 +55,21 @@ RUN sudo apt-get -y install r-cran-tidyverse=1.3.0-1
 RUN sudo apt-get -y install r-cran-doparallel=1.0.15-1
 RUN sudo apt-get -y install r-cran-dosnow=1.0.18-1
 RUN sudo apt-get -y install r-cran-stringr=1.4.0-1
-RUN sudo apt-get -y install r-cran-seurat
 RUN sudo apt-get -y install r-cran-biocmanager
 RUN sudo apt-get -y install r-cran-plotly
 RUN sudo apt-get -y install r-cran-gridextra
-
-RUN sudo apt-get update
-
+RUN sudo apt-get -y install r-cran-seurat=3.1.3-1 
+RUN sudo apt-get -y install r-cran-metap
+RUN sudo apt-get -y install r-cran-viridis
+RUN sudo apt-get -y install r-cran-ape
 
 RUN chmod +rwx $(pwd)/JSEQ_scRNAseq/setup/r_req.R 
 RUN sudo -i Rscript $(pwd)/JSEQ_scRNAseq/setup/r_req.R 
+
+
+
+RUN sudo apt-get update
+
 
 
 RUN sudo apt -y install default-jdk
@@ -68,15 +79,18 @@ RUN sudo apt-get update
 RUN sudo apt-get install -y samtools
 
 
+RUN sudo apt-get update
+
+
 RUN cd JSEQ_scRNAseq/setup \
-	&& wget http://archive.ubuntu.com/ubuntu/pool/universe/r/rna-star/rna-star_2.7.3a+dfsg-1build2_amd64.deb \
+	&& gdown 1ndAFxTqHUFjhfBEiFuVs-D1SMKBmhfyI \
 	&& sudo dpkg -i rna-star_2.7.3a+dfsg-1build2_amd64.deb \
 	&& rm rna-star_2.7.3a+dfsg-1build2_amd64.deb
 	
 
 
 RUN cd JSEQ_scRNAseq/setup \
-	&& wget http://archive.ubuntu.com/ubuntu/pool/universe/f/fastp/fastp_0.20.0+dfsg-1build1_amd64.deb \
+	&& gdown 1nQzT2deG9l0Ho_Nj0splNv9kZIIh-gYv \
 	&& sudo dpkg -i fastp_0.20.0+dfsg-1build1_amd64.deb \
 	&& rm fastp_0.20.0+dfsg-1build1_amd64.deb
 
@@ -84,10 +98,10 @@ RUN cd JSEQ_scRNAseq/setup \
 
 RUN sudo apt-get update
 RUN cd JSEQ_scRNAseq/setup \
-	&& wget -O DropSeq.zip https://github.com/broadinstitute/Drop-seq/releases/download/v2.4.0/Drop-seq_tools-2.4.0.zip \
-	&& unzip DropSeq \
+	&& gdown 1deqNjK2Ix_O0yPQTnXqD6ShX2WYH5PAz \
+	&& unzip Drop-seq_tools-2.4.0.zip \
+	&& rm -r Drop-seq_tools-2.4.0.zip \
 	&& mv Drop-seq_tools-2.4.0 DropSeq \
-	&& rm -r DropSeq.zip \
 	&& sudo chmod +rwx DropSeq
 
 
@@ -119,9 +133,12 @@ RUN mkdir $(pwd)/JSEQ_scRNAseq/projects
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/projects
 RUN mkdir $(pwd)/JSEQ_scRNAseq/results
 RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/results
+RUN sudo chmod +rwx $(pwd)/JSEQ_scRNAseq/scripts/docker
 
 
 WORKDIR /app/JSEQ_scRNAseq
+
+
 CMD $(pwd)/scripts/docker
 
 

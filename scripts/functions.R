@@ -73,7 +73,7 @@ cssg_naming <- function(seurat_project, CSSG_df) {
   cell_names <- c()
   for (cluster in sort(as.numeric(as.character(unique(seurat_project@active.ident))))) {
     sub_cssg <- CSSG_df[CSSG_df$cluster %in% cluster, ]
-    sub_cssg <- sub_cssg[sub_cssg$`loss_pval` == min(sub_cssg$`loss_pval`), ]
+    sub_cssg <- sub_cssg[sub_cssg$`loss_val` == min(sub_cssg$`loss_val`), ]
     sub_cssg <- sub_cssg[order(sub_cssg$`adj_hf`, decreasing = TRUE),]
     tmp <- subset(seurat_project, features =  gsub(' ', '', strsplit(rownames(sub_cssg)[1], split = ' ')[[1]]))
     tmp <- as.matrix(GetAssayData(tmp, slot = 'data'))
@@ -682,7 +682,7 @@ hd_cluster_factors <- function(seurat_object, markers_cssg) {
     tmp_cssg <- markers_cssg[markers_cssg$cluster %in% cluster,]
     
     tmp_cssg <- tmp_cssg[order(tmp_cssg$adj_hf, decreasing = TRUE),]
-    tmp_cssg <- tmp_cssg[tmp_cssg$loss_pval == min(tmp_cssg$loss_pval),]
+    tmp_cssg <- tmp_cssg[tmp_cssg$loss_val == min(tmp_cssg$loss_val),]
 
     gen_cor <- c()
     for (i in 1:nrow(tmp_cssg)) {
@@ -769,3 +769,63 @@ DimPlotFactor <- function(HDMAP) {
 
 
 
+
+outlires <- function(input) {
+  
+  tmp_input = input
+
+  rang <- c()
+  n <- c()
+  
+  iter = ceiling(max(tmp_input)/10)
+  for (j in 1:iter) {
+    rang <- c(rang, j*10)
+    n <- c(n, as.numeric(length(tmp_input[tmp_input <= j*10])))
+    tmp_input = tmp_input[tmp_input > j*10]
+  }
+  
+  df = data.frame(rang, n)
+  
+  factor = 1.25
+  bin <- c()
+  for (k in 1:(nrow(df)-1)) {
+    if (df$n[k+1] == 0) {
+      bin <- c(bin, 0)
+    } else if (df$n[k] > df$n[k+1]*factor) {
+      bin <- c(bin, -1)
+    } else {
+      bin <- c(bin, 1)
+    }
+  }
+  
+  bin <- c(bin[1], bin)
+  
+  df$bin <- bin
+  
+  df = df[df$bin > 0,]
+  
+  tf <- c()
+  for (u in 1:(nrow(df)-1)) {
+      if (df$rang[u+1] - df$rang[u] >= 100) {
+      tf <- c(tf, FALSE)
+    } else {
+      tf <- c(tf, TRUE)
+    }
+  }
+  
+  df$tf <- c(tf[1], tf)
+  
+  df = df[df$tf == TRUE,]
+  
+  df = df[df$n > quantile(df$n, 0.10),]
+  
+  tmp_input = input
+ 
+  tmp_input <- tmp_input[tmp_input >= min(df$rang) & tmp_input <= max(df$rang)]
+  
+  
+ 
+  
+  return(tmp_input)
+  
+}

@@ -21,8 +21,6 @@ args <- commandArgs()
   
   mice_extend <- as.character(conf_file$V2[grep(pattern = 'mice_extend', rownames(conf_file))])
   
-  mix_extend <- as.character(conf_file$V2[grep(pattern = 'mix_extend', rownames(conf_file))])
-  
   custom_extend <- as.character(conf_file$V2[grep(pattern = 'custom_extend', rownames(conf_file))])
   
   three_prime_utr <- as.numeric(as.character(conf_file$V2[grep(pattern = 'three_prime_utr', rownames(conf_file))]))
@@ -42,8 +40,6 @@ GTF2 <- add_UTR(GTF2, five_prime_utr, three_prime_utr)
 } else if (species == 'mice'&  grepl('T', toupper(mice_extend))) {
   GTF2 <- add_UTR(GTF2, five_prime_utr, three_prime_utr)
 } else if (species == 'custom'&  grepl('T', toupper(custom_extend))) {
-  GTF2 <- add_UTR(GTF2, five_prime_utr, three_prime_utr)
-} else if (species == 'mix' &  grepl('T', toupper(human_extend))) {
   GTF2 <- add_UTR(GTF2, five_prime_utr, three_prime_utr)
 } 
 

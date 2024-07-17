@@ -1,5 +1,5 @@
 --- 
-title: "JSEQ® REPORT"
+title: "JSEQ_scRNAseq© - REPORT"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -9,7 +9,6 @@ output: html_document
 
 library(Seurat)
 library(tidyverse)
-library(patchwork)
 library(gridExtra)
 library(grid)
 library(knitr)
@@ -20,8 +19,8 @@ library(viridis)
 
 \
 
-### **The report was generated in JSEQ® single-cell analysis pipeline**
-##### **For more information go to https://github.com/jkubis96/JSEQ_scRNAseq and read JSEQ_manual.pdf**
+### **The report was generated using the JSEQ_scRNAseq© single-cell analysis pipeline**
+##### **For more information, please visit: https://github.com/jkubis96/JSEQ_scRNAseq/tree/v2.3.2**
 
 \
 
@@ -47,7 +46,7 @@ metrics <- file.path(path_tmp,'scRNAmetrics.txt')
 chceck_fq <- grepl("_fq", metrics)
 ```
 
-### **The cell content analysis**
+### **Cell content analysis**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1,  results='asis'}
 
@@ -153,7 +152,7 @@ cat('*The above graph shows only trend and quality at the beginning of single ce
 
 \
 
-##### **The number of the genes and counts per the cell**
+##### **The number of genes and counts per cell**
 
 \
 
@@ -163,7 +162,7 @@ knitr::include_graphics(file.path(path_results,'counts~genes.svg'), dpi = 600)
 
 \
 
-##### **The ratio of the number of genes to the number of counts**
+##### **The ratio of the number of genes to counts**
 
 \
 
@@ -176,7 +175,7 @@ knitr::include_graphics(file.path(path_results,'counts~genes_QC.svg'), dpi = 600
 
 \
 
-##### **The percent of the ribosomal and mitochondrial genes [%]**
+##### **The percentage of ribosomal and mitochondrial genes [%]**
 
 
 \
@@ -190,11 +189,11 @@ knitr::include_graphics(file.path(path_results,'Ribo~Mito.svg'), dpi = 600)
 
 \
 
-### **The quality control of the cells**
+### **Quality control of cell content**
 
 \
 
-##### **Number of the counts**
+##### **Number of counts**
 
 \
 
@@ -206,7 +205,7 @@ knitr::include_graphics(file.path(path_results,'DropletQC.svg'), dpi = 600)
 
 \
 
-##### **The content of the mitochondrial genes**
+##### **Mitochondrial gene content**
 
 \
 
@@ -219,7 +218,7 @@ knitr::include_graphics(file.path(path_results,'MitoQC.svg'), dpi = 600)
 
 \
 
-##### **The content of the ribosomal genes**
+##### **Ribosomal gene content**
 
 \
 
@@ -231,7 +230,7 @@ knitr::include_graphics(file.path(path_results,'RiboQC.svg'), dpi = 600)
 
 \
 
-##### **Number of the cells at the different steps of the analysis**
+##### **Number of cells at different stages of the analysis**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
@@ -243,7 +242,7 @@ knitr::include_graphics(file.path(path_results,'Cells.svg'), dpi = 600)
 \
 \
 
-##### **Top of the high variable genes in the data set**
+##### **Top highly variable genes in the dataset**
 
 \
 
@@ -295,11 +294,11 @@ dims <- as.data.frame(Elbow$data$stdev)
 
 \
 
-### **Analysis parameter selection**
+### **Selection of analysis parameters**
 
 \
 
-##### **The cut off for the number of the principal components**
+##### **The cutoff for the number of principal components**
 
 \
 
@@ -319,14 +318,14 @@ knitr::include_graphics(file.path(path_results,'JackStrawPlot.svg'), dpi = 600)
 
 \
 
-### **The results for the cells grouping**
-##### **The UMAP processing and presentation of the cell clusters**
+### **The results of cell grouping**
+##### **UMAP processing and visualization of cell clusters**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 knitr::include_graphics(file.path(path_results,'UMAP.svg'), dpi = 600)
 ```
 
-##### **The cluster selected markers**
+##### **Markers selected for the clusters**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
 markers <- read.csv(file = file.path(path_results, "subclasses_marker_report.csv"), header = T, sep = ',', row.names = 1)
@@ -336,15 +335,15 @@ knitr::kable(markers, align = "l")
 \
 \
 
-### **The cluster classification and naming via the markers**
+### **Cluster classification and naming based on markers**
 
 \
 
-##### **The cell subclasses**
+##### **Subclasses of cells**
 
 \
 
-##### **The PC plot**
+##### **The principal component plot**
 
 \
 
@@ -368,11 +367,11 @@ knitr::include_graphics(file.path(path_results,'UMAP_with_DE_gene_class.svg'), d
 
 \
 
-### **The presentation of the subtypes obtained using the CSSG algorithm**
+### **Presentation of subtypes identified with the CSSG algorithm**
 
 \
 
-##### **The quality control of the cell subtypes**
+##### **Quality control for cell subtypes**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
@@ -382,7 +381,7 @@ knitr::include_graphics(file.path(path_results,'cells_type_threshold.svg'), dpi 
 
 \
 
-##### **The PC plot**
+##### **The principal component plot**
 
 \
 
@@ -428,7 +427,7 @@ HDMAP
 
 \
 
-### **The subtypes selected markers**
+### **Markers selected for the subtypes**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
 markers <- read.csv(file = file.path(path_results, "subtypes_marker_report.csv"), header = T, sep = ',', row.names = 1)
@@ -439,8 +438,8 @@ knitr::kable(markers, align = "l")
 \
 \
 
-##### **The heatmap of the cell subtypes with specific markers**
-###### **The expression normalization by log(CPM+1)**
+##### **Heatmap of cell subtypes with specific markers**
+###### **Log(CPM + 1) normalization of expression**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
 
@@ -450,7 +449,7 @@ knitr::include_graphics(file.path(path_results,'pheatmap_cells_populations.svg')
 
 \
 
-### **The cell subtypes heterogeneity - number of genes vs mean expression**
+### **Heterogeneity of cells within subtypes: number of genes vs. mean expression**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
 
@@ -466,7 +465,7 @@ knitr::include_graphics(file.path(path_results,'cells_heterogenity.svg'), dpi = 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
-cat('The analysis was performed through the non-profit and open-source pipeline JSEQ®. Pipeline belongs to the part of the JBioSystem project in which we create complex software for bioinformatics analysis. Remember in silico analysis can not be taken for granted and must be validated in vitro or in vivo. For more information go to GitHub or contact us. The JSEQ® was created in the Department of Molecular Neurobiology, Institute of Bioorganic Chemistry, Polish Academy of Sciences')
+cat('The analysis was performed through the non-profit and open-source pipeline JSEQ_scRNAseq©. Pipeline belongs to the part of the JBioSystem© project in which we create complex software for bioinformatics analysis. Remember in silico analysis can not be taken for granted and must be validated in vitro or in vivo. For more information go to GitHub or contact us. The JSEQ_scRNAseq© was created in the Department of Molecular Neurobiology, Institute of Bioorganic Chemistry, Polish Academy of Sciences')
 
 ```
 \

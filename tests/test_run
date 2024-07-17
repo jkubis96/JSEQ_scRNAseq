@@ -1,0 +1,203 @@
+#!/bin/bash  
+
+
+
+
+function test_fucntions {
+
+
+	echo ''
+	echo -e '\033[1;32m Test for genome downloading...'
+	echo ''
+
+	species=human
+	#config
+	source $(pwd)/requirements_file/genome.conf
+	human_genome=$human_genome
+	human_annotation=$human_annotation
+
+	species=$(echo $species | tr '[:upper:]' '[:lower:]')
+	source=$(pwd)/scripts
+	input_human=$(pwd)/genome/$species/annotation_human.gtf
+
+	mkdir -p genome
+	mkdir -p genome/$species
+	cd genome/$species
+	wget ${human_annotation} -O annotation.gtf.gz
+	gunzip annotation.gtf.gz
+	wget ${human_genome} -O genome.fa.gz
+	gunzip genome.fa.gz
+	
+	cd ..
+	cd ..
+	
+	echo -e "\033[0;34m $(date) Creating genome reference files"
+	create_ref  
+
+	Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+	
+	echo -e "\033[0;34m $(date) Generating of the intervals"
+	rna_intervals
+	
+	echo -e "\033[0;32m $(date) Process DONE!"
+	
+	check_path=$(pwd)/genome/$species/reduced_annotation.gtf
+
+	if [ -f $check_path ]; then
+		echo ''
+		echo ''
+    	
+		echo -e '\033[1;32m Test passed successfully'
+	else
+		echo ''
+		echo ''
+		
+    	echo -e '\033[1;31m Test failed - genome downloading'
+	fi 
+
+
+	echo ''
+	echo -e '\033[1;32m Test for genome indexing - 150 chunk...'
+	echo ''
+
+	echo ''
+	echo -e "\033[0;34m Start indexing"
+	echo ''
+
+	mkdir -p genome/$species/index/150 
+	cpu=$(grep -c ^processor /proc/cpuinfo)
+	cpu=$cpu-2
+	DIR=$(pwd)/genome/$species/index/150 
+	GENOME=$(pwd)/genome/$species
+	lenght=150
+
+	mem=$(($(getconf _PHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))
+	mem=$[$mem * 1000000]
+
+	STAR --runThreadN $cpu  --runMode genomeGenerate --genomeDir $DIR  --genomeFastaFiles $GENOME/*.fa  --sjdbGTFfile $GENOME/correct_annotation.gtf --limitGenomeGenerateRAM $mem --sjdbOverhang $lenght
+
+	echo -e "\033[0;32m $(date) Genome indexing done"
+
+	echo ''
+	echo ''
+	
+
+	check_path=$(pwd)/genome/$species/index/150/SA
+
+	if [ -f $check_path ]; then
+		echo ''
+		echo ''
+
+    	echo -e '\033[1;32m Test passed successfully'
+	else
+		echo ''
+		echo ''
+    	
+		echo -e '\033[1;31m Test failed - genome annotation'
+	fi 
+
+	echo ''
+	echo -e '\033[1;32m Test for data analysis...'
+	echo ''
+
+	echo ''
+	echo -e '\033[1;32m Downloading test data...'
+	echo ''
+
+
+	mkdir -p projects
+	cd projects
+
+	gdown 1dkPZxalrJoKSRPt7Lz3LL2dCmEyl7Ehk
+	tar -xzvf test_mode_fq.tar.gz
+	rm -f test_mode_fq.tar.gz
+	
+	cd ..
+
+
+	check_path=$(pwd)/projects/test_mode_fq
+
+	if [ -d $check_path ]; then
+		echo ''
+		echo ''
+
+    	echo -e '\033[1;32m Test passed successfully'
+	else
+		echo ''
+		echo ''
+
+    	echo -e '\033[1;31m Test failed - downloading'
+	fi 
+
+
+	cd $(pwd)/projects/test_mode_fq
+	source config
+	project_name=$project_name
+	project_name_mode=$project_name_mode 
+	READS_LENGHT=$READS_LENGHT 
+	species=$species 
+	cell=$cell
+	marker_path=$marker_path
+
+	cd ..
+	cd ..
+
+	log=$(pwd)/projects/$project_name_mode/results/process.log.out
+
+	source=$(pwd)/scripts
+	source $source/analysis_species
+	echo ''
+	echo -e "\033[0;34m Process start..."
+	echo ''
+	echo -e "\033[1;33m WARNING! Depending on data set volume and data heterogeneity a whole analysis can last even several hours" 
+	echo ''
+	echo -e "\033[0;34m $(date) Trimming of the adapters and quality control of the reads"
+	TRIMMING >> $log 2>&1
+	echo -e "\033[0;34m $(date) UMIs and barcodes extraction"
+	whitelist >> $log 2>&1
+	echo -e "\033[0;34m $(date) Starting of the mapping process"
+	STAR_MAPPING >> $log 2>&1
+	echo -e "\033[0;34m $(date) Adding UMI and barcode tags to bam file"
+	add_tags >> $log 2>&1	
+	echo -e "\033[0;34m $(date) Annotation to transcriptome regions"
+	dropSEQ >> $log 2>&1
+	echo -e "\033[0;34m $(date) Detecting and repairing substitution errors in the cell barcodes"
+	final_exon >> $log 2>&1
+	echo -e "\033[0;34m $(date) Detecting and repairing barcode indexes synthesis errors"
+	completed_bam >> $log 2>&1
+	echo -e "\033[0;34m $(date) Creating count statistics"
+	umi_extract >> $log 2>&1
+	umi_expression >> $log 2>&1
+	echo -e "\033[0;34m $(date) Creating RNA metrics"
+	scRNAmetrics >> $log 2>&1
+	metric_plot >> $log 2>&1
+	echo -e "\033[0;34m $(date) Creating matrix of counts"
+	convert_mtx_umi >> $log 2>&1
+	echo -e "\033[0;34m $(date) Counts analysis and creating report"
+	seurat >> $log 2>&1
+	echo ''
+	echo -e "\033[0;32m Process completed"
+	echo ''
+	echo -e "\033[1;33m Check $project_name_mode for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
+	echo ''
+
+	check_path=$(pwd)/projects/test_mode_fq/results/Report.html
+
+	if [ -f $check_path ]; then
+	
+		echo ''
+		echo ''
+    	
+		echo -e '\033[1;32m All tests passed successfully'
+	else
+    	echo ''
+		echo ''
+		
+		echo -e '\033[1;31m Test failed - analysis'
+		echo -e '\033[1;31m Check Log File --> ' $(pwd)/projects/test_mode_fq/results/process.log.out
+
+	fi 
+
+
+		
+}

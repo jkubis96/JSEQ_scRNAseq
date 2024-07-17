@@ -9,13 +9,13 @@ echo ''
 function start {
 
 echo ''
-echo -e '\033[1;36m Choose JSEQ function:'
+echo -e '\033[1;36m Select JSEQ_scRNAseq function:'
 echo -e '\033[1;36m -download RefGenome [genome]'
 echo -e '\033[1;36m -creat new project [project]'
 echo -e '\033[1;36m -start analysis [analysis]'
 echo -e '\033[1;36m -quit [q]'
 echo ''
-echo -e '\033[1;36m Choose function:'
+echo -e '\033[1;36m Select function:'
 echo ''
 	read s
 	s=$(echo $s | tr '[:upper:]' '[:lower:]')
@@ -173,4 +173,29 @@ fi
 
 }
 
-start
+
+if [[ $fun_run == True ]]; 
+then
+
+	start
+	
+elif [[ $fun_run == False ]]; 
+then
+
+	   /bin/bash
+
+elif [[ $fun_run == Test ]]; 
+then
+
+	   source=$(pwd)/tests
+	   source $source/test_run
+	   test_fucntions
+
+elif [[ $fun_run == Extension ]]; 
+then
+
+	   source=$(pwd)/extension
+	   source $source/extension_list
+	   run_extension
+	   
+fi

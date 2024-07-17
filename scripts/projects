@@ -276,7 +276,7 @@ echo ''
 echo  -e '\033[1;36m ReadsLenght:'
 echo ''
         read READS_LENGHT
-echo  -e '\033[1;36m Species [human/mice/mix/custom]:'
+echo  -e '\033[1;36m Species [human/mice/custom]:'
 echo ''
         read species
 		species=$(echo $species | tr '[:upper:]' '[:lower:]')
@@ -295,7 +295,7 @@ marker_path=$m
 echo ''
 echo ''
 
-if [[ $READS_LENGHT -lt 300 && $READS_LENGHT -gt 0 ]] && [[ $species == 'human' || $species == 'mice' || $species == 'mix' || $species == 'custom' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]];
+if [[ $READS_LENGHT -lt 300 && $READS_LENGHT -gt 0 ]] && [[ $species == 'human' || $species == 'mice' || $species == 'custom' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]];
 then
 
 echo -e "\033[0;32m Parametrs correct"

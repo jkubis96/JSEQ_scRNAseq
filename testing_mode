@@ -1,0 +1,56 @@
+#!/bin/bash  
+
+echo ''
+
+echo -e '\033[1;33m Welcome to the JSEQ_scRNAseq© tool - testing mode'
+
+echo -e '\033[1;33m Before starting the test, ensure that the application has been installed'
+
+echo -e '\033[1;33m All information and references you can check README on GitHub'
+
+echo -e '\033[1;33m Contact: jbiosystem@gmail.com or jakub.kubis1996@gmail.com'
+
+echo ''
+echo ''
+
+
+function test {
+
+echo ''
+echo -e '\033[1;36m Run tests:'
+echo -e '\033[1;36m -start tests [run]'
+echo -e '\033[1;36m -quit [q]'
+echo ''
+echo -e '\033[1;36m Select function:'
+echo ''
+	read s
+	s=$(echo $s | tr '[:upper:]' '[:lower:]')
+
+if [[ $s == 'run' ]]
+then
+
+	if [[ -f $(pwd)/setup/docker_id ]];
+	then
+		source $(pwd)/setup/docker_id
+		id=$id
+		docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq -e fun_run=Test $id 
+	
+	else
+	
+		source=$(pwd)/tests
+		source $source/test_run
+		test_fucntions
+	fi
+
+	
+
+	
+elif [[ $s == 'q' ]]
+then
+        exit
+		
+
+fi
+}
+
+test

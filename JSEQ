@@ -1,36 +1,18 @@
 #!/bin/bash  
 
-echo ''
-
-echo -e '\033[1;33m Welcome to the JSEQ® Single-Cell RNA Seq tool'
-
-echo -e '\033[1;33m The pipeline was prepared at the Institute of Bioorganic Chemistry, Polish Academy of Sciences'
-
-echo -e '\033[1;33m All information and references you can check in the file JSEQ manual on my GitHub'
-
-echo -e '\033[1;33m Contact: jbiosystem@gmail.com or jakub.kubis1996@gmail.com'
-
-echo ''
-echo ''
-
-echo -e '\033[1;36m Choose JSEQ working directory location:'
-echo -e '\033[1;36m Local [local]'
-echo -e '\033[1;36m Docker container [docker]'
-echo ''
-	
 
 
 function start {
 
 echo ''
-echo -e '\033[1;36m Choose JSEQ function:'
+echo -e '\033[1;36m Select JSEQ_scRNAseq function:'
 echo -e '\033[1;36m -local installation [install]'
 echo -e '\033[1;36m -download RefGenome [genome]'
 echo -e '\033[1;36m -creat new project [project]'
 echo -e '\033[1;36m -start analysis [analysis]'
 echo -e '\033[1;36m -quit [q]'
 echo ''
-echo -e '\033[1;36m Choose function:'
+echo -e '\033[1;36m Select function:'
 echo ''
 	read s
 	s=$(echo $s | tr '[:upper:]' '[:lower:]')
@@ -59,8 +41,8 @@ then
 		DropSeq >> $log_install 2>&1
         cd ..
 		echo ''
-		echo "Installing completed. Before run the JSEQ check the install.log file in setup directory for some errors."
-		echo $"If you have trouble with installing any parts of the pipeline, you can try install missing files or libraries manually [instruction in JSEQ manual] or contact us"
+		echo "Installing completed. Before run the JSEQ_scRNAseq check the install.log file in setup directory for some errors."
+		echo $"If you have trouble with installing any parts of the pipeline, you can try install missing files or read README or contact us"
 		echo ''
 		start
 		
@@ -126,58 +108,9 @@ then
 		echo ''
 		start
 		
-elif
-		[[ $d  == *'_fq'* ]] && [[ $species  == 'mix' ]];
-then
-		log=$(pwd)/projects/$project_name_mode/results/process.log.out
+
 		
-        source=$(pwd)/scripts
-		source $source/analysis_mix
-		echo ''
-		echo -e "\033[0;34m Process start..."
-		echo ''
-		echo -e "\033[1;33m WARNING! Depending on data set volume and data heterogeneity a whole analysis can last even several hours" 
-		echo ''
-		echo -e "\033[0;34m $(date) Trimming of the adapters and quality control of the reads"
-		directory >> $log 2>&1
-		TRIMMING >> $log 2>&1
-		echo -e "\033[0;34m $(date) UMIs and barcodes extraction"
-		whitelist >> $log 2>&1
-		echo -e "\033[0;34m $(date) Starting of the mapping process"
-		STAR_MAPPING >> $log 2>&1
-		echo -e "\033[0;34m $(date) Adding UMI and barcode tags to bam file"
-		add_tags >> $log 2>&1			
-		echo -e "\033[0;34m $(date) Annotation to transcriptome regions"
-		dropSEQ >> $log 2>&1
-		echo -e "\033[0;34m $(date) Detecting and repairing substitution errors in the cell barcodes"
-		final_exon >> $log 2>&1
-		echo -e "\033[0;34m $(date) Detecting and repairing barcode indexes synthesis errors"
-		completed_bam >> $log 2>&1
-		echo -e "\033[0;34m $(date) Dividing combined scingle cell data to mice and human experiments analysis"
-		filtr_mice >> $log 2>&1
-		filtr_human >> $log 2>&1
-		echo -e "\033[0;34m $(date) Creating count statistics"
-		umi_extract >> $log 2>&1
-		umi_expression_mice >> $log 2>&1
-		umi_expression_human >> $log 2>&1
-		echo -e "\033[0;34m $(date) Creating metrics of the genetics parts content"
-		scRNAmetrics_mice >> $log 2>&1
-		scRNAmetrics_human >> $log 2>&1
-		metric_plot_mice >> $log 2>&1
-		metric_plot_human >> $log 2>&1
-		echo -e "\033[0;34m $(date) Creating matrix of counts"
-		convert_mtx_umi_mice >> $log 2>&1
-		convert_mtx_umi_human >> $log 2>&1
-		echo -e "\033[0;34m $(date) Counts analysis and creating report"	
-		seurat_mix >> $log 2>&1
-		echo ''
-		echo -e "\033[0;32m Process completed"
-		echo ''
-		echo -e "\033[1;33m Check $project_name_mode for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
-		echo ''
-		start
-		
-elif	[[ $species  == 'human' && $d  == *'_exp'* ]] || [[ $species  == 'mice' && $d  == *'_exp'* ]] || [[ $species  == 'mix' && $d  == *'_exp'* ]] || [[ $species  == 'custom' && $d  == *'_exp'* ]]
+elif	[[ $species  == 'human' && $d  == *'_exp'* ]] || [[ $species  == 'mice' && $d  == *'_exp'* ]] || [[ $species  == 'custom' && $d  == *'_exp'* ]]
 then
 
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
@@ -220,8 +153,9 @@ fi
 function container {
 
 echo ''
-echo -e '\033[1;36m Choose function:'
+echo -e '\033[1;36m Select function:'
 echo -e '\033[1;36m -docker container installation [install]'
+echo -e '\033[1;36m -docker container pulling [pull]'
 echo -e '\033[1;36m -start container [start]'
 echo ''
 		read con
@@ -233,30 +167,83 @@ then
 	log_install=$(pwd)/setup/install.log.out
 	
 	sudo apt-get -y install unzip >> $log_install 2>&1
+	sudo apt -y install python3.8  >> $log_install 2>&1
+    sudo apt -y install python3-pip  >> $log_install 2>&1
+	sudo pip3 install gdown >> $log_install 2>&1
+    sudo apt-get update >> $log_install 2>&1
 	
 	cd setup 
 	
 	echo -e "\033[0;31m $(date) Localhost env preparing..."
-	wget -O DropSeq.zip https://github.com/broadinstitute/Drop-seq/releases/download/v2.4.0/Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
-	unzip DropSeq >> $log_install 2>&1
+	if [ -d "Drop-seq_tools-2.4.0" ]; then
+	
+    rm -rf Drop-seq_tools-2.4.0
+    
+	fi
+	
+	gdown 1deqNjK2Ix_O0yPQTnXqD6ShX2WYH5PAz
+	unzip Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
+	rm -r Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
 	mv Drop-seq_tools-2.4.0 DropSeq >> $log_install 2>&1
-	rm -r DropSeq.zip >> $log_install 2>&1
+
+	
 
 	cd ..
 	
 	echo -e "\033[0;31m $(date) Docker build starting..."
-	sudo docker build -t jseq -f Dockerfile .
+	sudo DOCKER_BUILDKIT=1 docker build --build-arg BUILDKIT_STEP_LOG_MAX_SIZE=10485760 --no-cache -t jseq -f Dockerfile .
 	id=$(docker images --format "{{.ID}}" jseq)
 	echo $id
 	echo id=$id > $(pwd)/setup/docker_id
-	docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq $id
+	docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq -e fun_run=True $id 
 
+	
+	
+elif [[ $con == 'pull' ]]
+then
+
+    log_install=$(pwd)/setup/install.log.out
+	
+	sudo apt-get -y install unzip >> $log_install 2>&1
+	sudo apt -y install python3.8  >> $log_install 2>&1
+    sudo apt -y install python3-pip  >> $log_install 2>&1
+	sudo pip3 install gdown >> $log_install 2>&1
+    sudo apt-get update >> $log_install 2>&1
+	
+	cd setup 
+	
+	echo -e "\033[0;31m $(date) Localhost env preparing..."
+	if [ -d "Drop-seq_tools-2.4.0" ]; then
+	
+    rm -rf Drop-seq_tools-2.4.0
+    
+	fi
+	
+	gdown 1deqNjK2Ix_O0yPQTnXqD6ShX2WYH5PAz
+	unzip Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
+	rm -r Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
+	mv Drop-seq_tools-2.4.0 DropSeq >> $log_install 2>&1
+
+
+	cd ..
+	
+	echo -e "\033[0;31m $(date) Docker pull starting..."
+	sudo docker pull jkubis96/jseq_scrnaseq:jseq
+	id=$(docker images --format "{{.ID}}" jkubis96/jseq_scrnaseq)
+	echo $id
+	echo id=$id > $(pwd)/setup/docker_id
+	docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq -e fun_run=True $id 
+
+	
+	
+	
 elif [[ $con == 'start' ]]
 then
 
     source $(pwd)/setup/docker_id
 	id=$id
-	docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq $id
+	docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq -e fun_run=True $id 
+
 	
 	
 else 
@@ -266,6 +253,25 @@ fi
 }
 
 function repo {
+
+echo ''
+
+echo -e '\033[1;33m Welcome to the JSEQ_scRNAseq© tool'
+
+echo -e '\033[1;33m The pipeline was prepared at the Institute of Bioorganic Chemistry, Polish Academy of Sciences'
+
+echo -e '\033[1;33m All information and references you can check README on GitHub'
+
+echo -e '\033[1;33m Contact: jbiosystem@gmail.com or jakub.kubis1996@gmail.com'
+
+echo ''
+echo ''
+
+echo -e '\033[1;36m Select JSEQ_scRNAseq working directory location:'
+echo -e '\033[1;36m Local [local]'
+echo -e '\033[1;36m Docker container [docker]'
+echo ''
+	
 
 echo ''
 		read l
