@@ -49,6 +49,8 @@ else
 
 	cd ..
 
+fi
+
 }
 
 
@@ -76,5 +78,7 @@ else
 	cd ..
 
 	cd ..
+
+fi
 
 }
