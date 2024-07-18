@@ -5,6 +5,7 @@
 
 function test_fucntions {
 
+	source $(pwd)/scripts/genome_indexing
 
 	echo ''
 	echo -e '\033[1;32m Test for genome downloading...'

@@ -32,6 +32,8 @@ echo ''
 
 read species
 
+species=$(echo $species | tr '[:upper:]' '[:lower:]')
+
 if [ -z $species ] 
 then
 
