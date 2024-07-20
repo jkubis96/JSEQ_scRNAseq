@@ -68,23 +68,23 @@ The JSEQ® pipeline was prepared and tested on AMD Ryzen Threadripper 24-Core, R
 4. [Additional algorithms](#aa) \
 4.1 [GTFtool](#aagtf) \
 4.2 [Genes per cell - range estimation algorithm](#gout) \
-4.3 [Component selection algorithm](#pca) 
-4.4 [CSSG (Cell Subtypes Selection by Gene) algorithm](#aaCSSG)
-4.5 [Cell naming algorithm](#aacn)
-4.6 [Removing outlier results - algorithms](#out)
-4.7 [HDMAP (High Density Manifold Approximation and Projection) - advanced visualization of CSSG subtypes](#hdmap)
-5. [Used techniques](#used) 
-5.1 [Ribosomal & mitochondrial gene thresholds](#used1) 
-5.2 [Data normalization](#used2) 
-5.3 [Variable features](#used3) 
-5.4 [Dimensionality reduction (PCA)](#used4) 
-5.5 [Data clustering](#used5) 
+4.3 [Component selection algorithm](#pca) \
+4.4 [CSSG (Cell Subtypes Selection by Gene) algorithm](#aaCSSG) \
+4.5 [Cell naming algorithm](#aacn) \
+4.6 [Removing outlier results - algorithms](#out) \
+4.7 [HDMAP (High Density Manifold Approximation and Projection) - advanced visualization of CSSG subtypes](#hdmap) 
+5. [Used techniques](#used) \
+5.1 [Ribosomal & mitochondrial gene thresholds](#used1) \
+5.2 [Data normalization](#used2) \
+5.3 [Variable features](#used3) \
+5.4 [Dimensionality reduction (PCA)](#used4) \
+5.5 [Data clustering](#used5) \
 5.6 [Cluster visualization (UMAP)](#used6) 
-6. [Performance testing](#perform) 
-6.1 [FastQ data analysis](#perform1) 
+6. [Performance testing](#perform) \
+6.1 [FastQ data analysis](#perform1) \
 6.2 [Expresion matrix data analysis](#perform2) 
-7. [References tools](#ref)
-7.1 [Tools and algorithms](#ref1) 
+7. [References tools](#ref) \
+7.1 [Tools and algorithms](#ref1) \
 7.2 [Publications](#ref2) 
 
 
@@ -633,7 +633,7 @@ If everything is okay, the user will see: All tests passed!
 <br />
 
 
-##### Example of subclustering using CSSG algorithm:
+##### Example of subclustering using CSSG algorithm
 
 
 <br />
@@ -647,7 +647,7 @@ If everything is okay, the user will see: All tests passed!
 <br />
 
 
-##### Heatmap of subtypes with the CSSG markers that were responsible for separating:
+##### Heatmap of subtypes with the CSSG markers that were responsible for separating
 
 <br />
 
@@ -660,7 +660,7 @@ If everything is okay, the user will see: All tests passed!
 <br />
 
 
-##### Plot of heterogeneity of cells within subtypes:
+##### Plot of heterogeneity of cells within subtypes
 
 <br />
 
