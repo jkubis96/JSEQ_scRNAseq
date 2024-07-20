@@ -581,7 +581,7 @@ If everything is okay, the user will see: All tests passed!
 ##### Graph presents example threshold on testing data
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/492bfadcad2f3d5293bc3aa3defc435b9026dd61/setup/fig/DropletQC.svg" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/DropletQC.svg" alt="drawing" width="1000" />
 </p>
 
 
@@ -596,20 +596,20 @@ If everything is okay, the user will see: All tests passed!
 ##### Graph (ElbowPlot) presents example threshold for PCs
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/492bfadcad2f3d5293bc3aa3defc435b9026dd61/setup/fig/Elbow.svg" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/Elbow.svg" alt="drawing" width="1000" />
 </p>
 
 <br/>
 
 
-<div align="justify"> In this case, the algorithm selected 10 as the appropriate number of PCs for this data set. To verify the correctness of the selected number of PCs, the JackStraw function was used to indicate the statistical significance of individual PCs (p_val = 0.05). </div>
+<div align="justify"> In this case, the algorithm selected 25 as the appropriate number of PCs for this data set. To verify the correctness of the selected number of PCs, the JackStraw function was used to indicate the statistical significance of individual PCs (p_val = 0.05). </div>
 
 <br />
 
 ##### Graph (JackStraPlot) presents of significient PCs
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/492bfadcad2f3d5293bc3aa3defc435b9026dd61/setup/fig/JackStrawPlot.svg" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/JackStrawPlot.svg" alt="drawing" width="1000" />
 </p>
 
 <br/>
@@ -652,7 +652,7 @@ If everything is okay, the user will see: All tests passed!
 <br />
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/ab91211d96a95fd5f78035b103501495e6e2e81a/setup/fig/pheatmap_cells_populations.svg" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/pheatmap_cells_populations.svg" alt="drawing" width="1000" />
 </p>
 
 
@@ -665,7 +665,7 @@ If everything is okay, the user will see: All tests passed!
 <br />
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/ab91211d96a95fd5f78035b103501495e6e2e81a/setup/fig/cells_heterogenity.svg" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/cells_heterogenity.svg" alt="drawing" width="1000" />
 </p>
 
 The graph shows the x-axis percent of expressed genes for all cells included in this cell subtype and the y-axis mean expression value for all cells in this subtype. Thanks to this plot, we can check the heterogeneity/homogeneity obtained in the analysis of cell subtypes.
@@ -745,7 +745,7 @@ Non-canonical approach is based only on cluster information and cluster-specific
 ##### Graph presents (red & gray) removed results
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/492bfadcad2f3d5293bc3aa3defc435b9026dd61/setup/fig/cells_type_threshold.svg">
+<img src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/cells_type_threshold.svg">
 </p>
 
 
@@ -756,7 +756,7 @@ Non-canonical approach is based only on cluster information and cluster-specific
 
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/492bfadcad2f3d5293bc3aa3defc435b9026dd61/setup/fig/Cells.svg">
+<img src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/Cells.svg">
 </p>
 
 <br />
@@ -805,8 +805,7 @@ Non-canonical approach is based only on cluster information and cluster-specific
 ##### Mitochondrial & Ribosomal genes
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/327506e4901c19f155a143d89807db1ceac08544/setup/fig/Ribo%7EMito.svg
-" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/Ribo%7EMito.svg" alt="drawing" width="1000" />
 </p>
 
 
@@ -816,7 +815,7 @@ Non-canonical approach is based only on cluster information and cluster-specific
 ##### Mitochondrial genes
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/327506e4901c19f155a143d89807db1ceac08544/setup/fig/MitoQC.svg" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/MitoQC.svg" alt="drawing" width="1000" />
 </p>
 
 
@@ -825,7 +824,7 @@ Non-canonical approach is based only on cluster information and cluster-specific
 ##### Ribosomal genes
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/327506e4901c19f155a143d89807db1ceac08544/setup/fig/RiboQC.svg" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/RiboQC.svg" alt="drawing" width="1000" />
 </p>
 
 
@@ -855,7 +854,7 @@ $$
 <br />
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/327506e4901c19f155a143d89807db1ceac08544/setup/fig/variable_genes.svg" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/variable_genes.svg" alt="drawing" width="1000" />
 </p>
 
 <br />
@@ -868,7 +867,7 @@ $$
 <br />
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/327506e4901c19f155a143d89807db1ceac08544/setup/fig/PCA_DimPlot_class.svg" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/PCA_DimPlot_class.svg" alt="drawing" width="1000" />
 </p>
 
 
@@ -890,7 +889,7 @@ $$
 <br />
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/327506e4901c19f155a143d89807db1ceac08544/setup/fig/UMAP.svg" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/UMAP.svg" alt="drawing" width="1000" />
 </p>
 
 
@@ -904,7 +903,7 @@ $$
 ##### Inputed cells
 
 <p align="center">
-<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/327506e4901c19f155a143d89807db1ceac08544/setup/fig/Cells.svg" alt="drawing" width="1000" />
+<img  src="https://raw.githubusercontent.com/jkubis96/JSEQ_scRNAseq/360db41d2419dca96be038352f733f9ba6744387/setup/fig/Cells.svg" alt="drawing" width="1000" />
 </p>
 
 <br/>
