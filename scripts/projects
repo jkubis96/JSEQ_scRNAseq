@@ -83,7 +83,7 @@ done;
 if      [[ $r == *".tsv"* ]]
 then
 
-        echo  -e '\033[1;36m $(date) Data converting'
+        echo  -e "\033[1;36m $(date) Data converting"
 	
 	format=tsv
 	con=NULL
@@ -102,7 +102,7 @@ then
 	
 elif     [[ $r == *".csv"* ]] 
 then
-        echo  -e '\033[1;36m $(date) Data converting'
+        echo  -e "\033[1;36m $(date) Data converting"
 	
 	format=csv
 	con=NULL
@@ -122,7 +122,7 @@ then
 elif    [[ $r == *".txt"* ]]
 then
         
-		echo  -e '\033[1;36m $(date) Data converting'
+		echo  -e "\033[1;36m $(date) Data converting"
 		
 	format=txt
 	con=NULL
@@ -166,7 +166,7 @@ done;
 if      [[ $r == *".tsv"* ]]
 then
 
-       echo -e '\033[1;36m $(date) Data converting'
+       echo -e "\033[1;36m $(date) Data converting"
 		
 	format=tsv
 	con=NULL
@@ -185,7 +185,7 @@ then
 elif     [[ $r == *".csv"* ]] 
 then
 
-        echo  -e '\033[1;36m $(date) Data converting'
+        echo  -e "\033[1;36m $(date) Data converting"
 	
 	format=csv
 	con=NULL
@@ -204,7 +204,7 @@ then
 elif    [[ $r == *".txt"* ]]
 then
 
-       echo  -e '\033[1;36m $(date) Data converting'
+       echo  -e "\033[1;36m $(date) Data converting"
 		
 	format=txt
 	con=NULL

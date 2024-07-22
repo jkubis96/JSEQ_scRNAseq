@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 function seurat_start {
-echo -e '\033[1;36m $(date) Start counts / expression analysis'
+echo -e "\033[1;36m $(date) Start counts / expression analysis"
 
 PATH_PROJECT=$(pwd)/projects/$project_name_mode
 MARKERS=$marker_path
