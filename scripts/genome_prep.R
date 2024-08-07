@@ -1,5 +1,5 @@
 args <- commandArgs()
-
+set.seed(123)
 
 #Paths and arguments from env
 {

@@ -1,11 +1,15 @@
 #Cell name change for future
 firstup <- function(x) {
+
+  set.seed(123)
+
   substr(x, 1, 1) <- toupper(substr(x, 1, 1))
   x
 }
 
 cluster_nameing <- function(matrix_a, markers) {
   
+  set.seed(123)
   
   matrix_a <- as.data.frame(matrix_a)
   colname <- colnames(matrix_a)
@@ -65,6 +69,8 @@ cluster_nameing <- function(matrix_a, markers) {
 
 cssg_naming <- function(seurat_project, CSSG_df) {
   
+  set.seed(123)
+
   firstup <- function(x) {
     substr(x, 1, 1) <- toupper(substr(x, 1, 1))
     x
@@ -95,6 +101,8 @@ cssg_naming <- function(seurat_project, CSSG_df) {
 
 subcluster_naming <- function(average_expression, markers_subclass, cell_markers, top_cell_markers) {
   
+  set.seed(123)
+
   if (length(markers_subclass) != 0) {
     
     firstup <- function(x) {
@@ -169,6 +177,8 @@ subcluster_naming <- function(average_expression, markers_subclass, cell_markers
 
 name_repairing <- function(seurat_project, average_expression, markers_class, markers_subclass, species) {
   
+  set.seed(123)
+
   if (length(markers_class) != 0) {
   
   #remove empty cells (without markers expression)
@@ -340,7 +350,8 @@ name_repairing <- function(seurat_project, average_expression, markers_class, ma
 
 dim_reuction_pcs <- function(dim_stats) {
   
-  
+    set.seed(123)
+
     dim <- 1
     score <- c()
     element <- 0
@@ -361,6 +372,8 @@ dim_reuction_pcs <- function(dim_stats) {
 
 bin_cell_test <- function(renamed_list, p_val) {
   
+  set.seed(123)
+
   subclass_names <- renamed_list$Renamed_idents
   bad <- subclass_names[grepl('BAD!', toupper(as.character(subclass_names)))]
   renamed.subnames <- c(as.character(renamed_list$renamed_new.1), as.character(renamed_list$renamed_new.2))
@@ -376,12 +389,13 @@ bin_cell_test <- function(renamed_list, p_val) {
   data$names <- rownames(data)
   data$p_val <- NA
   
+  
   for (n in 1:length(data$n)) {
-    bin <- binom.test(data$n[n], sum(data$n), p = 1/sum(data$n),
-                      conf.level = 0.9)
+    bin <- binom.test(data$n[n], ceiling(sum(data$n)/2), p = median(data$n)/sum(data$n),
+                      conf.level = 0.9, alternative = 'greater')
+    
     data$p_val[n] <- bin$p.value
   }
-  
   
   
   below.names <- data$names[data$p_val > p_val]
@@ -397,7 +411,8 @@ bin_cell_test <- function(renamed_list, p_val) {
 
 cell_stat_graph <- function(data) {
   
-  
+  set.seed(123)
+
   threshold <- ggplot(data, aes(y = n, x = reorder(names, -n), fill = test, sort = test)) +
     geom_bar(stat = 'identity') +
     ylab("Cells types") +
@@ -417,7 +432,8 @@ cell_stat_graph <- function(data) {
 
 aggregation_num <- function(seurat_project) {
   
-  
+  set.seed(123)
+
   subset_num <- round(length(colnames(seurat_project))/10000)
   cells_num <- round(length(colnames(seurat_project))/subset_num)
   exp_matrix <- GetAssayData(seurat_project, slot = 'data')
@@ -514,6 +530,8 @@ aggregation_num <- function(seurat_project) {
 
 aggregation_chr <- function(seurat_project) {
   
+  set.seed(123)
+
   subset_num <- round(length(colnames(seurat_project))/10000)
   cells_num <- round(length(colnames(seurat_project))/subset_num)
   exp_matrix <- GetAssayData(seurat_project, slot = 'data')
@@ -610,6 +628,7 @@ aggregation_chr <- function(seurat_project) {
 
 heterogenity_stats <- function(seurat_project) {
   
+  set.seed(123)
 
   subset_num <- round(length(colnames(seurat_project))/1000)
   cells_num <- round(length(colnames(seurat_project))/subset_num)
@@ -674,6 +693,8 @@ heterogenity_stats <- function(seurat_project) {
 hd_cluster_factors <- function(seurat_object, markers_cssg) {
   
   library(umap)
+  set.seed(123)
+
   
   for (cluster in unique(Idents(seurat_object))) {
     
@@ -720,7 +741,8 @@ hd_cluster_factors <- function(seurat_object, markers_cssg) {
 
 hdmap_cordinates <- function(seurat_object, fUMAP) {
   
-  
+  set.seed(123)
+
   HDMAP <- as.data.frame(seurat_object@reductions$umap@cell.embeddings)
   HDMAP$idents <- Idents(seurat_object)
   HDMAP$BARCODES <- rownames(HDMAP) 
@@ -754,7 +776,8 @@ hdmap_cordinates <- function(seurat_object, fUMAP) {
 
 DimPlotFactor <- function(HDMAP) {
   
-  
+  set.seed(123)
+
   plot <- ggplot() +
     geom_point(mapping = aes(x = HDMAP$HDMAP_1  , y = HDMAP$HDMAP_2 , color = HDMAP$idents)) +
     xlab('HDMAP_1') +
@@ -772,6 +795,8 @@ DimPlotFactor <- function(HDMAP) {
 
 outlires <- function(input) {
   
+  set.seed(123)
+
   tmp_input = input
 
   rang <- c()

@@ -32,7 +32,7 @@ library(stringr)
 #Create new directory for manual analysis and load requirements 
 
 {  
-
+  set.seed(123)
   dir.create('manual_results')
   OUTPUT <- file.path('manual_results')
   functions <- '../../../scripts/functions.R'
@@ -308,11 +308,11 @@ dev.off()
 print('Searching for cluster marker genes')
 
 
-UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10, test.use = 'MAST',  logfc.threshold = 0.10)
+UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10, test.use = 'MAST',  logfc.threshold = 0.10, base = exp(1))
 
 
 if (length(unique(levels(UMI))) != length(unique(UMI.markers$cluster)) || TRUE %in% unique(as.data.frame(summary(UMI.markers$cluster))$`summary(UMI.markers$cluster)` < 20) ) {
-  UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.01 , logfc.threshold = 0.01, test.use = 'MAST')
+  UMI.markers <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.01 , logfc.threshold = 0.01, test.use = 'MAST', base = exp(1))
 }
 
 top10 <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
@@ -542,11 +542,11 @@ print('DONE')
 ###########################################################################################################################################################
 #Subtype markers selection
 
-UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10, test.use = 'MAST',  logfc.threshold = 0.10)
+UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.10, test.use = 'MAST',  logfc.threshold = 0.10, base = exp(1))
 
 
 if (length(unique(levels(UMI))) != length(unique(UMI.subtypes$cluster)) || TRUE %in% unique(as.data.frame(summary(UMI.subtypes$cluster))$`summary(UMI.subtypes$cluster)` < 20) ) {
-  UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.01 , logfc.threshold = 0.05, test.use = 'MAST')
+  UMI.subtypes <- FindAllMarkers(UMI, only.pos = TRUE, min.pct = 0.01 , logfc.threshold = 0.05, test.use = 'MAST', base = exp(1))
 }
 
 subtypes_marker <- UMI.subtypes %>% group_by(cluster) %>% top_n(n = 1000, wt = avg_logFC)

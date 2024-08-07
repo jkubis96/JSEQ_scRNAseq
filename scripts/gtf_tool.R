@@ -1,5 +1,7 @@
 load_annotation <- function(path) {
   
+  set.seed(123)
+  
   options(scipen = 999)
   library(readr)
   library(stringr)
@@ -34,6 +36,9 @@ return(GTF)
 
 
 create_GTF_df <- function(input) {
+
+    set.seed(123)
+
     cat('\n\n GTF converting... \n\n')
 
     df <- input[,1:8]
@@ -249,7 +254,7 @@ create_GTF_df <- function(input) {
       registerDoParallel(cl)
       registerDoSNOW(cl)
       
-      #DOBRZE ZROBIONE ALE TRZEBA ZAMIENIÆ I ZBINDOWAC
+      #DOBRZE ZROBIONE ALE TRZEBA ZAMIENIï¿½ I ZBINDOWAC
       
       
       
@@ -537,6 +542,8 @@ return(df)
 
 add_UTR <- function(input, five_prim_utr_length, three_prim_utr_length) {
   
+  set.seed(123)
+
   cat('\n\n UTRs sequence extending...             \n\n')
   
   input$sort_val <- 1:length(input$chr)
@@ -796,6 +803,8 @@ add_UTR <- function(input, five_prim_utr_length, three_prim_utr_length) {
 
 
 prepare_to_reffflat <- function(input) {
+
+  set.seed(123)
   
   cat('\n\n Transcripts repair & extending...             \n\n')
   
@@ -966,6 +975,8 @@ prepare_to_reffflat <- function(input) {
 
 refflat_create <- function(input) {
   
+  set.seed(123)
+
   iterations <- length(unique(input$chr))
   pb <- txtProgressBar(max = iterations, style = 3)
   progress <- function(n) setTxtProgressBar(pb, n)
@@ -1101,7 +1112,8 @@ refflat_create <- function(input) {
 
 create_full_GTF <- function(input) {
   
-  
+  set.seed(123)
+
   output <- input[,1:8]
   gene_id <- paste0('gene_id ',gsub(' ', '',input$gene_id), ';')
   gene_name <-  paste0('gene_name ', gsub(' ','',input$gene_name), ';')
@@ -1119,6 +1131,8 @@ create_full_GTF <- function(input) {
 
 create_reduced_GTF <- function(input) {
   
+  set.seed(123)
+
   output <- input %>%
     dplyr::select(chr,start,end,strand,transcript_name,transcript_id, gene_name, gene_id)
   output$annotationType <- input$annotationType
