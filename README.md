@@ -43,7 +43,7 @@
 <img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/v2.3.1/setup/fig/JSEQ.jpg?raw=true" alt="drawing" width="1000" />
 </p>
 
-The JSEQ® pipeline was prepared and tested on AMD Ryzen Threadripper 24-Core, RAM 256GB, Ubuntu 20.04 LTS. For more information, I invite you to familiarize yourself with the manual.
+The JSEQ© pipeline was prepared and tested on AMD Ryzen Threadripper 24-Core, RAM 256GB, Ubuntu 20.04 LTS. For more information, I invite you to familiarize yourself with the manual.
 
 
 ## Table of contents
