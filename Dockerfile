@@ -27,7 +27,22 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     default-jdk \
     wget \
     samtools \
+	libssl-dev \
+	libxml2-dev \
+	libfontconfig1-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    libtiff5-dev \
+    libjpeg-dev \
+    libgit2-dev \
+    libicu-dev \
+    build-essential \
+    gfortran \
     && rm -rf /var/lib/apt/lists/*
+
+
+
+
 
 RUN pip3 install --no-cache-dir \
     pysam==0.16.0.1 \
@@ -39,12 +54,21 @@ RUN pip3 install --no-cache-dir \
 
 
 
-RUN Rscript -e "install.packages(c('httr','leiden','igraph','readxl','pheatmap','matrix','tidyverse','doparallel','dosnow','stringr','BiocManager','plotly','gridExtra','Seurat','metap','viridis','ape'), repos='https://cran.rstudio.com/')" \
-    && Rscript -e "if (!requireNamespace('devtools', quietly = TRUE)) install.packages('devtools', repos='https://cran.rstudio.com/')" \
-    && Rscript -e "devtools::install_url('https://github.com/jkubis96/GTF-tool/raw/refs/heads/main/packages/GTF.tool_0.1.2.tar.gz', dependencies = TRUE)" \
-	&& Rscript -e "devtools::install_url('https://github.com/jkubis96/CSSG/raw/refs/heads/main/packages/CSSG.toolkit_0.1.0.tar.gz', dependencies = TRUE)"
+RUN R -e "install.packages(c( \
+  'cpp11','vroom','httr','purrr','forcats','tidyr','readr','readxl', \
+  'dplyr','dbplyr','broom','lubridate','ragg','ggplot2','scales','plotly', \
+  'tidyverse','matrix','stringr','viridis','gridExtra','pheatmap', \
+  'doParallel','doSNOW','leiden','igraph','metap','ape','BiocManager', \
+  'remotes' \
+), dependencies=TRUE, repos='https://cran.rstudio.com/')" \
+ && R -e "remotes::install_url('https://github.com/jkubis96/GTF-tool/raw/refs/heads/main/packages/GTF.tool_0.1.2.tar.gz', dependencies=TRUE)" \
+ && R -e "remotes::install_url('https://github.com/jkubis96/CSSG/raw/refs/heads/main/packages/CSSG.toolkit_0.1.0.tar.gz', dependencies=TRUE)" \
+ && R -e "if (!requireNamespace('Seurat', quietly = TRUE)) BiocManager::install('Seurat')"
 
-RUN cd /app/JSEQ_scRNAseq/setup \
+
+
+RUN mkdir -p /app/JSEQ_scRNAseq/setup \
+    && cd /app/JSEQ_scRNAseq/setup \
     && gdown 1ndAFxTqHUFjhfBEiFuVs-D1SMKBmhfyI \
     && dpkg -i rna-star_2.7.3a+dfsg-1build2_amd64.deb \
     && rm rna-star_2.7.3a+dfsg-1build2_amd64.deb \
@@ -56,4 +80,5 @@ RUN cd /app/JSEQ_scRNAseq/setup \
     && rm Drop-seq_tools-2.4.0.zip \
     && mv Drop-seq_tools-2.4.0 DropSeq \
     && chmod -R +x DropSeq
+
 
