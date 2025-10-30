@@ -29,11 +29,14 @@ echo ''
 if [[ $s == 'run' ]]
 then
 
-	if [[ -f $(pwd)/setup/docker_id ]];
+	if [[ -f $(pwd)/docker_id ]];
 	then
-		source $(pwd)/setup/docker_id
+		source $(pwd)/docker_id
 		id=$id
-		docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq -e fun_run=Test $id 
+		docker run --privileged --rm -it \
+			-v $(pwd):/app \
+			-e fun_run=Test \
+			$id /app/scripts/docker
 	
 	else
 	
