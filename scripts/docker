@@ -41,8 +41,8 @@ then
 		select_analysis
 		
 function experiment_selection {
-		if [ $d  == *'_fq'*];
-then
+		if [[ $d == *_fq* ]]; then
+
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
         source=$(pwd)/scripts
 		source $source/analysis_species
@@ -83,8 +83,7 @@ then
 		start
 		
 		
-elif	[$d  == *'_exp'* ]
-then
+elif	[[$d  == *'_exp'* ]]; then
 
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
