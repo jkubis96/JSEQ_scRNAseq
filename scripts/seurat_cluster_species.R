@@ -9,6 +9,7 @@ args <- commandArgs()
 
 #Paths and arguments from env
 {
+  
   print(args)
   
   path <- args[6]
@@ -73,7 +74,7 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
 }
 
 
-UMI@meta.data$orig.ident   <- make.unique(as.character(names(Idents(UMI))))
+UMI@meta.data$orig.ident  <- make.unique(as.character(names(Idents(UMI))))
 
 ###########################################################################################################################################################
 
@@ -112,18 +113,18 @@ dev.off()
 
 #Droplet content and QC
 
-tmp <- outlires(UMI@meta.data$nGenes)
+tmp <- CSSG.toolkit::outlires(UMI@meta.data$nGenes)
 
 
 if (is.na(up_tr)) {
-  n_gen <- max(tmp) - 1
+  n_gen <- thresholds$thresholds[length(thresholds$thresholds)]
 } else {
   n_gen <- up_tr
 }
 
 
 if (is.na(down_tr)) {
-  down_tr <- min(tmp) + 1
+  down_tr <- thresholds$thresholds[1]
 } else {
   down_tr <- down_tr
 }
@@ -164,6 +165,12 @@ DQC
 dev.off()
 rm(DQC)
 
+
+svg(filename = file.path(OUTPUT,'DropletQC_hist.svg'), width = 10, height = 7)
+thresholds$plot
+dev.off()
+
+
 MQC <- ggplot()+
   geom_point(QC_UMI, mapping = aes(x = MitoPercent, y = MitoPercent , color = Mito_Status))+
   ylab("% MitoRNA") +
@@ -198,31 +205,10 @@ rm(QC_UMI)
 #Selecting right cells
 
 UMI <- subset(UMI, subset = nGenes > down_tr & nGenes <= n_gen & MitoPercent < mt_per)
-n_gen <- max(as.numeric(UMI@meta.data$nGenes))*0.95
 cells_number <- length(Idents(UMI))
 
 
-###########################################################################################################################################################
-#Cells_stats
 
-cells <- factor(c('Estimated_cells', 'Input_cells', 'Analyzed_cells'), levels = c('Estimated_cells', 'Input_cells', 'Analyzed_cells'))
-cell_num <- c(as.numeric(estimated_cells), as.numeric(cell_input), as.numeric(cells_number))
-df_cells <- data.frame(cells, cell_num)
-
-cells <- ggplot(df_cells, aes(x = cells, y = cell_num, fill = cells)) +
-  geom_col() +
-  ylab("Number of cells") +
-  xlab("Cells in analysis")+
-  geom_text(aes(label = cell_num), vjust = -0.5)+
-  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
-  theme_classic() +
-  theme(legend.position = 'none') 
-
-
-svg(filename = file.path(OUTPUT,'Cells.svg'), width = 10, height = 7)
-cells
-dev.off()
-rm(cells)
 
 
 ###########################################################################################################################################################
@@ -236,7 +222,7 @@ if (data == 2) {
 
 ###########################################################################################################################################################
 
-UMI <- FindVariableFeatures(UMI, selection.method = "vst", nfeatures = n_gen, binning.method = 'equal_frequency')
+UMI <- FindVariableFeatures(UMI, selection.method = "vst", nfeatures = 2500, binning.method = 'equal_frequency')
 
 # Identify the 10 most highly variable genes
 
@@ -267,7 +253,7 @@ dims <- as.data.frame(Elbow$data$stdev)
 
 #select the most variable reduction
 
-dim <- dim_reuction_pcs(dims)
+dim <- CSSG.toolkit::dim_reuction_pcs(dims)
 
 
 svg(file.path(OUTPUT, "Elbow.svg"), width=10, height=7)
@@ -330,21 +316,21 @@ if (length(markers_subclass) != 0) {
   top10 <- top10[!toupper(top10$gene) %in% toupper(markers_subclass), ]
 }
 
-
-top_sig <- UMI.markers
-
-
-if (mt_cssg == "exclude") {
-  top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grepl('t-', top_sig$gene)],]
-  top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grepl('T-', top_sig$gene)],]
-  top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grepl('t.', top_sig$gene)],]
-  top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grepl('T.', top_sig$gene)],]
-}
-
-#CHANGE
-subclasses_marker <- UMI.markers %>% group_by(cluster) %>% top_n(n = 1000, wt = avg_logFC)
-
-subclasses_marker_report <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
+# 
+# top_sig <- UMI.markers
+# 
+# 
+# if (mt_cssg == "exclude") {
+#   top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grepl('t-', top_sig$gene)],]
+#   top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grepl('T-', top_sig$gene)],]
+#   top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grepl('t.', top_sig$gene)],]
+#   top_sig <- top_sig[!top_sig$gene %in% top_sig$gene[grepl('T.', top_sig$gene)],]
+# }
+# 
+# #CHANGE
+# subclasses_marker <- UMI.markers %>% group_by(cluster) %>% top_n(n = 1000, wt = avg_logFC)
+# 
+# subclasses_marker_report <- UMI.markers %>% group_by(cluster) %>% top_n(n = 10, wt = avg_logFC)
 
 
 print('Cluster genes - DONE')
@@ -358,12 +344,52 @@ print('Cluster genes - DONE')
 ###########################################################################################################################################################
 #Cells subtypes selection
 
+sc_project <- CSSG.toolkit::create_project_from_seurat(UMI)
 
-tmp <- GetAssayData(UMI, slot = 'data')
-colnames(tmp) <- UMI@active.ident
+if (TRUE) {
+  
+  # heterogeneity based on Mann-Whitney statistic
+  sc_project <- CSSG.toolkit::get_cluster_stats(sc_project = sc_project, type = 'primary', only_pos = TRUE)
+  
+  
+  sc_project <- CSSG.toolkit::heterogeneity_select_specificity(sc_project = sc_project, type = 'primary', heterogeneity_factor = 80, p_val =  0.05, max_genes =  50, select_stat = 'p_val',  min_occ = 5, mito_content = FALSE)
+  
+  
+} else {
+  
+  # heterogeneity based on variance
+  sc_project <- CSSG.toolkit::heterogeneity_select_variance(sc_project = sc_project, heterogeneity_factor = 80, max_genes = 50, min_occ = 5, min_exp = 0.3, rep_factor = 0.5, mito_content = FALSE)
 
-marker_df <- heterogenity_select(cells_wide_df = tmp, marker_df = top_sig, heterogenity_factor = s_factor, p_val =  m_val, max_genes =  max_genes, select_stat = 'p_val')
+}
 
+
+# subclass
+sc_project <- CSSG.toolkit::subclass_naming(sc_project = sc_project, class_markers = markers_class, subclass_markers = markers_subclass, species = 'Homo sapiens', chunk_size = 5000)
+
+
+data <- CSSG.toolkit::bin_cell_test(p_val = 0.05, names = sc_project@names$subclass, min_cells = 20)
+
+threshold <- CSSG.toolkit::cell_stat_graph(data$data)
+
+threshold
+
+
+# subtypes
+sc_project <- subtypes_naming(sc_project = sc_project, markers_class = markers_class, markers_subclass = markers_subclass, species = 'Homo sapiens') 
+
+
+thr_data <- bin_cell_test(p_val = 0.05, names = sc_project@names$repaired, min_cells = 10)
+
+threshold <- cell_stat_graph(thr_data$data, include_ns = TRUE)
+
+threshold
+
+
+
+
+
+
+# tutaj CSSG
 CSSG_df <- CSSG_markers(cells_wide_df = tmp, markers_df = marker_df$marker_df, max_combine = max_combine, loss_val = loss_val)
 hd_factors <- hd_cluster_factors(UMI, CSSG_df)
 
@@ -696,6 +722,30 @@ svg(file.path(OUTPUT, "pheatmap_cells_populations.svg"), width = width, height =
 pheat
 dev.off()
 rm(pheat)
+
+
+
+###########################################################################################################################################################
+#Cells_stats
+
+cells <- factor(c('Estimated_cells', 'Input_cells', 'Analyzed_cells'), levels = c('Estimated_cells', 'Input_cells', 'Analyzed_cells'))
+cell_num <- c(as.numeric(estimated_cells), as.numeric(cell_input), as.numeric(cells_number))
+df_cells <- data.frame(cells, cell_num)
+
+cells <- ggplot(df_cells, aes(x = cells, y = cell_num, fill = cells)) +
+  geom_col() +
+  ylab("Number of cells") +
+  xlab("Cells in analysis")+
+  geom_text(aes(label = cell_num), vjust = -0.5)+
+  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
+  theme_classic() +
+  theme(legend.position = 'none') 
+
+
+svg(filename = file.path(OUTPUT,'Cells.svg'), width = 10, height = 7)
+cells
+dev.off()
+rm(cells)
 
 
 ###########################################################################################################################################################

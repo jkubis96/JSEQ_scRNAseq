@@ -1,6 +1,7 @@
 #!/bin/bash
 
 
+
 # Length for extending of UTRs (you can change depending on species) [for mice and human default 3'UTR = 1000 & 5'UTR = 400]
 three_prime_utr=1000
 five_prim_utr=400

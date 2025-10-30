@@ -7,9 +7,7 @@ set.seed(123)
   species  <- args[6]
   annotation <-args[7]
   output <- args[8]
-  
-  functions <- file.path(getwd(), 'scripts/gtf_tool.R')
-  source(functions, local = T)
+
 }
 
 #Configuration file 
@@ -17,11 +15,11 @@ set.seed(123)
 {
   conf_file <- read.csv(file = file.path(getwd(), 'requirements_file/genome.conf'), header = F, sep = '=', row.names = 1)
   
-  human_extend <- as.character(conf_file$V2[grep(pattern = 'human_extend', rownames(conf_file))])
+  extend <- as.logical(conf_file$V2[grep(pattern = 'extend', rownames(conf_file))])
   
-  mice_extend <- as.character(conf_file$V2[grep(pattern = 'mice_extend', rownames(conf_file))])
+  optimize <- as.logical(conf_file$V2[grep(pattern = 'optimize_names', rownames(conf_file))])
   
-  custom_extend <- as.character(conf_file$V2[grep(pattern = 'custom_extend', rownames(conf_file))])
+  sep_factor <- as.numeric(conf_file$V2[grep(pattern = 'sep_factor', rownames(conf_file))])
   
   three_prime_utr <- as.numeric(as.character(conf_file$V2[grep(pattern = 'three_prime_utr', rownames(conf_file))]))
   
@@ -31,34 +29,41 @@ set.seed(123)
 
 
 
-GTF <- load_annotation(annotation)
+GTF <- GTF.tool::load_annotation(annotation)
 
-GTF2 <- create_GTF_df(GTF)
+if (extend) {
+  
+GTF2 <- GTF.tool::create_GTF_df(GTF, optimize = T, shift = sep_factor)
 
-if (species == 'human'&  grepl('T', toupper(human_extend))) {
-GTF2 <- add_UTR(GTF2, five_prime_utr, three_prime_utr)
-} else if (species == 'mice'&  grepl('T', toupper(mice_extend))) {
-  GTF2 <- add_UTR(GTF2, five_prime_utr, three_prime_utr)
-} else if (species == 'custom'&  grepl('T', toupper(custom_extend))) {
-  GTF2 <- add_UTR(GTF2, five_prime_utr, three_prime_utr)
-} 
+} else {
+  
+  GTF2 <- GTF.tool::create_GTF_df(GTF, optimize = optimize, shift = sep_factor)
+  
+}
+s
+GTF3 <- GTF.tool::add_CDS(GTF2)
 
+GTF4 <- GTF.tool::add_introns(GTF3)
 
-GTF3 <- prepare_to_reffflat(GTF2)
-
-GTF4 <- refflat_create(GTF3)
-
-write.table(GTF4, file.path(output, 'correct_annotation.refflat'), quote = F, sep = '\t', col.names = F, row.names = F)
-
-
-GTF5 <- create_full_GTF(GTF3)
-
-write.table(GTF5, file.path(output, 'correct_annotation.gtf'), quote = F, sep = '\t', col.names = F, row.names = F)
-
-GTF6 <- create_reduced_GTF(GTF3)
-
-
-write.table(GTF6, file.path(output, 'reduced_annotation.gtf'), quote = F, sep = '\t', col.names = T, row.names = F)
-
+if (extend) {
+  
+  GTF5 <- GTF.tool::add_UTR(GTF4, five_prime_utr = five_prime_utr , three_prime_utr = three_prime_utr)
+  
+  GTF6 <- GTF.tool::create_full_GTF(GTF5)
+  
+} else {
+  
+  GTF6 <- GTF.tool::create_full_GTF(GTF4)
+  
+}
 
 
+write.table(GTF6, file.path(output, 'correct_annotation.gtf'), quote = F, sep = '\t', col.names = F, row.names = F)
+
+GTF7 <- GTF.tool::create_reduced_GTF(GTF5)
+
+write.table(GTF7, file.path(output, 'reduced_annotation.gtf'), quote = F, sep = '\t', col.names = T, row.names = F)
+
+GTF8 <- GTF.tool::refflat_create(GTF5)
+
+write.table(GTF8, file.path(output, 'correct_annotation.refflat'), quote = F, sep = '\t', col.names = F, row.names = F)
