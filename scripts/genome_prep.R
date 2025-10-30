@@ -13,7 +13,13 @@ set.seed(123)
 #Configuration file 
 
 {
-  conf_file <- read.csv(file = file.path(getwd(), 'requirements_file/genome.conf'), header = F, sep = '=', row.names = 1)
+  conf_file <- read.csv(
+    file = file.path(getwd(), 'requirements_file/genome.conf'),
+    header = FALSE,
+    sep = '=',
+    row.names = 1,
+    comment.char = "#"
+  )
   
   extend <- as.logical(conf_file$V2[grep(pattern = 'extend', rownames(conf_file))])
   
