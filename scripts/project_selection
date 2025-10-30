@@ -1,5 +1,6 @@
 #!/bin/bash
- 
+shopt -s nullglob
+
 function select_analysis {
 
 echo -e '\033[1;36m Analysis of data for fastq analysis project [1]  counts / expression analysis project [2] or back [b]:'

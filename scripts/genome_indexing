@@ -1,4 +1,5 @@
 #!/bin/bash 
+shopt -s nullglob
 
 #ref fiile generate
 

@@ -1,4 +1,6 @@
 #!/bin/bash
+shopt -s nullglob
+
 function merge_fq {
  
 
