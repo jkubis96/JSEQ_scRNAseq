@@ -32,6 +32,8 @@ then
 	echo -e "\033[0;31m $(date) Docker pull starting..."
 	docker pull jkubis96/jseq_scrnaseq:latest
 	id=$(docker images --format "{{.ID}}" jkubis96/jseq_scrnaseq:latest)
+	echo $id
+	echo id=$id > $(pwd)/docker_id
 
 	if [[ -f $(pwd)/docker_id ]];
 	then
