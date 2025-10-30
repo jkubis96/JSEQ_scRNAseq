@@ -46,7 +46,8 @@ GTF2 <- GTF.tool::create_GTF_df(GTF, optimize = T, shift = sep_factor)
   GTF2 <- GTF.tool::create_GTF_df(GTF, optimize = optimize, shift = sep_factor)
   
 }
-s
+
+
 GTF3 <- GTF.tool::add_CDS(GTF2)
 
 GTF4 <- GTF.tool::add_introns(GTF3)
