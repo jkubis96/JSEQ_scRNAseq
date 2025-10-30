@@ -13,8 +13,7 @@ samtools dict $(pwd)/genome/$species/genome.fa > $(pwd)/genome/$species/genome.d
 
 function rna_intervals {
 
-SCRIPTS_EXTRACT=$(pwd)/setup
-java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar CreateIntervalsFiles \
+java -jar /tools/DropSeq/jar/dropseq.jar CreateIntervalsFiles \
         REDUCED_GTF=$(pwd)/genome/$species/reduced_annotation.gtf \
         SEQUENCE_DICTIONARY=$(pwd)/genome/$species/genome.dict \
         O=$(pwd)/genome/$species/ \
@@ -27,6 +26,7 @@ java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar CreateIntervalsFiles \
 function GENOME {
 
 echo -e '\033[1;36m Enter the species [human/mice/custom]:'
+echo -e '\033[1;36m Prepare inputed genome [input]:'
 echo -e '\033[1;36m If quit [q]:'
 echo ''
 
@@ -44,6 +44,72 @@ fi
 if [ $species == q ]
 then
 
+	start
+
+elif [[ $species == 'input' ]]
+then
+
+	
+	dirs=($(for d in $(pwd)/genome/*/; do [ ! -f "$d/genome.dict" ] && echo "$d"; done))
+
+	select d in $dirs Back; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
+
+	if [ "$d" == "Back" ]
+	then
+		start
+	fi
+
+	name=$(basename "$d")
+
+	if ! compgen -G "$d"/*.gtf* > /dev/null || ! compgen -G "$d"/*.fa* > /dev/null; then
+	then
+
+		echo "In directory $d files *.gtf and *.fa not found"
+		start
+	
+	fi
+
+	cd genome/$name
+
+	for file in $(pwd)/*; do
+    
+    # --- GTF ---
+    if [[ "$file" == *.gtf.gz ]]; then
+        echo "Decompressing $file -> annotation.gtf"
+        gunzip -c "$file" > annotation.gtf
+        rm "$file"   
+    elif [[ "$file" == *.gtf ]]; then
+        echo "Renaming $file -> annotation.gtf"
+        mv "$file" annotation.gtf
+    fi
+
+    # --- FASTA ---
+    if [[ "$file" == *.fa.gz ]]; then
+        echo "Decompressing $file -> genome.fa"
+        gunzip -c "$file" > genome.fa
+        rm "$file"
+    elif [[ "$file" == *.fa ]]; then
+        echo "Renaming $file -> genome.fa"
+        mv "$file" genome.fa
+    fi
+
+	done
+
+	
+	cd ..
+	cd ..
+	
+	echo -e "\033[0;34m $(date) Creating genome reference files"
+	create_ref  
+
+	Rscript $source/genome_prep.R $name $(pwd)/genome/$name/annotation.gtf $(pwd)/genome/$name
+	
+	echo -e "\033[0;34m $(date) Generating of the intervals"
+	rna_intervals
+	
+	echo -e "\033[0;32m $(date) Process DONE!"
+
+		
 	start
 
 else

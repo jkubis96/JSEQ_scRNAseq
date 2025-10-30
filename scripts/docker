@@ -10,9 +10,9 @@ function start {
 
 echo ''
 echo -e '\033[1;36m Select option:'
-echo -e '\033[1;36m  -> Download RefGenome [genome]'
-echo -e '\033[1;36m  -> Creat new project [project]'
-echo -e '\033[1;36m  -> Start analysis [analysis]'
+echo -e '\033[1;36m  -> Download RefGenome [1]'
+echo -e '\033[1;36m  -> Creat new project [2]'
+echo -e '\033[1;36m  -> Start analysis [3]'
 echo -e '\033[1;36m  -> Quit [q]'
 echo ''
 echo -e '\033[1;36m Select option:'
@@ -21,27 +21,27 @@ echo ''
 	s=$(echo $s | tr '[:upper:]' '[:lower:]')
 
 
-if [[ $s == 'genome' ]]
+if [[ $s == '1' ]]
 then
         source=$(pwd)/scripts/genome_indexing
 		source $source
 		GENOME
 		
 		
-elif [[ $s == 'project' ]]
+elif [[ $s == '2' ]]
 then
         source=$(pwd)/scripts/projects
 		source $source
 		PROJECT
 		
-elif [[ $s == 'analysis' ]]
+elif [[ $s == '3' ]]
 then
 		source=$(pwd)/scripts
 		source $source/project_selection
 		select_analysis
 		
 function experiment_selection {
-		if [[ $d  == *'fq'* && $species  == 'human' ]] || [[ $d  == *'fq'* && $species  == 'mice' ]] || [[ $d  == *'fq'* && $species  == 'custom' ]];
+		if [ $d  == *'_fq'*];
 then
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
         source=$(pwd)/scripts
@@ -82,58 +82,8 @@ then
 		echo ''
 		start
 		
-elif
-		[[ $d  == *'_fq'* ]] && [[ $species  == 'mix' ]];
-then
-		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
-        source=$(pwd)/scripts
-		source $source/analysis_mix
-		echo ''
-		echo -e "\033[0;34m Process start..."
-		echo ''
-		echo -e "\033[1;33m WARNING! Depending on data set volume and data heterogeneity a whole analysis can last even several hours" 
-		echo ''
-		echo -e "\033[0;34m $(date) Trimming of the adapters and quality control of the reads"
-		directory >> $log 2>&1
-		TRIMMING >> $log 2>&1
-		echo -e "\033[0;34m $(date) UMIs and barcodes extraction"
-		whitelist >> $log 2>&1
-		echo -e "\033[0;34m $(date) Starting of the mapping process"
-		STAR_MAPPING >> $log 2>&1
-		echo -e "\033[0;34m $(date) Adding UMI and barcode tags to bam file"
-		add_tags >> $log 2>&1			
-		echo -e "\033[0;34m $(date) Annotation to transcriptome regions"
-		dropSEQ >> $log 2>&1
-		echo -e "\033[0;34m $(date) Detecting and repairing substitution errors in the cell barcodes"
-		final_exon >> $log 2>&1
-		echo -e "\033[0;34m $(date) Detecting and repairing barcode indexes synthesis errors"
-		completed_bam >> $log 2>&1
-		echo -e "\033[0;34m $(date) Dividing combined scingle cell data to mice and human experiments analysis"
-		filtr_mice >> $log 2>&1
-		filtr_human >> $log 2>&1
-		echo -e "\033[0;34m $(date) Creating count statistics"
-		umi_extract >> $log 2>&1
-		umi_expression_mice >> $log 2>&1
-		umi_expression_human >> $log 2>&1
-		echo -e "\033[0;34m $(date) Creating metrics of the genetics parts content"
-		scRNAmetrics_mice >> $log 2>&1
-		scRNAmetrics_human >> $log 2>&1
-		metric_plot_mice >> $log 2>&1
-		metric_plot_human >> $log 2>&1
-		echo -e "\033[0;34m $(date) Creating matrix of counts"
-		convert_mtx_umi_mice >> $log 2>&1
-		convert_mtx_umi_human >> $log 2>&1
-		echo -e "\033[0;34m $(date) Counts analysis and creating report"	
-		seurat_mix >> $log 2>&1
-		echo ''
-		echo -e "\033[0;32m Process completed"
-		echo ''
-		echo -e "\033[1;33m Check $project_name_mode for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
-		echo ''
-		start
-		
-elif	[[ $species  == 'human' && $d  == *'_exp'* ]] || [[ $species  == 'mice' && $d  == *'_exp'* ]] || [[ $species  == 'mix' && $d  == *'_exp'* ]] || [[ $species  == 'custom' && $d  == *'_exp'* ]]
+elif	[$d  == *'_exp'* ]
 then
 
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
@@ -191,11 +141,4 @@ then
 	   source $source/test_run
 	   test_fucntions
 
-elif [[ $fun_run == Extension ]]; 
-then
-
-	   source=$(pwd)/extension
-	   source $source/extension_list
-	   run_extension
-	   
 fi

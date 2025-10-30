@@ -7,42 +7,15 @@ RUN apt-get update && apt-get install -y locales \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 ENV LANG en_US.utf8
-
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    git \
-    python3.8 \
-    python3-pip \
-    software-properties-common \
-    libtbb-dev \
-    r-base=3.6.3-2 \
-    curl \
-    openssl \
-    libcurl4-openssl-dev \
-    libhdf5-dev \
-    libhdf5-serial-dev \
-    h5utils \
-    hdf5-tools \
-    hdf5-helpers \
-    unzip \
-    default-jdk \
-    wget \
-    samtools \
-	libssl-dev \
-	libxml2-dev \
-	libfontconfig1-dev \
-    libfreetype6-dev \
-    libpng-dev \
-    libtiff5-dev \
-    libjpeg-dev \
-    libgit2-dev \
-    libicu-dev \
-    build-essential \
-    gfortran \
-    && rm -rf /var/lib/apt/lists/*
+ENV DEBIAN_FRONTEND=noninteractive
 
 
-
-
+RUN apt-get update &&\
+	apt-get install -y \
+	default-jdk \
+	wget \
+    python3.10 \
+    python3-pip 
 
 RUN pip3 install --no-cache-dir \
     pysam==0.16.0.1 \
@@ -52,25 +25,51 @@ RUN pip3 install --no-cache-dir \
     umap-learn==0.5.1 \
     gdown
 
+RUN apt-get update && \
+    apt-get install -y software-properties-common curl openssl \
+                       libcurl4-openssl-dev libhdf5-dev libhdf5-serial-dev \
+                       h5utils hdf5-tools hdf5-helpers unzip libtbb-dev && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
+    add-apt-repository "deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/" && \
+    apt-get update && \
+    apt-get install -y r-base=3.6.3-2
+
+RUN apt-get install -y r-cran-httr=1.4.1-1ubuntu1 \
+                       r-cran-leiden=0.3.3+dfsg-1 \
+                       r-cran-igraph=1.2.4.2-2build1 \
+                       r-cran-readxl=1.3.1-2build1 \
+                       r-cran-pheatmap=1.0.12-1 \
+                       r-cran-matrix=1.2-18-1 \
+                       r-cran-tidyverse=1.3.0-1 \
+                       r-cran-doparallel=1.0.15-1 \
+                       r-cran-dosnow=1.0.18-1 \
+                       r-cran-stringr=1.4.0-1 \
+                       r-cran-biocmanager \
+                       r-cran-plotly \
+                       r-cran-gridextra \
+                       r-cran-seurat=3.1.3-1 \
+                       r-cran-metap \
+                       r-cran-viridis \
+                       r-cran-ape && \
+					   apt-get update && \
+					   apt-get clean && \
+					   rm -rf /var/lib/apt/lists/*
 
 
-RUN R -e "install.packages(c( \
-  'cpp11','vroom','httr','purrr','forcats','tidyr','readr','readxl', \
-  'dplyr','dbplyr','broom','lubridate','ragg','ggplot2','scales','plotly', \
-  'tidyverse','matrix','stringr','viridis','gridExtra','pheatmap', \
-  'doParallel','doSNOW','leiden','igraph','metap','ape','BiocManager', \
-  'remotes' \
-), dependencies=TRUE, repos='https://cran.rstudio.com/')" \
- && R -e "remotes::install_url('https://github.com/jkubis96/GTF-tool/raw/refs/heads/main/packages/GTF.tool_0.1.2.tar.gz', dependencies=TRUE)" \
- && R -e "remotes::install_url('https://github.com/jkubis96/CSSG/raw/refs/heads/main/packages/CSSG.toolkit_0.1.0.tar.gz', dependencies=TRUE)" \
- && R -e "if (!requireNamespace('Seurat', quietly = TRUE)) BiocManager::install('Seurat')"
+					 
+
+RUN R -e "Sys.setenv(R_INSTALL_STAGED = FALSE); \
+          BiocManager::install('MAST'); \
+          install.packages(c('umap', 'remotes')); \
+          remotes::install_version('textclean', version='0.9.3'); \
+          remotes::install_url('https://github.com/jkubis96/GTF-tool/raw/refs/heads/main/packages/GTF.tool_0.1.2.tar.gz', dependencies=TRUE); \
+          remotes::install_url('https://github.com/jkubis96/CSSG/raw/refs/heads/main/packages/CSSG.toolkit_0.1.0.tar.gz', dependencies=TRUE)"
 
 
-
-RUN mkdir -p /app/JSEQ_scRNAseq/setup \
-    && cd /app/JSEQ_scRNAseq/setup \
+RUN mkdir -p /tools \
+    && cd /tools \
     && gdown 1ndAFxTqHUFjhfBEiFuVs-D1SMKBmhfyI \
-    && dpkg -i rna-star_2.7.3a+dfsg-1build2_amd64.deb \
+    && dpkg -i rna-star_2.7.3a+dfsg-1build2_amd64.deb || apt-get install -f -y \
     && rm rna-star_2.7.3a+dfsg-1build2_amd64.deb \
     && gdown 1nQzT2deG9l0Ho_Nj0splNv9kZIIh-gYv \
     && dpkg -i fastp_0.20.0+dfsg-1build1_amd64.deb \

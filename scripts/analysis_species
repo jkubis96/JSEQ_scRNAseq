@@ -1,20 +1,23 @@
 #!/bin/bash 
 
+
+# loading configs & paths
+
+source $(pwd)/requirements_file/barcodes
+source $(pwd)/requirements_file/config_tools.conf
+CHECK=$(pwd)/projects/$project_name_mode
+RESULT=$(pwd)/projects/$project_name_mode/results/
+ADAPTERS=$(pwd)/requirements_file/Adapters.fa
+INFASTP=$(pwd)/projects/$project_name_mode/fast_data
+tmp=$(pwd)/projects/$project_name_mode/tmp
+SCRIPTS_EXTRACT=$(pwd)/scripts
+
+
 function TRIMMING {
 
 echo Trimming Start
 
-source $(pwd)/requirements_file/barcodes
 
-umi_length=$umi_length
-barcode_length=$barcode_length
-
-
-
-RESULT=$(pwd)/projects/$project_name_mode/results/
-ADAPTERS=$(pwd)/requirements_file/Adapters.fa
-INFASTP=$(pwd)/projects/$project_name_mode/fast_data
-CHECK=$(pwd)/projects/$project_name_mode
 
 if ! [[ -f $CHECK/fast_data/R1_out_exctracted.fastq.gz || -f $CHECK/sc_data/matrix.mtx ]];
 then
@@ -41,6 +44,7 @@ then
 	
 	cd $INFASTP
 
+
 	if [[ $qc_reads == *"ON"* ]];
 	then
 
@@ -52,6 +56,7 @@ then
 	fastp -i $R1_NAME -I $R2_NAME -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS -Q --trim_poly_x --length_required $[$umi_length + $barcode_length]  --html $RESULT/QC_RAPORT.html 
 	
 	fi
+
 
 	cd ..
 	cd ..
@@ -68,25 +73,12 @@ fi
 
 function whitelist {
 
-CHECK=$(pwd)/projects/$project_name_mode
 
 if ! [[ -f $CHECK/tmp/whitelist_barcodes.csv || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
-	source $(pwd)/requirements_file/barcodes
-	barcode_start=$barcode_start
-	barcode_end=$barcode_end
-	umi_start=$umi_start
-	umi_end=$umi_end
-	umi_length=$umi_length
-	barcode_length=$barcode_length
-	barcode=$barcode
 
-	INFASTP=$(pwd)/projects/$project_name_mode/fast_data
-	tmp=$(pwd)/projects/$project_name_mode/tmp
-	RESULT=$(pwd)/projects/$project_name_mode/results/
 
-#zmienione
 
 	for i in $INFASTP/*.fastq.gz;
 	do
@@ -106,10 +98,25 @@ then
 
 
 	cd $(pwd)/projects/$project_name_mode/fast_data
-	umi_tools whitelist --stdin $R1_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --subset-reads 1000000000 --error-correct-threshold=2  --ed-above-threshold=correct --plot-prefix=$RESULT/expect_whitelist --log2stderr > $tmp/whitelist.csv ;
-	umi_tools extract --bc-pattern=$barcode --extract-method=regex --stdin=$R1_NAME_out --stdout=R1_out_exctracted.fastq.gz --read2-in=$R2_NAME_out --read2-out=R2_out_extracted.fastq.gz --error-correct-cell --subset-reads 1000000000 --reconcile-pairs  --whitelist=$tmp/whitelist.csv
-	gunzip R2_out_extracted.fastq.gz
 
+	
+	if [[ $BU_READ == *"1"* ]];
+	then
+
+		umi_tools whitelist --stdin $R1_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --error-correct-threshold=$error_threshold --ed-above-threshold=discard --plot-prefix=$RESULT/expect_whitelist --log2stderr > $tmp/whitelist.csv ;
+		umi_tools extract --bc-pattern=$barcode --extract-method=regex --stdin=$R1_NAME_out --stdout=R1_out_extracted.fastq.gz --read2-in=$R2_NAME_out --read2-out=R2_out_extracted.fastq.gz --error-correct-cell --reconcile-pairs  --whitelist=$tmp/whitelist.csv
+		gunzip R2_out_extracted.fastq.gz
+		rm R1_out_extracted.fastq.gz
+
+	elif [[ $BU_READ == *"2"* ]];
+	then
+
+		umi_tools whitelist --stdin $R2_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --error-correct-threshold=$error_threshold --ed-above-threshold=discard --plot-prefix=$RESULT/expect_whitelist --log2stderr > $tmp/whitelist.csv ;
+		umi_tools extract --bc-pattern=$barcode --extract-method=regex --stdin=$R2_NAME_out --stdout=R2_out_extracted.fastq.gz --read2-in=$R1_NAME_out --read2-out=R1_out_extracted.fastq.gz --error-correct-cell --reconcile-pairs  --whitelist=$tmp/whitelist.csv
+		gunzip R1_out_extracted.fastq.gz
+		rm R2_out_extracted.fastq.gz
+
+	fi
 
 	cat $tmp/whitelist.csv | cut -f 1 > $tmp/whitelist_barcodes.csv ;
 
@@ -139,19 +146,14 @@ function STAR_MAPPING {
 
 echo Mapping Start
 
-CHECK=$(pwd)/projects/$project_name_mode
 
 if ! [[ -f $CHECK/tmp/Aligned.out.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 
-	RESULT=$(pwd)/projects/$project_name_mode/results/
-	INFASTP=$(pwd)/projects/$project_name_mode/fast_data
 	cpu=$(grep -c ^processor /proc/cpuinfo)
 	cpu=$[$cpu-2]
 	DIR=$(pwd)/genome/$species/index/$READS_LENGHT 
-	tmp=$(pwd)/projects/$project_name_mode/tmp/
-
 
 
 	for i in $INFASTP/*.fastq;
@@ -170,9 +172,23 @@ then
 	fi
 	done;
 
-	R2_FILE=$INFASTP'/'$R2_NAME_map
 
-	STAR --outReadsUnmapped Fastx --outFilterMismatchNmax 20 --outSAMtype BAM Unsorted --outFilterMultimapNmax 20 --outFilterMismatchNoverLmax 0.3 --outFilterMismatchNoverReadLmax 1 --outFilterMatchNmin 0 --outFilterScoreMinOverLread 0.33 --outFilterMatchNminOverLread 0.33  --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outFileNamePrefix $tmp --outStd Log  > $RESULT/Log.final.out 2>&1
+	if [[ $BU_READ == *"1"* ]];
+	then
+
+		R2_FILE=$INFASTP'/'$R2_NAME_map
+		STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread  --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outFileNamePrefix $tmp --outStd Log  > $RESULT/Log.final.out 2>&1
+		rm R2_FILE
+
+
+	elif [[ $BU_READ == *"2"* ]];
+	then
+
+		R1_FILE=$INFASTP'/'$R1_NAME_map
+		STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread  --runThreadN $cpu --genomeDir $DIR --readFilesIn $R1_FILE --outFileNamePrefix $tmp --outStd Log  > $RESULT/Log.final.out 2>&1
+		rm R1_FILE
+
+	fi
 
 else 
 
@@ -185,27 +201,18 @@ fi
 
 function add_tags {
 
-CHECK=$(pwd)/projects/$project_name_mode
 
 if ! [[ -f $CHECK/tmp/final.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
-	source $(pwd)/requirements_file/barcodes
-	barcode_start=$barcode_start
-	barcode_end=$barcode_end
-	umi_start=$umi_start
-	umi_end=$umi_end
-	umi_length=$umi_length
-	barcode_length=$barcode_length
-	barcode=$barcode
-
-	tmp=$(pwd)/projects/$project_name_mode/tmp
-
 	samtools view -h $tmp/*.out.bam | sed 's/_/XC:Z:/' | grep -oE "XC:Z:[acgtnACGTN-]+" > $tmp/barcodes.sam
 	samtools view -h $tmp/*.out.bam | sed 's/_/XC:Z:/' | sed 's/_/XM:Z:/' | grep -oE "XM:Z:[acgtnACGTN-]+" > $tmp/umis.sam
 
-	SCRIPTS_EXTRACT=$(pwd)/scripts
 	python3 $SCRIPTS_EXTRACT/add_tags.py $tmp/barcodes.sam $tmp/umis.sam $tmp/*.out.bam $tmp/final.bam $barcode_length $umi_length
+	
+	rm $CHECK/tmp/Aligned.out.bam
+	rm $tmp/barcodes.sam
+	rm $tmp/umis.sam
 
 else 
 
@@ -222,17 +229,17 @@ fi
 
 function dropSEQ {
 
-CHECK=$(pwd)/projects/$project_name_mode
 
 if ! [[ -f $CHECK/tmp/gene_exon_tagged.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
-	SCRIPTS_EXTRACT=$(pwd)/setup
-	java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar TagReadWithGeneFunction \
+	java -jar /tools/DropSeq/jar/dropseq.jar TagReadWithGeneFunction \
 			INPUT=$(pwd)/projects/$project_name_mode/tmp/final.bam \
 			OUTPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged.bam \
 			ANNOTATIONS_FILE=$(pwd)/genome/$species/correct_annotation.refFlat 
-		
+	
+	rm $CHECK/tmp/final.bam
+
 else 
 
 	echo 'TagGene was done before'
@@ -244,20 +251,21 @@ fi
 
 function final_exon {
 
-CHECK=$(pwd)/projects/$project_name_mode
 
 if ! [[ -f $CHECK/tmp/gene_exon_tagged_error.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
 	cpu=$(grep -c ^processor /proc/cpuinfo)
 	cpu=$[$cpu-2]
 
-	SCRIPTS_EXTRACT=$(pwd)/setup
-	java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar DetectBeadSubstitutionErrors \
+	java -jar /tools/DropSeq/jar/dropseq.jar DetectBeadSubstitutionErrors \
 			I=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged.bam \
 			O=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged_error.bam \
 			OUTPUT_REPORT=$(pwd)/projects/$project_name_mode/tmp/beadSubstitutionReport.txt \
 			OUTPUT_SUMMARY=$(pwd)/projects/$project_name_mode/tmp/beadSubstitutionSummary.txt \
 			NUM_THREADS=$cpu
+
+	rm $CHECK/tmp/gene_exon_tagged.bam
+
 else 
 
 	echo 'Barcodes repair was done before'
@@ -270,30 +278,26 @@ fi
 function completed_bam {
 
 
-
-CHECK=$(pwd)/projects/$project_name_mode
-
 if ! [[ -f $CHECK/results/Completed.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
-	tmp=$(pwd)/projects/$project_name_mode/tmp
 	cell=`cat $tmp/whitelist_barcodes.csv  | wc -l`
-
 	cpu=$(grep -c ^processor /proc/cpuinfo)
 	cpu=$[$cpu-2]
 
 	source $(pwd)/requirements_file/smart_primer
-	smart=$smart
 
-	SCRIPTS_EXTRACT=$(pwd)/setup
-	java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar DetectBeadSynthesisErrors \
+	java -jar /tools/DropSeq/jar/dropseq.jar DetectBeadSynthesisErrors \
 			INPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged_error.bam \
 			OUTPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam \
 			OUTPUT_STATS=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats.txt \
 			SUMMARY=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats_summary.txt \
-			NUM_BARCODES=$[$cell*1,25] \
+			NUM_BARCODES=$cell \
 			PRIMER_SEQUENCE=$smart \
 			NUM_THREADS=$cpu
+
+	rm $CHECK/tmp/gene_exon_tagged_error.bam
+
 else 
 
 	echo 'SynthesisError was done before'
@@ -308,16 +312,15 @@ fi
 ##EXPRESSION FILE AND STATS
 function umi_extract {
 
-CHECK=$(pwd)/projects/$project_name_mode
 
 if ! [[ -f $CHECK/tmp/selected_cells.sc || -f $CHECK/sc_data/matrix.mtx ]];
 then
-	tmp=$(pwd)/projects/$project_name_mode/tmp
-	results=$(pwd)/projects/$project_name_mode/results
-	
-	samtools view $results/Completed.bam | grep -oE "XC:Z:[acgtnACGTN-]+" > $tmp/repaired_barcodes.sam
+	#
+	samtools view $RESULT/Completed.bam | grep -oE "XC:Z:[acgtnACGTN-]+" > $tmp/repaired_barcodes.sam
 	cat $tmp/repaired_barcodes.sam | sort | uniq -c | sort -nr | sed 's/XC:Z:/\t/' > $tmp/barcode_stat.txt
-	awk '{if($1 > 2450) print $2}' $tmp/barcode_stat.txt > $tmp/selected_cells.sc
+	# awk '{if($1 > $umi_deep) print $2}' $tmp/barcode_stat.txt > $tmp/selected_cells.sc
+	awk 'NR==FNR {whitelist[$1]; next} ($1 > $umi_deep) && ($2 in whitelist) {print $2}' $tmp/whitelist_barcodes.csv $tmp/barcode_stat.txt $tmp/selected_cells.sc
+	rm $tmp/repaired_barcodes.sam
 
 else 
 
@@ -330,21 +333,19 @@ fi
 
 function umi_expression {
 
-CHECK=$(pwd)/projects/$project_name_mode
 
 if ! [[ -f $CHECK/tmp/umi_expression.tsv || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
-	SCRIPTS_EXTRACT=$(pwd)/setup
-	java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar DigitalExpression \
+	java -jar /tools/DropSeq/jar/dropseq.jar DigitalExpression \
 			I=$(pwd)/projects/$project_name_mode/results/Completed.bam \
 			O=$(pwd)/projects/$project_name_mode/tmp/umi_expression.tsv \
-			EDIT_DISTANCE=2 \
+			EDIT_DISTANCE=$EDIT_DISTANCE \
 			OUTPUT_LONG_FORMAT=$(pwd)/projects/$project_name_mode/tmp/umi_expression.long \
-			STRAND_STRATEGY=BOTH\
-			OUTPUT_READS_INSTEAD=false\
-			LOCUS_FUNCTION_LIST={INTERGENIC,INTRONIC,UTR,CODING,RIBOSOMAL}\
-			MIN_BC_READ_THRESHOLD=0\
+			STRAND_STRATEGY=$STRAND_STRATEGY \
+			OUTPUT_READS_INSTEAD=$OUTPUT_READS_INSTEAD \
+			LOCUS_FUNCTION_LIST=$LOCUS_FUNCTION_LIST \
+			MIN_BC_READ_THRESHOLD=$MIN_BC_READ_THRESHOLD \
 			CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/selected_cells.sc
 			
 else 
@@ -359,13 +360,11 @@ fi
 
 function scRNAmetrics {
 
-CHECK=$(pwd)/projects/$project_name_mode
 
 if ! [[ -f $CHECK/tmp/scRNAmetrics.txt || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
-	SCRIPTS_EXTRACT=$(pwd)/setup
-	java -jar $SCRIPTS_EXTRACT/DropSeq/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
+	java -jar /tools/DropSeq/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
 			INPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam\
 			OUTPUT=$(pwd)/projects/$project_name_mode/results/scRNAmetrics.txt\
 			ANNOTATIONS_FILE=$(pwd)/genome/$species/correct_annotation.refFlat \
@@ -383,17 +382,11 @@ fi
 
 function metric_plot {
 
-CHECK=$(pwd)/projects/$project_name_mode/sc_data
-
-if ! [[ -f $CHECK/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
-	path_metric=$(pwd)/projects/$project_name_mode/results
-	path_result=$(pwd)/projects/$project_name_mode/results
 
-	SCRIPTS_EXTRACT=$(pwd)/scripts
-
-	Rscript $SCRIPTS_EXTRACT/rna_metrics.R $path_metric $path_result
+	Rscript $SCRIPTS_EXTRACT/rna_metrics.R $RESULT $RESULT
 
 else 
 
@@ -408,9 +401,7 @@ fi
 
 function convert_mtx_umi {
 
-CHECK=$(pwd)/projects/$project_name_mode/sc_data
-
-if ! [[ -f $CHECK/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	path_convert=$(pwd)/projects/$project_name_mode/sc_data
@@ -422,6 +413,8 @@ then
 	null=NULL
 	converter=$(pwd)/scripts/converter.R
 	Rscript $converter $format $path_convert $null $path_tmp_mtx $con
+
+	rm -rf $PATH_PROJECT/tmp
 	
 else 
 
@@ -438,22 +431,18 @@ PATH_PROJECT=$(pwd)/projects/$project_name_mode
 MARKERS=$marker_path
 data=3
 
-SCRIPTS_EXTRACT=$(pwd)/scripts
-Rscript $SCRIPTS_EXTRACT/seurat_cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell
-
-cp $SCRIPTS_EXTRACT/manual_species.R $PATH_PROJECT/results
-mv $PATH_PROJECT/results/manual_species.R $PATH_PROJECT/results/manual_analysis.R 
-
-
 CHECK=$(pwd)/projects/$project_name_mode/sc_data
+
 if [[ -f $CHECK/matrix.mtx ]];
 then	
-rm -rf $PATH_PROJECT/tmp
-rm -rf $PATH_PROJECT/fast_data/R1_out_exctracted.fastq.gz
-rm -rf $PATH_PROJECT/fast_data/R2_out_extracted.fastq
-rm -rf $PATH_PROJECT/fast_data/R2_out.fastq.gz
-rm -rf $PATH_PROJECT/results/HDMAP_subtypes_files
-rm -rf $PATH_PROJECT/results/UMAP_with_DE_gene_subtypes_files
+
+	Rscript $SCRIPTS_EXTRACT/seurat_cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell
+
+	cp $SCRIPTS_EXTRACT/manual_species.R $PATH_PROJECT/results
+	mv $PATH_PROJECT/results/manual_species.R $PATH_PROJECT/results/manual_analysis.R 
+
+	rm -rf $PATH_PROJECT/results/HDMAP_subtypes_files
+	rm -rf $PATH_PROJECT/results/UMAP_with_DE_gene_subtypes_files
 
 
 fi

@@ -15,41 +15,17 @@ echo -e '\033[1;32m If you need help click ------>  \e]8;;https://docs.docker.co
 echo ''
 echo -e '\033[1;36m Select option:'
 echo ''
-echo -e '\033[1;36m  -> Docker container installation [install]'
-echo -e '\033[1;36m  -> Docker container pulling [pull]'
-echo -e '\033[1;36m  -> Back [back]'
+echo -e '\033[1;36m  -> Docker container installation [1]'
+echo -e '\033[1;36m  -> Docker container pulling [2]'
+echo -e '\033[1;36m  -> Back [b]'
 echo ''
 		read con
 		con=$(echo $con | tr '[:upper:]' '[:lower:]')
 
-if [[ $con == 'install' ]]
+if [[ $con == '1' ]]
 then
 	
 	log_install=$(pwd)/setup/install.log.out
-	
-	sudo apt-get -y install unzip >> $log_install 2>&1
-	sudo apt -y install python3.8  >> $log_install 2>&1
-    sudo apt -y install python3-pip  >> $log_install 2>&1
-	sudo pip3 install gdown >> $log_install 2>&1
-    sudo apt-get update >> $log_install 2>&1
-	
-	cd setup 
-	
-	echo -e "\033[0;31m $(date) Localhost env preparing..."
-	if [ -d "Drop-seq_tools-2.4.0" ]; then
-	
-    rm -rf Drop-seq_tools-2.4.0
-    
-	fi
-	
-	gdown 1deqNjK2Ix_O0yPQTnXqD6ShX2WYH5PAz
-	unzip Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
-	rm -r Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
-	mv Drop-seq_tools-2.4.0 DropSeq >> $log_install 2>&1
-
-	
-
-	cd ..
 	
 	echo -e "\033[0;31m $(date) Docker build starting..."
 	sudo DOCKER_BUILDKIT=1 docker build --build-arg BUILDKIT_STEP_LOG_MAX_SIZE=10485760 --no-cache -t jseq -f Dockerfile .
@@ -63,7 +39,13 @@ then
     	
 		echo $id
 		echo id=$id > $(pwd)/setup/docker_id
-		docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq -e fun_run=True $id 
+		
+		docker run --privileged --rm -it \
+			-v $(pwd):/app \
+			-e fun_run=True \
+			$id /app/scripts/docker
+
+
 	else
 		echo ''
 		echo -e '\033[1;31m !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
@@ -81,33 +63,10 @@ then
 	
 	
 	
-elif [[ $con == 'pull' ]]
+elif [[ $con == '2' ]]
 then
 
     log_install=$(pwd)/setup/install.log.out
-	
-	sudo apt-get -y install unzip >> $log_install 2>&1
-	sudo apt -y install python3.8  >> $log_install 2>&1
-    sudo apt -y install python3-pip  >> $log_install 2>&1
-	sudo pip3 install gdown >> $log_install 2>&1
-    sudo apt-get update >> $log_install 2>&1
-	
-	cd setup 
-	
-	echo -e "\033[0;31m $(date) Localhost env preparing..."
-	if [ -d "Drop-seq_tools-2.4.0" ]; then
-	
-    rm -rf Drop-seq_tools-2.4.0
-    
-	fi
-	
-	gdown 1deqNjK2Ix_O0yPQTnXqD6ShX2WYH5PAz
-	unzip Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
-	rm -r Drop-seq_tools-2.4.0.zip >> $log_install 2>&1
-	mv Drop-seq_tools-2.4.0 DropSeq >> $log_install 2>&1
-
-
-	cd ..
 	
 	echo -e "\033[0;31m $(date) Docker pull starting..."
 	sudo docker pull jkubis96/jseq_scrnaseq:jseq
@@ -120,6 +79,12 @@ then
 		echo $id
 		echo id=$id > $(pwd)/setup/docker_id
 		docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq -e fun_run=True $id 
+
+		docker run --privileged --rm -it \
+			-v $(pwd):/app \
+			-e fun_run=True \
+			$id /app/scripts/docker
+
 	else
 		echo ''
 		echo -e '\033[1;31m !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
@@ -137,7 +102,7 @@ then
 	
 	
 	
-elif [[ $con == 'back' ]]
+elif [[ $con == 'b' ]]
 then
 
     starting_point
@@ -183,8 +148,8 @@ echo ''
 
 echo -e '\033[1;36m Select option:'
 echo ''
-echo -e '\033[1;36m  -> Install [install]'
-echo -e '\033[1;36m  -> Start program [start]'
+echo -e '\033[1;36m  -> Install [1]'
+echo -e '\033[1;36m  -> Start program [2]'
 echo -e '\033[1;36m  -> Exit [q]'
 echo ''
 	
@@ -194,12 +159,12 @@ echo ''
 		l=$(echo $l | tr '[:upper:]' '[:lower:]')
 
 
-if [[ $l == 'install' ]]
+if [[ $l == '1' ]]
 then
 
 container_install
 		
-elif [[ $l == 'start' ]]
+elif [[ $l == '2' ]]
 then
     
 	if [[ -f $(pwd)/setup/docker_id ]];

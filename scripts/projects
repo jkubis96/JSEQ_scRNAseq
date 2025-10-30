@@ -294,10 +294,26 @@ else
 	echo  -e '\033[1;36m ReadsLenght:'
 	echo ''
 			read READS_LENGHT
-	echo  -e '\033[1;36m Species [human/mice/custom]:'
+
+
+	echo  -e '\033[1;36m Genome [select number]:'
 	echo ''
-			read species
-			species=$(echo $species | tr '[:upper:]' '[:lower:]')
+			genomes=( "$(pwd)"/genome/* )
+
+			select d in "${genomes[@]}" Back; do
+				if [[ -n "$d" ]]; then
+					species=$(basename "$d")
+					break
+				else
+					echo -e "\033[0;31m >>> Invalid Selection"
+				fi
+			done
+
+			if [[ "$d" == "Back" ]]; then
+				species=_
+				start
+			fi
+
 	echo  -e '\033[1;36m Estimated number of cells'
 	echo ''
 		read cell
@@ -313,7 +329,7 @@ else
 	echo ''
 	echo ''
 
-	if [[ $READS_LENGHT -lt 300 && $READS_LENGHT -gt 0 ]] && [[ $species == 'human' || $species == 'mice' || $species == 'custom' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]];
+	if [[ $READS_LENGHT -lt 1000 && $READS_LENGHT -gt 0 ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]];
 	then
 
 	echo -e "\033[0;32m Parametrs correct"
@@ -355,10 +371,12 @@ else
 	echo  -e '\033[1;36m Enter operation paramets:'
 	echo ''
 
-	echo  -e '\033[1;36m Species [human/mice/custom]:'
+	echo  -e '\033[1;36m Species [human/mice/*custom name*]:'
 	echo ''
 			read species
 			species=$(echo $species | tr '[:upper:]' '[:lower:]')
+
+
 	echo  -e '\033[1;36m Estimated number of cells'
 	echo ''
 		read cell
@@ -377,7 +395,7 @@ else
 	echo ''
 		read data
 
-	if [[ $species == 'human' || $species == 'mice' || $species == 'custom' ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]] && [[ $data == '1' || $data == '2' || $data == '3' ]];
+	if  [[ $cell -lt 1000000 && $cell -gt 0 ]] && [[ $data == '1' || $data == '2' || $data == '3' ]];
 	then
 
 	echo -e "\033[0;32m Parametrs correct"
@@ -409,7 +427,8 @@ fi
 
 function PROJECT {
 
-echo  -e '\033[1;36m Create project for fastq data [1] or counts / expression data  [2]:'
+echo  -e '\033[1;36m Create project for fastq data [1] or counts / expression data  [2] or back [b]:'
+
 read p 
 p=$(echo $p | tr '[:upper:]' '[:lower:]')
 
@@ -461,6 +480,12 @@ then
 		echo marker_path=$marker_path >> $(pwd)/projects/$project_name_mod/config
 
 		checkfq
+
+elif [[ $p == 'b' ]]
+then
+
+	start
+
 
 else
         PROJECT
