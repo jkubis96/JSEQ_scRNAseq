@@ -69,7 +69,7 @@ then
     log_install=$(pwd)/install.log.out
 	
 	echo -e "\033[0;31m $(date) Docker pull starting..."
-	sudo docker pull jkubis96/jseq_scrnaseq:jseq
+	sudo docker pull jkubis96/jseq_scrnaseq:latest
 	id=$(docker images --format "{{.ID}}" jkubis96/jseq_scrnaseq)
 	
 	length=${#id}
@@ -78,7 +78,6 @@ then
     	
 		echo $id
 		echo id=$id > $(pwd)/docker_id
-		docker run --privileged --rm -it -v $(pwd):/app/JSEQ_scRNAseq -e fun_run=True $id 
 
 		docker run --privileged --rm -it \
 			-v $(pwd):/app \
