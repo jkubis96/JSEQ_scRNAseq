@@ -30,7 +30,7 @@ if [[ $s == 'run' ]]
 then
 
 	echo -e "\033[0;31m $(date) Docker pull starting..."
-	sudo docker pull jkubis96/jseq_scrnaseq:latest
+	docker pull jkubis96/jseq_scrnaseq:latest
 	id=$(docker images --format "{{.ID}}" jkubis96/jseq_scrnaseq:latest)
 
 	if [[ -f $(pwd)/docker_id ]];
