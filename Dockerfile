@@ -12,6 +12,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update &&\
 	apt-get install -y \
+    samtools \
 	default-jdk \
 	wget \
     python3.10 \

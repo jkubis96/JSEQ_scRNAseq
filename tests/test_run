@@ -1,8 +1,6 @@
 #!/bin/bash  
 
 
-
-
 function test_fucntions {
 
 	source $(pwd)/scripts/genome_indexing
@@ -54,6 +52,7 @@ function test_fucntions {
 		echo ''
 		
     	echo -e '\033[1;31m Test failed - genome downloading'
+		exit 1 
 	fi 
 
 
@@ -95,6 +94,8 @@ function test_fucntions {
 		echo ''
     	
 		echo -e '\033[1;31m Test failed - genome annotation'
+		exit 1 
+
 	fi 
 
 	echo ''
@@ -128,6 +129,7 @@ function test_fucntions {
 		echo ''
 
     	echo -e '\033[1;31m Test failed - downloading'
+		exit 1 
 	fi 
 
 
@@ -196,6 +198,8 @@ function test_fucntions {
 		
 		echo -e '\033[1;31m Test failed - analysis'
 		echo -e '\033[1;31m Check Log File --> ' $(pwd)/projects/test_mode_fq/results/process.log.out
+		exit 1 
+
 
 	fi 
 

@@ -54,14 +54,14 @@ then
 
 	select d in $dirs Back; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
 
-	if [ "$d" == "Back" ]
+	if [ "$d" == "Back" ];
 	then
 		start
 	fi
 
 	name=$(basename "$d")
 
-	if ! compgen -G "$d"/*.gtf* > /dev/null || ! compgen -G "$d"/*.fa* > /dev/null; then
+	if ! compgen -G "$d"/*.gtf* > /dev/null || ! compgen -G "$d"/*.fa* > /dev/null; 
 	then
 
 		echo "In directory $d files *.gtf and *.fa not found"
