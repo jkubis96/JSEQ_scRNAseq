@@ -16,10 +16,6 @@ SCRIPTS_EXTRACT=$(pwd)/scripts
 
 function TRIMMING {
 
-echo $'TU'
-
-echo $barcode
-echo $BU_READ
 
 echo Trimming Start
 
