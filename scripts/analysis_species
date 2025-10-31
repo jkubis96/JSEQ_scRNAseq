@@ -20,7 +20,7 @@ echo Trimming Start
 
 
 
-if ! [[ -f $CHECK/fast_data/R1_out_exctracted.fastq.gz || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/fast_data/R1_out_exctracted.fastq || $CHECK/fast_data/R1_out_exctracted.fastq || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	for i in $INFASTP/*.fastq.gz;
@@ -201,6 +201,8 @@ fi
 
 function add_tags {
 
+echo 'Tags adding'
+
 
 if ! [[ -f $CHECK/tmp/final.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
@@ -229,6 +231,8 @@ fi
 
 function dropSEQ {
 
+echo 'TagReadWithGeneFunction'
+
 
 if ! [[ -f $CHECK/tmp/gene_exon_tagged.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
@@ -251,6 +255,7 @@ fi
 
 function final_exon {
 
+echo 'DetectBeadSubstitutionErrors'
 
 if ! [[ -f $CHECK/tmp/gene_exon_tagged_error.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
@@ -277,6 +282,7 @@ fi
 
 function completed_bam {
 
+echo 'DetectBeadSynthesisErrors'
 
 if ! [[ -f $CHECK/results/Completed.bam || -f $CHECK/sc_data/matrix.mtx ]];
 then
@@ -312,6 +318,7 @@ fi
 ##EXPRESSION FILE AND STATS
 function umi_extract {
 
+echo 'Barcode/UMI extraction'
 
 if ! [[ -f $CHECK/tmp/selected_cells.sc || -f $CHECK/sc_data/matrix.mtx ]];
 then
@@ -333,6 +340,7 @@ fi
 
 function umi_expression {
 
+echo 'DigitalExpression'
 
 if ! [[ -f $CHECK/tmp/umi_expression.tsv || -f $CHECK/sc_data/matrix.mtx ]];
 then
@@ -360,6 +368,7 @@ fi
 
 function scRNAmetrics {
 
+echo 'SingleCellRnaSeqMetricsCollector'
 
 if ! [[ -f $CHECK/tmp/scRNAmetrics.txt || -f $CHECK/sc_data/matrix.mtx ]];
 then
@@ -382,6 +391,8 @@ fi
 
 function metric_plot {
 
+echo 'SingleCellRnaSeqMetricsCollector - graph'
+
 if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
@@ -400,6 +411,8 @@ fi
 
 
 function convert_mtx_umi {
+
+echo 'MTX conversion'
 
 if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
@@ -426,6 +439,8 @@ fi
 
 
 function seurat {
+
+echo 'Data analysis'
 
 PATH_PROJECT=$(pwd)/projects/$project_name_mode
 MARKERS=$marker_path
