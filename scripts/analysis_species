@@ -177,7 +177,7 @@ then
 	then
 
 		R2_FILE=$INFASTP'/'$R2_NAME_map
-		STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread  --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outFileNamePrefix $tmp --outStd Log  > $RESULT/Log.final.out 2>&1
+		STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread  --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outFileNamePrefix $tmp/ --outStd Log  > $RESULT/Log.final.out 2>&1
 		rm R2_FILE
 
 
@@ -185,7 +185,7 @@ then
 	then
 
 		R1_FILE=$INFASTP'/'$R1_NAME_map
-		STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread  --runThreadN $cpu --genomeDir $DIR --readFilesIn $R1_FILE --outFileNamePrefix $tmp --outStd Log  > $RESULT/Log.final.out 2>&1
+		STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread  --runThreadN $cpu --genomeDir $DIR --readFilesIn $R1_FILE --outFileNamePrefix $tmp/ --outStd Log  > $RESULT/Log.final.out 2>&1
 		rm R1_FILE
 
 	fi
