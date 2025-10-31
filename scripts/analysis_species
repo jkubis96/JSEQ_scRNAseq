@@ -4,7 +4,6 @@ shopt -s nullglob
 
 # loading configs & paths
 
-source $(pwd)/requirements_file/barcodes
 source $(pwd)/requirements_file/config_tools.conf
 CHECK=$(pwd)/projects/$project_name_mode
 RESULT=$(pwd)/projects/$project_name_mode/results/
@@ -15,6 +14,7 @@ SCRIPTS_EXTRACT=$(pwd)/scripts
 
 
 function TRIMMING {
+source $(pwd)/requirements_file/barcodes
 
 echo $'TU'
 
