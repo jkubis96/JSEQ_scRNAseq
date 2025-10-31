@@ -74,6 +74,7 @@ fi
 
 function whitelist {
 
+echo 'Whitelist'
 
 if ! [[ -f $CHECK/tmp/whitelist_barcodes.csv || -f $CHECK/sc_data/matrix.mtx ]];
 then
@@ -91,8 +92,7 @@ then
 	then
 			R2=$i
 			R2_NAME_out=$(basename $i)
-	else
-			echo 'Next step =>'
+	
 	fi
 	done;
 
@@ -427,7 +427,7 @@ then
 	converter=$(pwd)/scripts/converter.R
 	Rscript $converter $format $path_convert $null $path_tmp_mtx $con
 
-	rm -rf $PATH_PROJECT/tmp
+	#rm -rf $PATH_PROJECT/tmp
 	
 else 
 
