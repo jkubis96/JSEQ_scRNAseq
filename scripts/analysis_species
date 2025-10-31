@@ -12,12 +12,14 @@ ADAPTERS=$(pwd)/requirements_file/Adapters.fa
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
 tmp=$(pwd)/projects/$project_name_mode/tmp
 SCRIPTS_EXTRACT=$(pwd)/scripts
+
+
+function TRIMMING {
+
 echo $'TU'
 
 echo $barcode
 echo $BU_READ
-
-function TRIMMING {
 
 echo Trimming Start
 
