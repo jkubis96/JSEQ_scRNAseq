@@ -20,7 +20,7 @@ echo Trimming Start
 
 
 
-if ! [[ -f $CHECK/fast_data/R1_out_exctracted.fastq || $CHECK/fast_data/R1_out_exctracted.fastq || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/fast_data/R1_out_exctracted.fastq || -f $CHECK/fast_data/R1_out_exctracted.fastq || -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	for i in $INFASTP/*.fastq.gz;
