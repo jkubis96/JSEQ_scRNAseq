@@ -100,6 +100,8 @@ then
 
 	cd $(pwd)/projects/$project_name_mode/fast_data
 
+	echo $barcode
+	echo $BU_READ
 	
 	if [[ $BU_READ == *"1"* ]];
 	then

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# BARCODE READ
+
+BU_READ=2
+
 # UMI-tools
 
 error_threshold=1

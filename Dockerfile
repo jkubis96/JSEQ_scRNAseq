@@ -15,7 +15,7 @@ RUN apt-get update &&\
     samtools \
 	default-jdk \
 	wget \
-    python3.8 \
+    python3.10 \
     python3-pip 
 
 RUN pip3 install --no-cache-dir \
@@ -23,7 +23,7 @@ RUN pip3 install --no-cache-dir \
     numba==0.53.1 \
     pysam==0.16.0.1 \
     biopython==1.78 \
-    umi_tools==1.0.1 \
+    umi-tools==1.1.2 \
     umap-learn==0.5.1 \
     gdown
 
