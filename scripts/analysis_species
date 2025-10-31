@@ -12,7 +12,10 @@ ADAPTERS=$(pwd)/requirements_file/Adapters.fa
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
 tmp=$(pwd)/projects/$project_name_mode/tmp
 SCRIPTS_EXTRACT=$(pwd)/scripts
+echo $'TU'
 
+echo $barcode
+echo $BU_READ
 
 function TRIMMING {
 
@@ -80,7 +83,6 @@ then
 
 
 
-
 	for i in $INFASTP/*.fastq.gz;
 	do
 	if       [[ $i == *"R1_out"* ]];
@@ -100,8 +102,6 @@ then
 
 	cd $(pwd)/projects/$project_name_mode/fast_data
 
-	echo $barcode
-	echo $BU_READ
 	
 	if [[ $BU_READ == *"1"* ]];
 	then
