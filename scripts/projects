@@ -1,5 +1,4 @@
 #!/bin/bash
-shopt -s nullglob
 
 function merge_fq {
  
@@ -302,6 +301,10 @@ else
 	echo ''
 			genomes=( "$(pwd)"/genome/* )
 
+			if [[ "${genomes[0]}" == "$(pwd)/genome/*" ]]; then
+				genomes=()  
+			fi
+
 			select d in "${genomes[@]}" Back; do
 				if [[ -n "$d" ]]; then
 					species=$(basename "$d")
@@ -324,6 +327,10 @@ else
 	echo ''
 
 	marker_input=$(pwd)/requirements_file/*xlsx
+
+	if [[ "${marker_input[0]}" == "$(pwd)/requirements_file/*xlsx" ]]; then
+    marker_input=()  
+	fi
 
 	select m in $marker_input; do test -n "$m" && break; echo ">>> Invalid Selection"; done
 	marker_path=$m
@@ -388,8 +395,13 @@ else
 
 	marker_input=$(pwd)/requirements_file/*xlsx
 
+	if [[ "${marker_input[0]}" == "$(pwd)/requirements_file/*xlsx" ]]; then
+    marker_input=()  
+	fi
+
 	select m in $marker_input; do test -n "$m" && break; echo ">>> Invalid Selection"; done
 	marker_path=$m
+
 	echo ''
 	echo ''
 

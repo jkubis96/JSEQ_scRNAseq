@@ -1,5 +1,4 @@
 #!/bin/bash 
-shopt -s nullglob
 
 echo ''
 echo -e '\033[1;36m Docker container'

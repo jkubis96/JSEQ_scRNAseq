@@ -1,5 +1,4 @@
 #!/bin/bash
-shopt -s nullglob
 
 function select_analysis {
 
@@ -33,6 +32,10 @@ function select_project_seurat {
 
 INFASTP=$(pwd)/projects/*'exp'*
 
+if [[ "${INFASTP[0]}" == "$(pwd)/projects/*'exp'*" ]]; then
+    INFASTP=()  
+fi
+
 select d in $INFASTP Back; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
 
 if [ $d == Back ]
@@ -62,6 +65,10 @@ fi
 function select_project_fastq {
 
 INFASTP=$(pwd)/projects/*'fq'*
+
+if [[ "${INFASTP[0]}" == "$(pwd)/projects/*'fq'*" ]]; then
+    INFASTP=()  
+fi
 
 select d in $INFASTP Back; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
 
