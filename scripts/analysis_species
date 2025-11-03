@@ -326,7 +326,7 @@ then
 	samtools view $RESULT/Completed.bam | grep -oE "XC:Z:[acgtnACGTN-]+" > $tmp/repaired_barcodes.sam
 	cat $tmp/repaired_barcodes.sam | sort | uniq -c | sort -nr | sed 's/XC:Z:/\t/' > $tmp/barcode_stat.txt
 	# awk '{if($1 > $umi_deep) print $2}' $tmp/barcode_stat.txt > $tmp/selected_cells.sc
-	awk 'NR==FNR {whitelist[$1]; next} ($1 > $umi_deep) && ($2 in whitelist) {print $2}' $tmp/whitelist_barcodes.csv $tmp/barcode_stat.txt $tmp/selected_cells.sc
+	awk 'NR==FNR {whitelist[$1]; next} ($1 > $umi_deep) && ($2 in whitelist) {print $2}' $tmp/whitelist_barcodes.csv $tmp/barcode_stat.txt > $tmp/selected_cells.sc
 	rm $tmp/repaired_barcodes.sam
 
 else 

@@ -38,4 +38,4 @@ umi_end=20
 barcode_length=$[$barcode_end-$barcode_start+1]
 umi_length=$[$umi_end-$umi_start+1]
 
-barcode="(?P<cell_1>.{'$barcode_length'})(?P<umi_1>.{'$umi_length'})"
+barcode='(?P<cell_1>.{'$barcode_length'})(?P<umi_1>.{'$umi_length'})'
