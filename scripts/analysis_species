@@ -352,7 +352,7 @@ then
 			OUTPUT_LONG_FORMAT=$(pwd)/projects/$project_name_mode/tmp/umi_expression.long \
 			STRAND_STRATEGY=$STRAND_STRATEGY \
 			OUTPUT_READS_INSTEAD=$OUTPUT_READS_INSTEAD \
-			LOCUS_FUNCTION_LIST=$LOCUS_FUNCTION_LIST \
+			LOCUS_FUNCTION_LIST={INTERGENIC,INTRONIC,UTR,CODING,RIBOSOMAL} \
 			MIN_BC_READ_THRESHOLD=$MIN_BC_READ_THRESHOLD \
 			CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/selected_cells.sc
 			
