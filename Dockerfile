@@ -62,7 +62,7 @@ RUN apt-get install -y r-cran-httr=1.4.1-1ubuntu1 \
 
 RUN R -e "Sys.setenv(R_INSTALL_STAGED = FALSE); \
           BiocManager::install('MAST'); \
-          install.packages(c('umap', 'remotes')); \
+          install.packages(c('umap', 'remotes', 'kableExtra')); \
           remotes::install_version('textclean', version='0.9.3'); \
           remotes::install_url('https://github.com/jkubis96/GTF-tool/raw/refs/heads/main/packages/GTF.tool_0.1.3.tar.gz', dependencies=TRUE); \
           remotes::install_url('https://github.com/jkubis96/CSSG/raw/refs/heads/main/packages/CSSG.toolkit_0.1.2.tar.gz', dependencies=TRUE)"

@@ -451,13 +451,12 @@ CHECK=$(pwd)/projects/$project_name_mode/sc_data
 if [[ -f $CHECK/matrix.mtx ]];
 then	
 
-	Rscript $SCRIPTS_EXTRACT/seurat_cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell
+	Rscript $SCRIPTS_EXTRACT/cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell
 
 	cp $SCRIPTS_EXTRACT/manual_species.R $PATH_PROJECT/results
 	mv $PATH_PROJECT/results/manual_species.R $PATH_PROJECT/results/manual_analysis.R 
 
-	rm -rf $PATH_PROJECT/results/HDMAP_subtypes_files
-	rm -rf $PATH_PROJECT/results/UMAP_with_DE_gene_subtypes_files
+	rm -rf $PATH_PROJECT/results/UMAP_subtypes_files
 
 
 fi

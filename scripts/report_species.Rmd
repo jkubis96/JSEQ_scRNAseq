@@ -1,472 +1,388 @@
---- 
+---
 title: "JSEQ_scRNAseq© - REPORT"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  html_document:
+    theme: flatly       
+    highlight: tango
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: "custom.css"
+
+
 ---
 
 
-```{r include=FALSE}
-
-library(Seurat)
-library(tidyverse)
-library(gridExtra)
-library(grid)
+```{r setup, include=FALSE}
 library(knitr)
-library(viridis)
+library(dplyr)
+library(openxlsx)
+library(DT)
+library(kableExtra)
+library(here)
+
+
 set.seed(123)
 
-```
+read_config <- function(path) {
+  conf <- read.csv(path, header = FALSE, sep = ":", row.names = 1, comment.char = "#", stringsAsFactors = FALSE)
+  conf_list <- setNames(as.list(conf$V2), rownames(conf))
+  conf_list <- lapply(conf_list, function(x) {
+    if (x %in% c("TRUE", "FALSE")) return(as.logical(x))
+    if (suppressWarnings(!is.na(as.numeric(x)))) return(as.numeric(x))
+    return(as.character(x))
+  })
+  return(conf_list)
+}
 
-\
 
-### **The report was generated using the JSEQ_scRNAseq© single-cell analysis pipeline**
-##### **For more information, please visit: https://github.com/jkubis96/JSEQ_scRNAseq/tree/v2.3.2**
-
-\
-
-```{r message=FALSE, warning=FALSE, include=FALSE}
 args <- commandArgs()
 
-path <- args[6]
-markers <-args[7]
-species <- args[8]
-seurat_umi <- file.path(path,'sc_data/')
-path_results <- file.path(path, 'results')
-project_name <- args[9]
-data <- args[10]
-functions <- file.path(getwd(), 'functions.R')
-source(functions)
+project_path <- args[6]
 
-path_tmp <- file.path(path, 'results')
+config <- read_config(file.path(getwd(), 'requirements_file/config_file.conf'))
 
-UMI <- readRDS(file = file.path(path_results, "Results.rds"))
-cells_number <- length(UMI@active.ident)
+results_dir <- file.path(project_path, "results")
 
-metrics <- file.path(path_tmp,'scRNAmetrics.txt')
-chceck_fq <- grepl("_fq", metrics)
-```
-
-### **Cell content analysis**
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1,  results='asis'}
-
-if (chceck_fq == TRUE){
-  
-cat('**The conntent of mapped reads of the detected barcodes**')
-  
-mydata <- read.csv(file = metrics, header = T,
-                   stringsAsFactors = F, skip = 6, sep = "\t")
-mydata <- mydata[order(mydata$PF_ALIGNED_BASES, decreasing = T), ]
-mydata_pct <- mydata[, c("READ_GROUP",
-                         "PCT_INTERGENIC_BASES",
-                         "PCT_UTR_BASES",
-                         "PCT_RIBOSOMAL_BASES",
-                         "PCT_INTRONIC_BASES",
-                         "PCT_CODING_BASES")
-                     ]
-colnames(mydata_pct) = c('Cell Barcode', 'Intergenic', 'UTR', 'Ribosomial', 'Intronic', 'Coding')
-
-mydata <- mydata[, c("READ_GROUP",
-                     "INTERGENIC_BASES",
-                     "UTR_BASES",
-                     "RIBOSOMAL_BASES",
-                     "INTRONIC_BASES",
-                     "CODING_BASES")
-                 ]
-colnames(mydata) = c('Cell Barcode', 'Intergenic', 'UTR', 'Ribosomial', 'Intronic', 'Coding')
-
-# converting into long format for ploting
-mydata_long <- mydata %>% gather("Read Overlap", count, -"Cell Barcode")
-
-# Keep the original order of the barcodes using factor and levels.
-mydata_long$`Cell Barcode` <- factor(mydata_long$`Cell Barcode`,
-                                 levels = factor(unique(mydata_long$`Cell Barcode`)))
-mydata_long$`Read Overlap` <- factor(mydata_long$`Read Overlap`,
-                                   levels = unique(mydata_long$`Read Overlap`))
-
-p1 <- ggplot(mydata_long, aes(x = `Cell Barcode`, y = count, fill = `Read Overlap`)) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 0), legend.position = "none")
-p1 <- p1 + labs(x = "Barcodes", y = "Bases")
-p1 <- p1 + theme(axis.title.x = element_blank(),
-                 axis.text.x = element_blank(),
-                 axis.ticks.x = element_blank())
-p1 <- p1 + scale_y_continuous(labels = scales::scientific)
-p1 <- p1 + scale_fill_viridis(discrete = TRUE, option = "viridis")
+chceck_fq <- grepl("_fq", results_dir)
 
 
-mydata_long_pct <- mydata_pct %>% gather("Read Overlap", fraction, -"Cell Barcode")
-# Keep the original order of the barcodes using factor and levels.
-mydata_long_pct$`Cell Barcode` <- factor(mydata_long_pct$`Cell Barcode`,
-                                     levels = factor(unique(mydata_long_pct$`Cell Barcode`)))
-mydata_long_pct$`Read Overlap` <- factor(mydata_long_pct$`Read Overlap`,
-                                       levels = unique(mydata_long_pct$`Read Overlap`))
-
-p2 <- ggplot(mydata_long_pct, aes(x = `Cell Barcode`, y = fraction, fill = `Read Overlap`)) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 0, size=8, vjust = 0.05), legend.position = "bottom") +
-  labs(x = "Barcodes", y = "%Bases") +
-  scale_y_continuous(labels = scales::percent) + scale_fill_viridis(discrete = TRUE, option = "viridis")
-
-
-p1
-
-}
-```
-
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1}
-
-if (chceck_fq == TRUE) {
-p2
+show_image <- function(path, caption = NULL, width = NULL, height = NULL) {
+  if (file.exists(path)) {
+    if (!is.null(caption)) cat(sprintf("%s\n", caption))
+    knitr::include_graphics(path, dpi = 300, auto_pdf = FALSE)
+  } 
 }
 
 ```
 
-\
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
-if (chceck_fq == TRUE){
-cat('**The knee plot for computed discovery the right cells and user defined number of cells based [UMI/BARCODE]**')
-}
+---
+
+**The report was generated using the JSEQ_scRNAseq© single-cell analysis pipeline**
+**For more information, please visit: [https://github.com/jkubis96/JSEQ_scRNAseq](https://github.com/jkubis96/JSEQ_scRNAseq)**
+
+---
+
+
+## Analysis Configuration Parameters
+
+```{r echo=FALSE}
+params_df <- data.frame(
+  Parameter = names(config),
+  Value = unlist(config)
+)
+
+params_df <- params_df[!params_df$Parameter %in% c('down', 'up'),]
+
+params_df %>%
+  kbl(caption = "Parameters", row.names = FALSE) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed"))
 ```
 
-```{r pressure, echo=FALSE, out.width = '70%', fig.align="center"}
 
-if (chceck_fq == TRUE){
-  
-knitr::include_graphics(file.path(path_results,'expect_whitelist_cell_barcode_counts.png'), dpi = 600)
+---
+
+## Cell content analysis
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+if (chceck_fq ){
+
+  show_image(file.path(results_dir, "scRNAmetrics.jpeg"), "### Read distribution across genomic features")
   
 }
-``` 
+
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+if (chceck_fq ){
+  
+show_image(file.path(results_dir, "expect_whitelist_cell_barcode_counts.png"), "### Count (UMI) per barcode (cell)")
+  
+}
+
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+
+if (chceck_fq ){
+  
+show_image(file.path(results_dir, "expect_whitelist_cell_barcode_knee.png"), "### Cell barcode knee plot")
+  
+}
+
+```
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 
-if (chceck_fq == TRUE){
+if (chceck_fq){
   
-cat('*The above graph shows only trend and quality at the beginning of single cell analysis, however, it is not the final result for obtained number of cells')
+cat('*The above graph illustrates general trends and quality metrics at the initial stage of single-cell analysis; however, it does not represent the final number of detected cells.*')
+
+cat('<br><br>')
 
 }
 ```
 
-\
 
-##### **The number of genes and counts per cell**
 
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-knitr::include_graphics(file.path(path_results,'counts~genes.svg'), dpi = 600)
-```
-
-\
-
-##### **The ratio of the number of genes to counts**
-
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-
-knitr::include_graphics(file.path(path_results,'counts~genes_QC.svg'), dpi = 600)
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+show_image(file.path(results_dir, "counts~genes.svg"), "### Number of genes and counts per cell")
 
 ```
 
 
-\
-
-##### **The percentage of ribosomal and mitochondrial genes [%]**
-
-
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-
-knitr::include_graphics(file.path(path_results,'Ribo~Mito.svg'), dpi = 600)
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+show_image(file.path(results_dir, "counts~genes_QC.svg"), "### Ratio of number of genes to counts")
 
 ```
 
 
-\
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+show_image(file.path(results_dir, "counts~genes.svg"), "### Number of genes and counts per cell")
 
-### **Quality control of cell content**
+```
 
-\
 
-##### **Number of counts**
 
-\
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-knitr::include_graphics(file.path(path_results,'DropletQC.svg'), dpi = 600)
+file_path <- file.path(results_dir, "Ribo~Mito.svg")
+
+if (file.exists(file_path)) {
+  
+ show_image(file.path(results_dir, "Ribo~Mito.svg"), "### Percentage of ribosomal and mitochondrial genes [%]")
+
+}
+
+
+```
+
+
+---
+
+## Quality control of cell content
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "DropletQC_hist.svg"), "### Genes per cell content & thresholds")
+
+
+```
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "DropletQC.svg"), "### Genes upper & lower thresholds per cell")
+
+
+```
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "Cells.svg"), "### Number of cells across different stages of analysis")
+
+
+```
+
+
+
+---
+
+## Gene expression analysis across cells
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "variable_genes.svg"), "### Top highly variable genes in the dataset")
+
+```
+
+
+---
+
+## Princilpe component selection
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "Elbow.svg"), "### ElbowPlot - Principal components cutoff")
+
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "JackStrawPlot.svg"), "### JackStrawPlot - PC significance")
+
+```
+
+
+---
+
+### Cells clustering
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "UMAP_clusters.svg"), "### UMAP Clusters")
+
+
+```
+
+
+---
+
+## Subclasses identification based on marker genes
+
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "PCA_DimPlot_subclasses.svg"), "### PCA Visualization of Subclasses")
+
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "UMAP_DimPlot_subclasses.svg"), "### UMAP Visualization of Subclasses")
+
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "subclasses_composition.svg"), "### Subclass Cell Composition")
+
 
 ```
 
 \
 
-##### **Mitochondrial gene content**
+### Subclasses markers - top 25
 
 \
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
+markers <- read.csv(file = file.path(results_dir, 'markers_subclasses.csv'), header = T, sep = ',', row.names = 1)
 
-knitr::include_graphics(file.path(path_results,'MitoQC.svg'), dpi = 600)
+markers <- markers %>%
+  group_by(cluster) %>% top_n(n = 25, wt = esm)
 
+DT::datatable(markers, filter = 'top')
 ```
 
 
-\
+---
 
-##### **Ribosomal gene content**
+## Subtypes identification based on CSSG genes
 
-\
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
 
-knitr::include_graphics(file.path(path_results,'RiboQC.svg'), dpi = 600)
-
-```
+### UMAP visualization
 
 \
 
-##### **Number of cells at different stages of the analysis**
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-
-knitr::include_graphics(file.path(path_results,'Cells.svg'), dpi = 600)
-
-
-```
-
-\
-\
-
-##### **Top highly variable genes in the dataset**
-
-\
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-top20 <- head(VariableFeatures(UMI), 20)
-top20
+plot_meta <- read.csv(file = file.path(results_dir, 'metadata.csv'), header = T, sep = ',', row.names = 1)
+
+plot_meta <- plot_meta[!plot_meta$subtypes %in% 'Undefined',]
+p <- plotly::plot_ly(
+  data = plot_meta,
+  x = ~fUMAP1,
+  y = ~fUMAP2,
+  color = ~subtypes,
+  text = ~subtypes,          
+  colors = "Set2",
+  type = "scattergl",
+  mode = "markers",
+  marker = list(size = 3, opacity = 0.7)
+) %>%
+  plotly::layout(
+    xaxis = list(title = "fUMAP_1", zeroline = FALSE),
+    yaxis = list(title = "fUMAP_2", zeroline = FALSE),
+    legend = list(
+      orientation = "v",       
+      x = 1.02,               
+      y = 0.5,                 
+      xanchor = "left",        
+      yanchor = "middle",
+      tracegroupgap = 3,
+      itemwidth = 50,
+      font = list(size = 9)
+  
+    ),
+    margin = list(t = 60, b = 60, l = 60, r = 120),  
+    autosize = TRUE
+  ) %>%
+  plotly::config(displayModeBar = FALSE)
+
+
+p <- plotly::layout(p, height = 700, width = 1350)
+
+p
+
+```
+
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "subtypes_composition.svg"), "### Subtype Cell Composition (CSSG)")
+
 
 ```
 
 \
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=300, retina=1}
-
-plot1 <- VariableFeaturePlot(UMI)
-LabelPoints(plot = plot1, points = top20, repel = TRUE) +
-theme(legend.position = 'none') 
-
-
-```
+### Subtypes markers - top 25
 
 \
-
-```{r message=FALSE, warning=FALSE, include=FALSE}
-
-Elbow <- ElbowPlot(UMI, ndims = 50)
-
-dims <- as.data.frame(Elbow$data$stdev)
-
-#select the most variable reduction
-
-{
-  dim <- 1
-  score <- c()
-  element <- 0
-  for (i in dims$`Elbow$data$stdev`) {
-    element <- element + 1
-    if (i-i*0.01 > dims$`Elbow$data$stdev`[element+1] & element < 50 | i-i*0.02 > dims$`Elbow$data$stdev`[element+2] & element < 49 | i-i*0.02 > dims$`Elbow$data$stdev`[element+3] & element < 48 | i-i*0.02 > dims$`Elbow$data$stdev`[element+4] & element < 47) {
-      dim <- dim + 1
-    } else 
-      break
-  }
-  dim <- as.numeric(dim)
-}
-
-
-```
-
-
-\
-
-### **Selection of analysis parameters**
-
-\
-
-##### **The cutoff for the number of principal components**
-
-\
-
-##### **ElbowPlot**
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1}
-Elbow + geom_vline(xintercept = dim, color = 'red')
-```
-
-\
-
-##### **JackStrawPlot for `r dim` PCs**
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-knitr::include_graphics(file.path(path_results,'JackStrawPlot.svg'), dpi = 600)
-```
-
-\
-
-### **The results of cell grouping**
-##### **UMAP processing and visualization of cell clusters**
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-knitr::include_graphics(file.path(path_results,'UMAP.svg'), dpi = 600)
-```
-
-##### **Markers selected for the clusters**
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
-markers <- read.csv(file = file.path(path_results, "subclasses_marker_report.csv"), header = T, sep = ',', row.names = 1)
-knitr::kable(markers, align = "l")
-```
+markers <- read.csv(file = file.path(results_dir, 'markers_subtypes.csv'), header = T, sep = ',', row.names = 1)
 
-\
-\
+markers <- markers %>%
+  group_by(cluster) %>% top_n(n = 25, wt = esm)
 
-### **Cluster classification and naming based on markers**
-
-\
-
-##### **Subclasses of cells**
-
-\
-
-##### **The principal component plot**
-
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-
-knitr::include_graphics(file.path(path_results,'PCA_DimPlot_class.svg'), dpi = 600)
-
+DT::datatable(markers, filter = 'top')
 ```
 
 \
 
-##### **The UMAP plot**
 
-\
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
+show_image(file.path(results_dir, "heatmap_cells_populations.svg"), "### Heatmap of cell subtypes - log(CPM + 1)")
 
-knitr::include_graphics(file.path(path_results,'UMAP_with_DE_gene_class.svg'), dpi = 600)
+```
+
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "heatmap_cells_populations_scaled.svg"), "### Heatmap of cell subtypes - Scaled(log(CPM + 1))")
 
 ```
 
 \
 
-### **Presentation of subtypes identified with the CSSG algorithm**
+## Disclaimer
 
-\
-
-##### **Quality control for cell subtypes**
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center"}
-
-knitr::include_graphics(file.path(path_results,'cells_type_threshold.svg'), dpi = 600)
-
+```{r echo=FALSE, results='asis'}
+cat('The analysis was performed through the non-profit and open-source pipeline JSEQ_scRNAseq©. ')
+cat('It is part of the JBioSystem© project, which develops complex bioinformatics analysis software. ')
+cat('Remember, in silico analysis must be validated in vitro or in vivo. For more information, visit GitHub or contact us. ')
+cat('JSEQ_scRNAseq© was created at the Institute of Bioorganic Chemistry, Polish Academy of Sciences.')
 ```
 
-\
-
-##### **The principal component plot**
-
-\
-
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1}
-
-PCA <- DimPlot(UMI, reduction = "pca", restart = FALSE)
-PCA <- plotly::ggplotly(PCA, height = 800, width=800)
-PCA <- PCA %>% plotly::layout(showlegend = FALSE)
-PCA 
-
-```
-
-\
-
-##### **The UMAP plot**
-
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1}
-
-UMAP <- DimPlot(UMI, reduction = "umap", restart = FALSE)
-UMAP <- plotly::ggplotly(UMAP, height = 800, width=1400)
-UMAP <- UMAP %>% plotly::layout(legend = list(x = 1.1)) 
-UMAP
-```
-
-\
-
-##### **The HDMAP plot**
-
-\
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", dpi=600, retina=1}
-
-hd_map <- read.csv(file = file.path(path_results, "hdmap_cordinates.csv"), header = T, sep = ',', row.names = 1)
-HDMAP <- plotly::ggplotly(DimPlotFactor(hd_map), height = 800, width=1400)
-HDMAP <- HDMAP %>% plotly::layout(legend = list(x = 1.1)) 
-HDMAP
-
-
-```
-
-\
-
-### **Markers selected for the subtypes**
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
-markers <- read.csv(file = file.path(path_results, "subtypes_marker_report.csv"), header = T, sep = ',', row.names = 1)
-markers <- markers[,colnames(markers) %in% c('p_val','avg_logFC', 'cluster', 'gene')]
-knitr::kable(markers, align = "l")
-```
-
-\
-\
-
-##### **Heatmap of cell subtypes with specific markers**
-###### **Log(CPM + 1) normalization of expression**
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
-
-knitr::include_graphics(file.path(path_results,'pheatmap_cells_populations.svg'), dpi = 600)
-
-```
-
-\
-
-### **Heterogeneity of cells within subtypes: number of genes vs. mean expression**
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align= "center"}
-
-knitr::include_graphics(file.path(path_results,'cells_heterogenity.svg'), dpi = 600)
-
-```
-
-
-\
-\
-
-## **Disclaimer**
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
-
-cat('The analysis was performed through the non-profit and open-source pipeline JSEQ_scRNAseq©. Pipeline belongs to the part of the JBioSystem© project in which we create complex software for bioinformatics analysis. Remember in silico analysis can not be taken for granted and must be validated in vitro or in vivo. For more information go to GitHub or contact us. The JSEQ_scRNAseq© was created in the Department of Molecular Neurobiology, Institute of Bioorganic Chemistry, Polish Academy of Sciences')
-
-```
 \
 \

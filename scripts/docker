@@ -88,7 +88,7 @@ elif	[[$d  == *'_exp'* ]]; then
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
 		source=$(pwd)/scripts
-		source $source/seurat_analysis
+		source $source/sc_analysis
 		echo ''
 		echo -e "\033[0;34m Process start..."
 		echo ''
