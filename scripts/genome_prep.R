@@ -1,5 +1,7 @@
 args <- commandArgs()
 set.seed(123)
+options(scipen = 999)
+
 
 #Paths and arguments from env
 {
