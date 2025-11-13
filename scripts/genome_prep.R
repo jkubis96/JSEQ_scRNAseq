@@ -52,27 +52,26 @@ GTF2 <- GTF.tool::create_GTF_df(GTF, optimize = T, shift = sep_factor)
 
 GTF3 <- GTF.tool::add_CDS(GTF2)
 
-GTF4 <- GTF.tool::add_introns(GTF3)
 
 if (extend) {
   
-  GTF5 <- GTF.tool::add_UTR(GTF4, five_prime_utr = five_prime_utr , three_prime_utr = three_prime_utr)
+  GTF3 <- GTF.tool::add_UTR(GTF3, five_prime_utr = five_prime_utr , three_prime_utr = three_prime_utr)
   
-  GTF6 <- GTF.tool::create_full_GTF(GTF5)
+  GTF4 <- GTF.tool::create_full_GTF(GTF3)
   
 } else {
   
-  GTF6 <- GTF.tool::create_full_GTF(GTF4)
+  GTF4 <- GTF.tool::create_full_GTF(GTF3)
   
 }
 
 
-write.table(GTF6, file.path(output, 'correct_annotation.gtf'), quote = F, sep = '\t', col.names = F, row.names = F)
+write.table(GTF4, file.path(output, 'correct_annotation.gtf'), quote = F, sep = '\t', col.names = F, row.names = F)
 
-GTF7 <- GTF.tool::create_reduced_GTF(GTF5)
+GTF5 <- GTF.tool::create_reduced_GTF(GTF3)
 
-write.table(GTF7, file.path(output, 'reduced_annotation.gtf'), quote = F, sep = '\t', col.names = T, row.names = F)
+write.table(GTF5, file.path(output, 'reduced_annotation.gtf'), quote = F, sep = '\t', col.names = T, row.names = F)
 
-GTF8 <- GTF.tool::refflat_create(GTF5)
+GTF6 <- GTF.tool::refflat_create(GTF3)
 
-write.table(GTF8, file.path(output, 'correct_annotation.refflat'), quote = F, sep = '\t', col.names = F, row.names = F)
+write.table(GTF6, file.path(output, 'correct_annotation.refflat'), quote = F, sep = '\t', col.names = F, row.names = F)
