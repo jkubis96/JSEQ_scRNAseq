@@ -9,9 +9,9 @@ args <- commandArgs()
 
 #Paths and arguments from env
 {
-  
+
   print(args)
-  
+
   path <- args[6]
   markers <-args[7]
   species <- args[8]
@@ -24,54 +24,55 @@ args <- commandArgs()
   data <- args[10]
   estimated_cells <- args[11]
   dir.create(path = file.path(OUTPUT,'exp_matrix'))
-  
+
 }
 
-#Configuration file 
+#Configuration file
 
 
 
 {
   conf_file <- read.csv(file = file.path(getwd(), 'requirements_file/config_file.conf'), header = F, sep = ':', row.names = 1)
-  
+
   mt_per <- as.numeric(as.character(conf_file$V2[grep(pattern = 'mt_per', rownames(conf_file))]))
-  
+
   down_tr <- as.numeric(as.character(conf_file$V2[grep(pattern = 'down', rownames(conf_file))]))
-  
+
   up_tr <- as.numeric(as.character(conf_file$V2[grep(pattern = 'up', rownames(conf_file))]))
-  
+
   mt_cssg <- as.logical(conf_file$V2[grep(pattern = 'mt_cssg', rownames(conf_file))])
-  
+
   s_factor <- as.numeric(as.character(conf_file$V2[grep(pattern = 's_factor', rownames(conf_file))]))
-  
+
   m_val <- as.numeric(as.character(conf_file$V2[grep(pattern = 'm_val', rownames(conf_file))]))
-  
+
   max_genes <- as.numeric(as.character(conf_file$V2[grep(pattern = 'max_genes', rownames(conf_file))]))
-  
+
   max_combine <- as.numeric(as.character(conf_file$V2[grep(pattern = 'max_combine', rownames(conf_file))]))
-  
+
   loss_val <- as.numeric(as.character(conf_file$V2[grep(pattern = 'loss_val', rownames(conf_file))]))
-  
+
   p_bin <- as.numeric(as.character(conf_file$V2[grep(pattern = 'p_bin', rownames(conf_file))]))
-  
+
   scale_factor <- as.numeric(as.character(conf_file$V2[grep(pattern = 'scale_factor', rownames(conf_file))]))
-  
+
   n_features <- as.numeric(as.character(conf_file$V2[grep(pattern = 'n_features', rownames(conf_file))]))
-  
+
   heterogeneity <- as.character(as.character(conf_file$V2[grep(pattern = 'heterogeneity', rownames(conf_file))]))
-  
+
   drop_sub <- as.logical(as.character(conf_file$V2[grep(pattern = 'drop', rownames(conf_file))]))
-  
+
   min_c <- as.numeric(as.character(conf_file$V2[grep(pattern = 'min_c', rownames(conf_file))]))
-  
-  c_res <- as.numeric(as.character(conf_file$V2[grep(pattern = 'resolution', rownames(conf_file))]))
-  
+
+  c_res <- as.numeric(as.character(conf_file$V2[grep(pattern = 'c_res', rownames(conf_file))]))
+
   top_m <- as.numeric(as.character(conf_file$V2[grep(pattern = 'top_m', rownames(conf_file))]))
-  
+
 
   if(length(data) == 0) {data = 3}
-  
+
 }
+
 ###########################################################################################################################################################
 
 markers_class <- readxl::read_xlsx(markers, sheet = 1)
@@ -79,13 +80,13 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
 
 ###########################################################################################################################################################
 
-{ 
+{
   # Load the raw dataset by UMI
   UMI_raw <- Read10X(seurat_umi, gene.column = 1)
-  
+
   #Create SeuratObject
   UMI <- CreateSeuratObject(counts = UMI_raw, project = project_name, min.cells = 1, min.features = 1)
-  
+
   cell_input <- ncol(UMI)
 }
 
@@ -99,8 +100,8 @@ UMI[["MitoPercent"]] <- PercentageFeatureSet(UMI, pattern = "^(MT-|MT\\.)")
 UMI[["RiboPercent"]] <- PercentageFeatureSet(UMI, pattern = "^(RPS|RPL|MRPL|MRPS|RS-)")
 
 
-UMI@meta.data <- UMI@meta.data %>% 
-  rename(nCounts = nCount_RNA) %>% 
+UMI@meta.data <- UMI@meta.data %>%
+  rename(nCounts = nCount_RNA) %>%
   rename(nGenes = nFeature_RNA)
 
 
@@ -121,13 +122,13 @@ dev.off()
 
 
 if (!any(is.na(UMI@meta.data$MitoPercent)) && !any(is.na(UMI@meta.data$RiboPercent))) {
-  
+
   MR_plot <- VlnPlot(UMI, features = c("RiboPercent", "MitoPercent"), ncol = 2)
   svg(file.path(OUTPUT, "Ribo~Mito.svg"), width=15, height=10)
   MR_plot
   rm(MR_plot)
   dev.off()
-  
+
 }
 
 
@@ -197,14 +198,14 @@ rm(thresholds)
 #Selecting right cells
 
 if (!any(is.na(UMI@meta.data$MitoPercent))) {
-  
+
   UMI <- subset(UMI, subset = nGenes > down_tr & nGenes <= n_gen & MitoPercent < mt_per)
-  
+
 } else {
-  
+
   UMI <- subset(UMI, subset = nGenes > down_tr & nGenes <= n_gen)
-  
-  
+
+
 }
 
 
@@ -279,6 +280,8 @@ JackStrawPlot(UMI, dims = dim)
 dev.off()
 
 UMI <- FindNeighbors(UMI, dims = dim, reduction = 'pca')
+
+
 UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
 
 
@@ -314,11 +317,15 @@ print('Searching for clusters / subclasses marker genes')
 
 # clusters /  subclasses
 
-sc_project <- CSSG.toolkit::create_project_from_seurat(UMI)
 
+
+
+
+sc_project <- CSSG.toolkit::create_project_from_seurat(UMI)
 
 # get markers  for subclass naming
 sc_project <- CSSG.toolkit::get_cluster_stats(sc_project = sc_project, type = 'primary', only_pos = TRUE)
+
 
 # elect markers for subclass naming
 sc_project <- CSSG.toolkit::namign_genes_selection(sc_project, type = 'primary', top_n = top_m,
@@ -326,7 +333,9 @@ sc_project <- CSSG.toolkit::namign_genes_selection(sc_project, type = 'primary',
                                                    mito_content = FALSE, ribo_content = FALSE)
 
 
+
 sc_project <- CSSG.toolkit::subclass_naming(sc_project = sc_project, class_markers = markers_class, subclass_markers = markers_subclass, species = 'Homo sapiens', chunk_size = 5000)
+
 
 
 data <- CSSG.toolkit::bin_cell_test(p_val = p_bin, names = sc_project@names$subclass, min_cells = min_c)
@@ -362,7 +371,7 @@ dev.off()
 
 
 svg(file.path(OUTPUT, "UMAP_DimPlot_subclasses.svg"), width = width, height = 10)
-DimPlot(UMI, reduction = "umap", raster = FALSE) 
+DimPlot(UMI, reduction = "umap", raster = FALSE)
 dev.off()
 
 
@@ -376,29 +385,29 @@ print('Searching for clusters / subclasses marker genes - DONE')
 print('Searching for CSSG markers')
 
 if (tolower(heterogeneity) == 'var') {
-  
-  sc_project <- CSSG.toolkit::heterogeneity_select_variance(sc_project = sc_project, 
-                                                            heterogeneity_factor = s_factor, 
-                                                            max_genes = max_genes, 
-                                                            min_occ = 5, 
-                                                            min_exp = 0.1, 
-                                                            rep_factor = 0.2, 
+
+  sc_project <- CSSG.toolkit::heterogeneity_select_variance(sc_project = sc_project,
+                                                            heterogeneity_factor = s_factor,
+                                                            max_genes = max_genes,
+                                                            min_occ = 5,
+                                                            min_exp = 0.1,
+                                                            rep_factor = 0.2,
                                                             mito_content = mt_cssg)
-  
+
 } else {
-  
-  sc_project <- CSSG.toolkit::heterogeneity_select_specificity(sc_project = sc_project, 
-                                                               type = 'primary', 
-                                                               heterogeneity_factor = s_factor, 
-                                                               p_val =  m_val, 
-                                                               max_genes =  max_genes, 
-                                                               select_stat = 'p_val',  
-                                                               min_occ = 5, 
+
+  sc_project <- CSSG.toolkit::heterogeneity_select_specificity(sc_project = sc_project,
+                                                               type = 'primary',
+                                                               heterogeneity_factor = s_factor,
+                                                               p_val =  m_val,
+                                                               max_genes =  max_genes,
+                                                               select_stat = 'p_val',
+                                                               min_occ = 5,
                                                                mito_content = mt_cssg)
 }
 
-sc_project <- CSSG.toolkit::CSSG_markers(sc_project = sc_project, 
-                                         max_combine = max_combine, 
+sc_project <- CSSG.toolkit::CSSG_markers(sc_project = sc_project,
+                                         max_combine = max_combine,
                                          loss_val = loss_val)
 
 write.table(sc_project@metadata$primary_markers, file = file.path(OUTPUT, "markers_subclasses.csv"), sep = ',')
@@ -410,11 +419,11 @@ print('Searching for CSSG markers - DONE')
 print('Subtypes naming')
 
 # subtypes
-sc_project <- CSSG.toolkit::subtypes_naming(sc_project = sc_project, markers_class = markers_class, markers_subclass = markers_subclass,  species = 'Homo sapiens') 
+sc_project <- CSSG.toolkit::subtypes_naming(sc_project = sc_project, markers_class = markers_class, markers_subclass = markers_subclass,  species = 'Homo sapiens')
 
 
-thr_data <- CSSG.toolkit::bin_cell_test(p_val = p_bin, 
-                                        names = sc_project@names$repaired, 
+thr_data <- CSSG.toolkit::bin_cell_test(p_val = p_bin,
+                                        names = sc_project@names$repaired,
                                         min_cells = min_c)
 
 threshold <- CSSG.toolkit::cell_stat_graph(thr_data$data, include_ns = TRUE)
@@ -436,19 +445,19 @@ write.table(sc_project@metadata$cssg_markers, file = file.path(OUTPUT, "CSSG_mar
 
 ###########################################################################################################################################################
 
-# subsetns analysis 
+# subsetns analysis
 
 Idents(UMI) <- sc_project@names$subtypes
 
 
 if (drop_sub) {
-  
+
   select_list <- thr_data$data$names[thr_data$data$test %in% c("Good marked types", "Renamed")]
-  
+
 } else {
-  
+
   select_list <- thr_data$data$names[thr_data$data$test %in% c("Good marked types", "Renamed", "Non-significant")]
-  
+
 }
 
 
@@ -494,7 +503,7 @@ write.table(meta_data, file = file.path(OUTPUT, "metadata.csv"), sep = ',')
 meta_data_plot <- meta_data[!meta_data$subtypes %in% 'Undefined',]
 
 plot <- ggplot(meta_data_plot, aes(x = fUMAP1, y = fUMAP2, color = subtypes)) +
-  geom_point(size = 0.8, alpha = 0.8) + 
+  geom_point(size = 0.8, alpha = 0.8) +
   xlab('fUMAP_1') +
   ylab('fUMAP_2') +
   labs(colour = "Cell subtypes") +
@@ -525,38 +534,38 @@ sc_project <- CSSG.toolkit::subset_project(sc_project = sc_project, type = 'subt
 
 
 
-markers <- CSSG.toolkit::get_names_markers(sc_project, type = 'subtypes') 
+markers <- CSSG.toolkit::get_names_markers(sc_project, type = 'subtypes')
 
 height <- 10 + (length(unique(markers)))/5
 width <- 15 + (length(unique(Idents(UMI))))/5
 
 
-plot <- CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers, 
-                                     angle_col = 270, 
-                                     fontsize_row = 15, 
-                                     fontsize_col = 15, 
+plot <- CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers,
+                                     angle_col = 270,
+                                     fontsize_row = 15,
+                                     fontsize_col = 15,
                                      font_labels = 15,
-                                     clustering_method = 'complete', 
-                                     x_axis = 'Cells', 
+                                     clustering_method = 'complete',
+                                     x_axis = 'Cells',
                                      y_axis = 'Genes [log(CPM +1)]',
                                      scale = FALSE)
 
 
 svg(file.path(OUTPUT, "heatmap_cells_populations.svg"), width = width, height = height)
-par(mar = c(2, 2, 2, 2))  # dolny, lewy, górny, prawy margines w liniach
+par(mar = c(2, 2, 2, 2))
 
 plot
 dev.off()
 rm(plot)
 
 
-plot <- CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers, 
-                                     angle_col = 270, 
-                                     fontsize_row = 15, 
-                                     fontsize_col = 15, 
+plot <- CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers,
+                                     angle_col = 270,
+                                     fontsize_row = 15,
+                                     fontsize_col = 15,
                                      font_labels = 15,
-                                     clustering_method = 'complete', 
-                                     x_axis = 'Cells', 
+                                     clustering_method = 'complete',
+                                     x_axis = 'Cells',
                                      y_axis = 'Genes scaled([log(CPM +1)])',
                                      scale = TRUE)
 
@@ -564,7 +573,7 @@ plot <- CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = ma
 
 
 svg(file.path(OUTPUT, "heatmap_cells_populations_scaled.svg"), width = width, height = height)
-par(mar = c(2, 2, 2, 2))  # dolny, lewy, górny, prawy margines w liniach
+par(mar = c(2, 2, 2, 2))
 
 plot
 dev.off()
@@ -610,7 +619,7 @@ cells <- ggplot(df_cells, aes(x = cells, y = cell_num, fill = cells)) +
   geom_text(aes(label = cell_num), vjust = -0.5)+
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust=1))+
   theme_classic() +
-  theme(legend.position = 'none') 
+  theme(legend.position = 'none')
 
 
 svg(filename = file.path(OUTPUT,'Cells.svg'), width = 10, height = 7)
@@ -652,7 +661,6 @@ print('Project saving - DONE')
 print('Report creating')
 
 
-rmarkdown::render(input = file.path(getwd(), 'scripts/report_species.Rmd'), 
-                  output_format = 'html_document', output_dir = OUTPUT, 
+rmarkdown::render(input = file.path(getwd(), 'scripts/report_species.Rmd'),
+                  output_format = 'html_document', output_dir = OUTPUT,
                   output_file = 'Report')
-
