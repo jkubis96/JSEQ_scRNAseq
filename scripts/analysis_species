@@ -358,7 +358,7 @@ then
 			
 else 
 
-	echo 'DEG was done before'
+	echo 'DE was done before'
 	
 fi
 
