@@ -27,7 +27,7 @@ options(scipen = 999)
   
   optimize <- as.logical(conf_file$V2[grep(pattern = 'optimize_names', rownames(conf_file))])
   
-  sep_factor <- as.numeric(conf_file$V2[grep(pattern = 'sep_factor', rownames(conf_file))])
+  sep_factor <- as.numeric(as.character(conf_file$V2[grep(pattern = 'sep_factor', rownames(conf_file))]))
   
   three_prime_utr <- as.numeric(as.character(conf_file$V2[grep(pattern = 'three_prime_utr', rownames(conf_file))]))
   

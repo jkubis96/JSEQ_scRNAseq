@@ -32,7 +32,17 @@ args <- commandArgs()
 
 
 {
-  conf_file <- read.csv(file = file.path(getwd(), 'requirements_file/config_file.conf'), header = F, sep = ':', row.names = 1)
+
+  
+  
+  conf_file <- read.csv(
+    file = file.path(getwd(), 'requirements_file/config_file.conf'),
+    header = FALSE,
+    sep = ':',
+    row.names = 1,
+    comment.char = "#"
+  )
+  
   
   mt_per <- as.numeric(as.character(conf_file$V2[grep(pattern = 'mt_per', rownames(conf_file))]))
   
