@@ -18,7 +18,6 @@ output:
 ```{r setup, include=FALSE}
 library(knitr)
 library(dplyr)
-library(openxlsx)
 library(DT)
 library(kableExtra)
 library(here)
