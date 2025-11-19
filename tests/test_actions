@@ -1,0 +1,131 @@
+#!/bin/bash  
+
+
+function test_fucntions {
+
+	source $(pwd)/scripts/genome_indexing
+
+	echo ''
+	echo -e '\033[1;32m Test for genome downloading...'
+	echo ''
+
+	species=human
+	#config
+	source $(pwd)/requirements_file/genome.conf
+	human_annotation=$human_annotation
+
+	species=$(echo $species | tr '[:upper:]' '[:lower:]')
+	source=$(pwd)/scripts
+	input_human=$(pwd)/genome/$species/annotation_human.gtf
+
+	mkdir -p genome
+	mkdir -p genome/$species
+	cd genome/$species
+	wget ${human_annotation} -O annotation.gtf.gz
+	gunzip annotation.gtf.gz
+	
+	cd ..
+	cd ..
+	
+	echo -e "\033[0;34m $(date) Creating genome reference files"
+	create_ref  
+
+	Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+	
+	echo -e "\033[0;34m $(date) Generating of the intervals"
+	rna_intervals
+	
+	echo -e "\033[0;32m $(date) Process DONE!"
+	
+	check_path=$(pwd)/genome/$species/reduced_annotation.gtf
+
+	if [ -f $check_path ]; then
+		echo ''
+		echo ''
+    	
+		echo -e '\033[1;32m Test passed successfully'
+	else
+		echo ''
+		echo ''
+		
+    	echo -e '\033[1;31m Test failed - genome downloading'
+		exit 1 
+	fi 
+
+
+	
+
+	echo ''
+	echo -e '\033[1;32m Test for data analysis...'
+	echo ''
+
+	echo ''
+	echo -e '\033[1;32m Downloading test data...'
+	echo ''
+
+
+	mkdir -p projects
+	cd projects
+
+	gdown 1r1s8oYDh3XXLC7Z5SM9dqLJjGCR8-w1r
+	tar -xzvf test_mode_fq.tar.gz
+	rm -f test_mode_fq.tar.gz
+	
+	cd ..
+
+
+	check_path=$(pwd)/projects/test_mode_fq
+
+	if [ -d $check_path ]; then
+		echo ''
+		echo ''
+
+    	echo -e '\033[1;32m Test passed successfully'
+	else
+		echo ''
+		echo ''
+
+    	echo -e '\033[1;31m Test failed - downloading'
+		exit 1 
+	fi 
+
+
+	cd $(pwd)/projects/test_mode_fq
+	source config
+	project_name=$project_name
+	project_name_mode=$project_name_mode 
+	READS_LENGHT=$READS_LENGHT 
+	species=$species 
+	cell=$cell
+	marker_path=$marker_path
+
+	cd ..
+	cd ..
+
+
+	source=$(pwd)/scripts
+	source $source/analysis_species
+	seurat >> $log 2>&1
+
+
+	check_path=$(pwd)/projects/test_mode_fq/results/Report.html
+
+	if [ -f $check_path ]; then
+	
+		echo ''
+		echo ''
+    	
+		echo -e '\033[1;32m All tests passed successfully'
+	else
+    	echo ''
+		echo ''
+		
+		echo -e '\033[1;31m Test failed - analysis'
+		exit 1 
+
+
+	fi 
+
+
+		
+}
