@@ -1,11 +1,11 @@
 .main-container {
-  max-width: 1600px;       
-  margin: 0 auto;         
+  max-width: 1600px;
+  margin-left: -450px;   
+  margin-right: auto;
   padding-left: 20px;
   padding-right: 20px;
-  background-color: #ffffff; 
+  background-color: #ffffff;
 }
-
 
 #TOC {
   position: fixed !important;
@@ -25,16 +25,16 @@
 .plotly.html-widget {
   width: 100% !important;
   height: auto !important;
-  margin-top: 15px;
+  margin-top: 10px;
   margin-bottom: 15px;
-  border: none;           
-  border-radius: 0;     
-  background-color: #fff; 
+  border: none;
+  border-radius: 8px;
+  background-color: none;
 }
 
 .table {
-  width: 100% !important;
-  font-size: 14px;
+  width: 200% !important;
+  font-size: 12px;
 }
 
 body {
@@ -45,7 +45,7 @@ body {
 svg {
   display: block !important;
   margin: 0 auto !important;
-  max-width: 100% !important;
+  max-width: 150% !important;
   height: auto !important;
   background: none !important;
 }
