@@ -12,11 +12,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update &&\
 	apt-get install -y \
-    samtools \
+    	samtools \
 	default-jdk \
 	wget \
-    python3.10 \
-    python3-pip 
+    	python3.10 \
+    	python3-pip 
 
 RUN pip3 install --no-cache-dir \
     numpy==1.21.6 \
@@ -28,7 +28,7 @@ RUN pip3 install --no-cache-dir \
     gdown
 
 RUN apt-get update && \
-    apt-get install -y software-properties-common curl openssl \
+    apt-get install -y software-properties-common curl openssl libfontconfig1-dev \
                        libcurl4-openssl-dev libhdf5-dev libhdf5-serial-dev \
                        h5utils hdf5-tools hdf5-helpers unzip libtbb-dev && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
@@ -62,8 +62,11 @@ RUN apt-get install -y r-cran-httr=1.4.1-1ubuntu1 \
 
 RUN R -e "Sys.setenv(R_INSTALL_STAGED = FALSE); \
           BiocManager::install('MAST'); \
-          install.packages(c('umap', 'remotes', 'kableExtra')); \
+          install.packages(c('umap', 'remotes')); \
+          install.packages('https://cran.r-project.org/src/contrib/Archive/svglite/svglite_1.2.3.tar.gz', repos = NULL, type = 'source'); \
+          remotes::install_version('bslib', version = '0.3.1', repos = 'http://cran.us.r-project.org'); \
           remotes::install_version('textclean', version='0.9.3'); \
+          remotes::install_github('haozhu233/kableExtra'); \
           remotes::install_url('https://github.com/jkubis96/GTF-tool/raw/refs/heads/main/packages/GTF.tool_0.1.3.tar.gz', dependencies=TRUE); \
           remotes::install_url('https://github.com/jkubis96/CSSG/raw/refs/heads/main/packages/CSSG.toolkit_0.1.2.tar.gz', dependencies=TRUE)"
 

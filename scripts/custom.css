@@ -27,9 +27,9 @@
   height: auto !important;
   margin-top: 15px;
   margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: #fff;
+  border: none;           
+  border-radius: 0;     
+  background-color: #fff; 
 }
 
 .table {

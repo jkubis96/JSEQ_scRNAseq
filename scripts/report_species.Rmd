@@ -9,7 +9,7 @@ output:
     toc_float: true
     number_sections: true
     df_print: paged
-    css: "custom.css"
+    css: "../scripts/custom.css"
 
 
 ---
@@ -20,7 +20,6 @@ library(knitr)
 library(dplyr)
 library(DT)
 library(kableExtra)
-library(here)
 
 
 set.seed(123)
@@ -36,12 +35,12 @@ read_config <- function(path) {
   return(conf_list)
 }
 
-
+print(getwd())
 args <- commandArgs()
 
 project_path <- args[6]
 
-config <- read_config(file.path(getwd(), 'requirements_file/config_file.conf'))
+config <- read_config(file.path('../requirements_file/config_file.conf'))
 
 results_dir <- file.path(project_path, "results")
 
@@ -271,10 +270,11 @@ show_image(file.path(results_dir, "subclasses_composition.svg"), "### Subclass C
 ```{r echo=FALSE, message=FALSE, warning=FALSE, align="center"}
 markers <- read.csv(file = file.path(results_dir, 'markers_subclasses.csv'), header = T, sep = ',', row.names = 1)
 
+
 markers <- markers %>%
   group_by(cluster) %>% top_n(n = 25, wt = esm)
 
-DT::datatable(markers, filter = 'top')
+datatable(markers, filter = 'top')
 ```
 
 
@@ -303,7 +303,7 @@ p <- plotly::plot_ly(
   colors = "Set2",
   type = "scattergl",
   mode = "markers",
-  marker = list(size = 3, opacity = 0.7)
+  marker = list(size = 5, opacity = 0.7)
 ) %>%
   plotly::layout(
     xaxis = list(title = "fUMAP_1", zeroline = FALSE),
@@ -325,7 +325,7 @@ p <- plotly::plot_ly(
   plotly::config(displayModeBar = FALSE)
 
 
-p <- plotly::layout(p, height = 700, width = 1350)
+p <- plotly::layout(p, height = 850, width = 1350)
 
 p
 
@@ -352,7 +352,7 @@ markers <- read.csv(file = file.path(results_dir, 'markers_subtypes.csv'), heade
 markers <- markers %>%
   group_by(cluster) %>% top_n(n = 25, wt = esm)
 
-DT::datatable(markers, filter = 'top')
+datatable(markers, filter = 'top')
 ```
 
 \
