@@ -1,0 +1,24 @@
+name: Test JSEQ scRNA-seq
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  docker_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Pull JSEQ Docker image
+        run: |
+          docker pull jkubis96/jseq_scrnaseq:latest
+          id=$(docker images --format "{{.ID}}" jkubis96/jseq_scrnaseq:latest)
+          echo "id=$id" > docker_id
+          source docker_id
+          docker run --rm -v ${{ github.workspace }}:/app -e fun_run=Test $id /app/scripts/docker
