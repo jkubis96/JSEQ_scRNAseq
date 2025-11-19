@@ -19,7 +19,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Pull JSEQ Docker image
-         run: |
+        run: |
           docker pull jkubis96/jseq_scrnaseq:latest
           id=$(docker images --format "{{.ID}}" jkubis96/jseq_scrnaseq:latest)
           echo "Using image ID: $id"
