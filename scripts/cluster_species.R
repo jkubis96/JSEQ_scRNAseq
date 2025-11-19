@@ -255,6 +255,13 @@ rm(plot2)
 all.genes <- rownames(UMI)
 UMI <- ScaleData(UMI, features = all.genes)
 
+
+var_features = VariableFeatures(object = UMI)
+
+if (mt_cssg == F) {
+  var_features = var_features[!grepl("^(MT-|MT\\.)", toupper(var_features))]
+}
+
 UMI <- RunPCA(UMI, features = VariableFeatures(object = UMI))
 
 ###########################################################################################################################################################
@@ -271,7 +278,7 @@ dim <- CSSG.toolkit::dim_reuction_pcs(dims)
 
 svg(file.path(OUTPUT, "Elbow.svg"), width=10, height=7)
 Elbow <- Elbow + geom_vline(xintercept = dim, color = 'red') +   
-  geom_text(aes(x = dim + 3, y = round(max(Elbow$data$stdev)/2,0), label = paste("Dim =", dim)), color = 'red', vjust = -1)
+  geom_text(aes(x = dim + 3, y = round(max(Elbow$data$stdev)/1.5,0), label = paste("Dim =", dim)), color = 'red', vjust = -1)
 Elbow
 dev.off()
 rm(Elbow)
@@ -346,12 +353,13 @@ sc_project <- CSSG.toolkit::namign_genes_selection(sc_project, type = 'primary',
 
 
 
-
 sc_project <- CSSG.toolkit::subclass_naming(sc_project = sc_project, 
                                             class_markers = markers_class, 
                                             subclass_markers = markers_subclass, 
                                             species = 'Homo sapiens', 
                                             chunk_size = 5000)
+
+# unique(sc_project@names$subclass)
 
 
 data <- CSSG.toolkit::bin_cell_test(p_val = p_bin, names = sc_project@names$subclass, min_cells = min_c)
@@ -428,8 +436,23 @@ sc_project <- CSSG.toolkit::CSSG_markers(sc_project = sc_project,
 
 
 
-write.table(sc_project@metadata$primary_markers, file = file.path(OUTPUT, "markers_subclasses.csv"), sep = ',')
+marker_to_write <- sc_project@metadata$primary_markers
 
+mapper <- data.frame(
+  primary  = sc_project@names$primary,
+  subclass = sc_project@names$subclass,
+  stringsAsFactors = FALSE
+)
+
+mapper <- distinct(mapper)
+
+marker_to_write$subclass <- mapper$subclass[ match(marker_to_write$cluster, mapper$primary) ]
+
+write.table(marker_to_write, file = file.path(OUTPUT, "markers_subclasses.csv"), sep = ',')
+
+
+rm(marker_to_write)
+rm(mapper)
 
 
 
@@ -480,6 +503,8 @@ if (drop_sub) {
   
 }
 
+meta_data$reduced <- TRUE
+meta_data$reduced[meta_data$subtypes %in% select_list] <- FALSE
 
 centroids <- meta_data %>%
   group_by(subtypes) %>%
@@ -518,7 +543,8 @@ write.table(meta_data, file = file.path(OUTPUT, "metadata.csv"), sep = ',')
 
 
 
-meta_data_plot <- meta_data[!meta_data$subtypes %in% 'Undefined',]
+meta_data_plot <- meta_data[meta_data$subtypes %in% select_list,]
+
 
 plot <- ggplot(meta_data_plot, aes(x = fUMAP1, y = fUMAP2, color = subtypes)) +
   geom_point(size = 0.8, alpha = 0.8) +
@@ -550,50 +576,40 @@ sc_project <- CSSG.toolkit::subset_project(sc_project = sc_project, type = 'subt
 
 
 
-
-
 markers <- CSSG.toolkit::get_names_markers(sc_project, type = 'subtypes')
 
 height <- 10 + (length(unique(markers)))/5
 width <- 15 + (length(unique(Idents(UMI))))/5
 
 
-plot <- CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers,
-                                     angle_col = 270,
-                                     fontsize_row = 15,
-                                     fontsize_col = 15,
-                                     font_labels = 15,
-                                     clustering_method = 'complete',
-                                     x_axis = 'Cells',
-                                     y_axis = 'Genes [log(CPM +1)]',
-                                     scale = FALSE)
-
 
 svg(file.path(OUTPUT, "heatmap_cells_populations.svg"), width = width, height = height)
-par(mar = c(2, 2, 2, 2))
+CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers,
+                             angle_col = 270,
+                             fontsize_row = 15,
+                             fontsize_col = 15,
+                             font_labels = 15,
+                             clustering_method = 'complete',
+                             x_axis = 'Cells',
+                             y_axis = 'Genes [log(CPM +1)]',
+                             scale = FALSE)
 
-plot
 dev.off()
 rm(plot)
-
-
-plot <- CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers,
-                                     angle_col = 270,
-                                     fontsize_row = 15,
-                                     fontsize_col = 15,
-                                     font_labels = 15,
-                                     clustering_method = 'complete',
-                                     x_axis = 'Cells',
-                                     y_axis = 'Genes scaled([log(CPM +1)])',
-                                     scale = TRUE)
 
 
 
 
 svg(file.path(OUTPUT, "heatmap_cells_populations_scaled.svg"), width = width, height = height)
-par(mar = c(2, 2, 2, 2))
-
-plot
+CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers,
+                             angle_col = 270,
+                             fontsize_row = 15,
+                             fontsize_col = 15,
+                             font_labels = 15,
+                             clustering_method = 'complete',
+                             x_axis = 'Cells',
+                             y_axis = 'Genes scaled([log(CPM +1)])',
+                             scale = TRUE)
 dev.off()
 
 
@@ -617,8 +633,24 @@ print('Subtypes naming - DONE')
 
 sc_project <- CSSG.toolkit::get_cluster_stats(sc_project = sc_project, type = 'subtypes', only_pos = TRUE)
 
-write.table(sc_project@metadata$subtypes_markers, file = file.path(OUTPUT, "markers_subtypes.csv"), sep = ',')
 
+
+marker_to_write <- sc_project@metadata$subtypes_markers
+colnames(marker_to_write)[colnames(marker_to_write) == 'cluster'] <- 'subtype'
+
+mapper <- data.frame(
+  primary  = sc_project@names$primary,
+  subtype = sc_project@names$subtypes,
+  stringsAsFactors = FALSE
+)
+
+mapper <- distinct(mapper)
+
+marker_to_write$cluster <- mapper$primary[match(marker_to_write$subtype, mapper$subtype) ]
+write.table(marker_to_write, file = file.path(OUTPUT, "markers_subtypes.csv"), sep = ',')
+
+rm(marker_to_write)
+rm(mapper)
 
 ############################################################################################################################################################
 

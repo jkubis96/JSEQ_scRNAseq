@@ -61,14 +61,17 @@ RUN apt-get install -y r-cran-httr=1.4.1-1ubuntu1 \
 					 
 
 RUN R -e "Sys.setenv(R_INSTALL_STAGED = FALSE); \
-          BiocManager::install('MAST'); \
-          install.packages(c('umap', 'remotes')); \
-          install.packages('https://cran.r-project.org/src/contrib/Archive/svglite/svglite_1.2.3.tar.gz', repos = NULL, type = 'source'); \
-          remotes::install_version('bslib', version = '0.3.1', repos = 'http://cran.us.r-project.org'); \
-          remotes::install_version('textclean', version='0.9.3'); \
-          remotes::install_github('haozhu233/kableExtra'); \
-          remotes::install_url('https://github.com/jkubis96/GTF-tool/raw/refs/heads/main/packages/GTF.tool_0.1.3.tar.gz', dependencies=TRUE); \
-          remotes::install_url('https://github.com/jkubis96/CSSG/raw/refs/heads/main/packages/CSSG.toolkit_0.1.2.tar.gz', dependencies=TRUE)"
+            options(repos = c(CRAN = 'https://cran.r-project.org')); \
+            install.packages(c('umap', 'remotes')); \
+            BiocManager::install('MAST'); \
+            install.packages('https://cran.r-project.org/src/contrib/Archive/svglite/svglite_1.2.3.tar.gz', repos = NULL, type = 'source'); \
+            remotes::install_version('textclean', version='0.9.3', repos = 'https://cran.r-project.org'); \
+            remotes::install_github('haozhu233/kableExtra'); \
+            remotes::install_url('https://github.com/jkubis96/GTF-tool/raw/refs/heads/main/packages/GTF.tool_0.1.3.tar.gz', dependencies=TRUE); \
+            remotes::install_url('https://github.com/jkubis96/CSSG/raw/refs/heads/main/packages/CSSG.toolkit_0.1.2.tar.gz', dependencies=TRUE); \
+            "
+
+          
 
 
 RUN mkdir -p /tools \
@@ -84,5 +87,6 @@ RUN mkdir -p /tools \
     && rm Drop-seq_tools-2.4.0.zip \
     && mv Drop-seq_tools-2.4.0 DropSeq \
     && chmod -R +x DropSeq
+
 
 
