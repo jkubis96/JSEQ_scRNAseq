@@ -20,7 +20,7 @@ echo Trimming Start
 
 
 
-if ! [[ -f $CHECK/fast_data/R1_out_exctracted.fastq || -f $CHECK/fast_data/R2_out_exctracted.fastq || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	for i in $INFASTP/*.fastq.gz;
@@ -76,7 +76,7 @@ function whitelist {
 
 echo 'Whitelist'
 
-if ! [[ -f $CHECK/tmp/whitelist_barcodes.csv || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 
@@ -147,7 +147,7 @@ function STAR_MAPPING {
 echo Mapping Start
 
 
-if ! [[ -f $CHECK/tmp/Aligned.out.bam || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 
@@ -204,7 +204,7 @@ function add_tags {
 echo 'Tags adding'
 
 
-if ! [[ -f $CHECK/tmp/final.bam || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	samtools view -h $tmp/*.out.bam | sed 's/_/XC:Z:/' | grep -oE "XC:Z:[acgtnACGTN-]+" > $tmp/barcodes.sam
@@ -234,7 +234,7 @@ function dropSEQ {
 echo 'TagReadWithGeneFunction'
 
 
-if ! [[ -f $CHECK/tmp/gene_exon_tagged.bam || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	java -jar /tools/DropSeq/jar/dropseq.jar TagReadWithGeneFunction \
@@ -257,7 +257,7 @@ function final_exon {
 
 echo 'DetectBeadSubstitutionErrors'
 
-if ! [[ -f $CHECK/tmp/gene_exon_tagged_error.bam || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 	cpu=$(grep -c ^processor /proc/cpuinfo)
 	cpu=$[$cpu-2]
@@ -284,7 +284,7 @@ function completed_bam {
 
 echo 'DetectBeadSynthesisErrors'
 
-if ! [[ -f $CHECK/results/Completed.bam || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	cell=`cat $tmp/whitelist_barcodes.csv  | wc -l`
@@ -320,7 +320,7 @@ function umi_extract {
 
 echo 'Barcode/UMI extraction'
 
-if ! [[ -f $CHECK/tmp/selected_cells.sc || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 	#
 	samtools view $RESULT/Completed.bam | grep -oE "XC:Z:[acgtnACGTN-]+" > $tmp/repaired_barcodes.sam
@@ -342,7 +342,7 @@ function umi_expression {
 
 echo 'DigitalExpression'
 
-if ! [[ -f $CHECK/tmp/umi_expression.tsv || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	java -jar /tools/DropSeq/jar/dropseq.jar DigitalExpression \
@@ -370,7 +370,7 @@ function scRNAmetrics {
 
 echo 'SingleCellRnaSeqMetricsCollector'
 
-if ! [[ -f $CHECK/tmp/scRNAmetrics.txt || -f $CHECK/sc_data/matrix.mtx ]];
+if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
 	java -jar /tools/DropSeq/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
@@ -427,7 +427,9 @@ then
 	converter=$(pwd)/scripts/converter.R
 	Rscript $converter $format $path_convert $null $path_tmp_mtx $con
 
-	#rm -rf $PATH_PROJECT/tmp
+	mv $PATH_PROJECT/tmp/Log.final.out $PATH_PROJECT/results/STAR_mapping.out
+	mv $PATH_PROJECT/tmp/Log.out $PATH_PROJECT/results/STAR_process.log.out
+	rm -rf $PATH_PROJECT/tmp
 	
 else 
 

@@ -23,7 +23,16 @@ args <- commandArgs()
   project_name <- args[9]
   data <- args[10]
   estimated_cells <- args[11]
-  dir.create(path = file.path(OUTPUT,'exp_matrix'))
+  dir.create(path = file.path(OUTPUT,'matrices'))
+  dir.create(path = file.path(OUTPUT,'matrices/sparse'))
+  dir.create(path = file.path(OUTPUT,'figures'))
+  dir.create(path = file.path(OUTPUT,'markers'))
+  dir.create(path = file.path(OUTPUT,'rds'))
+  dir.create(path = file.path(OUTPUT,'metadata'))
+  
+  
+  
+  
   
 }
 
@@ -118,14 +127,14 @@ UMI@meta.data <- UMI@meta.data %>%
 #Graphs of counts content
 
 UC_plot <- VlnPlot(UMI, features = c("nGenes", "nCounts"), ncol = 2)
-svg(file.path(OUTPUT, "counts~genes.svg"), width=15, height=10)
+svg(file.path(OUTPUT, "figures/counts~genes.svg"), width=15, height=10)
 UC_plot
 rm(UC_plot)
 dev.off()
 
 
 CG_plot <- FeatureScatter(UMI, feature1 = "nCounts", feature2 = "nGenes")
-svg(file.path(OUTPUT, "counts~genes_QC.svg"), width=15, height=10)
+svg(file.path(OUTPUT, "figures/counts~genes_QC.svg"), width=15, height=10)
 CG_plot
 rm(CG_plot)
 dev.off()
@@ -134,7 +143,7 @@ dev.off()
 if (!any(is.na(UMI@meta.data$MitoPercent)) && !any(is.na(UMI@meta.data$RiboPercent))) {
   
   MR_plot <- VlnPlot(UMI, features = c("RiboPercent", "MitoPercent"), ncol = 2)
-  svg(file.path(OUTPUT, "Ribo~Mito.svg"), width=15, height=10)
+  svg(file.path(OUTPUT, "figures/Ribo~Mito.svg"), width=15, height=10)
   print(MR_plot)
   rm(MR_plot)
   dev.off()
@@ -188,13 +197,13 @@ DQC <- ggplot()+
   theme_classic()
 
 
-svg(filename = file.path(OUTPUT,'DropletQC.svg'), width = 10, height = 7)
+svg(filename = file.path(OUTPUT,'figures/DropletQC.svg'), width = 10, height = 7)
 DQC
 dev.off()
 rm(DQC)
 
 
-svg(filename = file.path(OUTPUT,'DropletQC_hist.svg'), width = 10, height = 7)
+svg(filename = file.path(OUTPUT,'figures/DropletQC_hist.svg'), width = 10, height = 7)
 thresholds$plot
 dev.off()
 
@@ -245,7 +254,7 @@ plot1 <- VariableFeaturePlot(UMI)
 
 plot2 <- LabelPoints(plot = plot1, points = top20, repel = TRUE)
 
-svg(file.path(OUTPUT, "variable_genes.svg"), width=10, height=7)
+svg(file.path(OUTPUT, "figures/variable_genes.svg"), width=10, height=7)
 plot2
 dev.off()
 rm(plot2)
@@ -276,7 +285,7 @@ dims <- as.data.frame(Elbow$data$stdev)
 dim <- CSSG.toolkit::dim_reuction_pcs(dims)
 
 
-svg(file.path(OUTPUT, "Elbow.svg"), width=10, height=7)
+svg(file.path(OUTPUT, "figures/Elbow.svg"), width=10, height=7)
 Elbow <- Elbow + geom_vline(xintercept = dim, color = 'red') +   
   geom_text(aes(x = dim + 3, y = round(max(Elbow$data$stdev)/1.5,0), label = paste("Dim =", dim)), color = 'red', vjust = -1)
 Elbow
@@ -294,7 +303,7 @@ jc <- jc[jc$Score < 0.05,]
 dim <- as.vector(jc$PC)
 
 
-svg(file.path(OUTPUT, "JackStrawPlot.svg"), width=10, height=7)
+svg(file.path(OUTPUT, "figures/JackStrawPlot.svg"), width=10, height=7)
 JackStrawPlot(UMI, dims = dim)
 dev.off()
 
@@ -311,7 +320,7 @@ UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
 
 width <- 10 + (length(unique(Idents(UMI))))/5
 
-svg(file.path(OUTPUT, "UMAP_clusters.svg"), width = width, height = 10)
+svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
 DimPlot(UMI, reduction = "umap", raster = FALSE)
 dev.off()
 
@@ -343,10 +352,16 @@ print('Searching for clusters / subclasses marker genes')
 sc_project <- CSSG.toolkit::create_project_from_seurat(UMI)
 
 # get markers  for subclass naming
+
+print('Clusters stats')
+
 sc_project <- CSSG.toolkit::get_cluster_stats(sc_project = sc_project, type = 'primary', only_pos = TRUE, min_pct = 0.05)
 
 
 # elect markers for subclass naming
+
+print('Clusters naming - subclasses')
+
 sc_project <- CSSG.toolkit::namign_genes_selection(sc_project, type = 'primary', top_n = top_m,
                                                    p_val = m_val, select_stat = "p_val",
                                                    mito_content = FALSE, ribo_content = FALSE)
@@ -356,45 +371,110 @@ sc_project <- CSSG.toolkit::namign_genes_selection(sc_project, type = 'primary',
 sc_project <- CSSG.toolkit::subclass_naming(sc_project = sc_project, 
                                             class_markers = markers_class, 
                                             subclass_markers = markers_subclass, 
-                                            species = 'Homo sapiens', 
+                                            species = species, 
                                             chunk_size = 5000)
 
 # unique(sc_project@names$subclass)
 
+print('Composition binomial - subclasses')
+
+# print(sc_project@names$subclass) # debug
 
 data <- CSSG.toolkit::bin_cell_test(p_val = p_bin, names = sc_project@names$subclass, min_cells = min_c)
 
-threshold <- CSSG.toolkit::cell_stat_graph(data$data)
+# print(data) # debug
 
-height <- 7 + (length(unique(Idents(UMI))))/5
+print('Composition - thresholds')
 
-svg(file.path(OUTPUT, "subclasses_composition.svg"), width = 10, height = height)
+# print(data$data) # debug
+
+threshold <- CSSG.toolkit::cell_stat_graph(data$data, include_ns = TRUE)
+
+height <- 4 + (length(unique(threshold$data$names)))/5
+svg(file.path(OUTPUT, "figures/subclasses_composition.svg"), width = 7, height = height)
 threshold
 dev.off()
 
 
-
 data_avg <- CSSG.toolkit::get_avg_data(sc_project = sc_project, type = 'subclasses', data = 'norm')
 
+# print(data_avg) # debug
 
-write.table(data_avg, file = file.path(OUTPUT, "exp_matrix/subclasses_average_expression.csv"), sep = ',')
+print('Save - subclasses avg')
+
+write.table(data_avg, file = file.path(OUTPUT, "matrices/subclasses_average_expression.csv"), sep = ',')
 
 rm(data_avg)
 rm(data)
 rm(threshold)
 
+################################################################################
+
+print('Get names markers - subclasses')
+
+
+# print(sc_project@names$subclass) # debug
+
+
+markers <- CSSG.toolkit::get_names_markers(sc_project, type = 'subclasses')
+
+
+print('Subclasses heatmaps')
+
+height <- 10 + (length(unique(markers)))/5
+width <- 15 + (length(unique(Idents(UMI))))/5
+
+
+
+svg(file.path(OUTPUT, "figures/heatmap_cells_subclasses.svg"), width = width, height = height)
+CSSG.toolkit::marker_heatmap(sc_project, type = 'subclasses', markers = markers,
+                             angle_col = 270,
+                             fontsize_row = 15,
+                             fontsize_col = 15,
+                             font_labels = 15,
+                             clustering_method = 'complete',
+                             x_axis = 'Cells',
+                             y_axis = 'Genes [log(CPM +1)]',
+                             scale = FALSE)
+
+dev.off()
+
+
+
+
+svg(file.path(OUTPUT, "figures/heatmap_cells_subclasses_scaled.svg"), width = width, height = height)
+CSSG.toolkit::marker_heatmap(sc_project, type = 'subclasses', markers = markers,
+                             angle_col = 270,
+                             fontsize_row = 15,
+                             fontsize_col = 15,
+                             font_labels = 15,
+                             clustering_method = 'complete',
+                             x_axis = 'Cells',
+                             y_axis = 'Genes scaled([log(CPM +1)])',
+                             scale = TRUE)
+dev.off()
+
+
+
+
+
+################################################################################
+
+
+print('Subclasses renaming')
+
 Idents(UMI) <- sc_project@names$subclass
 
 
-width <- 10 + (length(unique(Idents(UMI))))/5
+width <- 15 + (length(unique(Idents(UMI))))/5
 
 
-svg(file.path(OUTPUT, "PCA_DimPlot_subclasses.svg"), width = width, height = 10)
+svg(file.path(OUTPUT, "figures/PCA_DimPlot_subclasses.svg"), width = width, height = 10)
 DimPlot(UMI, reduction = "pca", raster = FALSE)
 dev.off()
 
 
-svg(file.path(OUTPUT, "UMAP_DimPlot_subclasses.svg"), width = width, height = 10)
+svg(file.path(OUTPUT, "figures/UMAP_DimPlot_subclasses.svg"), width = width, height = 10)
 DimPlot(UMI, reduction = "umap", raster = FALSE)
 dev.off()
 
@@ -448,7 +528,7 @@ mapper <- distinct(mapper)
 
 marker_to_write$subclass <- mapper$subclass[ match(marker_to_write$cluster, mapper$primary) ]
 
-write.table(marker_to_write, file = file.path(OUTPUT, "markers_subclasses.csv"), sep = ',')
+write.table(marker_to_write, file = file.path(OUTPUT, "markers/markers_subclasses.csv"), sep = ',')
 
 
 rm(marker_to_write)
@@ -462,7 +542,7 @@ print('Searching for CSSG markers - DONE')
 print('Subtypes naming')
 
 # subtypes
-sc_project <- CSSG.toolkit::subtypes_naming(sc_project = sc_project, markers_class = markers_class, markers_subclass = markers_subclass,  species = 'Homo sapiens')
+sc_project <- CSSG.toolkit::subtypes_naming(sc_project = sc_project, markers_class = markers_class, markers_subclass = markers_subclass,  species = species)
 
 
 thr_data <- CSSG.toolkit::bin_cell_test(p_val = p_bin,
@@ -473,7 +553,7 @@ threshold <- CSSG.toolkit::cell_stat_graph(thr_data$data, include_ns = TRUE)
 
 
 height <- 7 + (length(unique(threshold$data$names)))/5
-svg(file.path(OUTPUT, "subtypes_composition.svg"), width = 10, height = height)
+svg(file.path(OUTPUT, "figures/subtypes_composition.svg"), width = 10, height = height)
 threshold
 dev.off()
 
@@ -484,11 +564,13 @@ meta_data$subtypes <- as.character(sc_project@names$subtypes)
 meta_data$subtypes[grepl('BAD!', toupper(meta_data$subtypes))] <- 'Undefined'
 
 
-write.table(sc_project@metadata$cssg_markers, file = file.path(OUTPUT, "CSSG_marker.csv"), sep = ',')
+write.table(sc_project@metadata$cssg_markers, file = file.path(OUTPUT, "markers/CSSG_marker.csv"), sep = ',')
 
 ###########################################################################################################################################################
 
 # subsetns analysis
+
+print('Renames subtypes')
 
 Idents(UMI) <- sc_project@names$subtypes
 
@@ -502,6 +584,8 @@ if (drop_sub) {
   select_list <- thr_data$data$names[thr_data$data$test %in% c("Good marked types", "Renamed", "Non-significant")]
   
 }
+
+print('Select list set')
 
 meta_data$reduced <- TRUE
 meta_data$reduced[meta_data$subtypes %in% select_list] <- FALSE
@@ -539,12 +623,18 @@ meta_data <- meta_data %>%
 
 meta_data <- meta_data[,!colnames(meta_data) %in% c('umap1_centroid', 'umap2_centroid')]
 
-write.table(meta_data, file = file.path(OUTPUT, "metadata.csv"), sep = ',')
+
+print('Metadata writing')
+
+write.table(meta_data, file = file.path(OUTPUT, "metadata/metadata.csv"), sep = ',')
 
 
 
 meta_data_plot <- meta_data[meta_data$subtypes %in% select_list,]
 
+
+
+print('Subtypes UMAP')
 
 plot <- ggplot(meta_data_plot, aes(x = fUMAP1, y = fUMAP2, color = subtypes)) +
   geom_point(size = 0.8, alpha = 0.8) +
@@ -555,20 +645,21 @@ plot <- ggplot(meta_data_plot, aes(x = fUMAP1, y = fUMAP2, color = subtypes)) +
 
 
 
-htmlwidgets::saveWidget(plotly::ggplotly(plot) , file.path(OUTPUT, "UMAP_subtypes.html"))
+htmlwidgets::saveWidget(plotly::ggplotly(plot) , file.path(OUTPUT, "figures/UMAP_subtypes.html"))
 
 
 
 width <- 15 + (length(unique(Idents(UMI))))/5
 
 
-svg(file.path(OUTPUT, "UMAP_subtypes.svg"), width = width, height = 15)
+svg(file.path(OUTPUT, "figures/UMAP_subtypes.svg"), width = width, height = 15)
 plot
 dev.off()
 
 
 ################################ Reducing
 
+print('Projects subsetting')
 
 UMI <- subset(UMI, idents = select_list)
 sc_project <- CSSG.toolkit::subset_project(sc_project = sc_project, type = 'subtypes', select_list = select_list)
@@ -582,8 +673,10 @@ height <- 10 + (length(unique(markers)))/5
 width <- 15 + (length(unique(Idents(UMI))))/5
 
 
+print('Subtypes heatmaps')
 
-svg(file.path(OUTPUT, "heatmap_cells_populations.svg"), width = width, height = height)
+
+svg(file.path(OUTPUT, "figures/heatmap_cells_subtypes.svg"), width = width, height = height)
 CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers,
                              angle_col = 270,
                              fontsize_row = 15,
@@ -595,12 +688,11 @@ CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers,
                              scale = FALSE)
 
 dev.off()
-rm(plot)
 
 
 
 
-svg(file.path(OUTPUT, "heatmap_cells_populations_scaled.svg"), width = width, height = height)
+svg(file.path(OUTPUT, "figures/heatmap_cells_subtypes_scaled.svg"), width = width, height = height)
 CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers,
                              angle_col = 270,
                              fontsize_row = 15,
@@ -613,12 +705,11 @@ CSSG.toolkit::marker_heatmap(sc_project, type = 'subtypes', markers = markers,
 dev.off()
 
 
-rm(plot)
 
 
 data_avg <- CSSG.toolkit::get_avg_data(sc_project = sc_project, type = 'subtypes', data = 'norm')
 
-write.table(data_avg, file = file.path(OUTPUT, "exp_matrix/sybtypes_average_expression.csv"), sep = ',')
+write.table(data_avg, file = file.path(OUTPUT, "matrices/sybtypes_average_expression.csv"), sep = ',')
 
 
 
@@ -647,7 +738,7 @@ mapper <- data.frame(
 mapper <- distinct(mapper)
 
 marker_to_write$cluster <- mapper$primary[match(marker_to_write$subtype, mapper$subtype) ]
-write.table(marker_to_write, file = file.path(OUTPUT, "markers_subtypes.csv"), sep = ',')
+write.table(marker_to_write, file = file.path(OUTPUT, "markers/markers_subtypes.csv"), sep = ',')
 
 rm(marker_to_write)
 rm(mapper)
@@ -672,7 +763,7 @@ cells <- ggplot(df_cells, aes(x = cells, y = cell_num, fill = cells)) +
   theme(legend.position = 'none')
 
 
-svg(filename = file.path(OUTPUT,'Cells.svg'), width = 10, height = 7)
+svg(filename = file.path(OUTPUT,'figures/Cells.svg'), width = 10, height = 7)
 cells
 dev.off()
 rm(cells)
@@ -687,9 +778,9 @@ print('Matrix saving ')
 exp_matrix <- GetAssayData(UMI, slot = 'data')
 colnames(exp_matrix) <- UMI@active.ident
 
-write(colnames(exp_matrix), file = file.path(OUTPUT, "exp_matrix/barcodes.tsv"))
-write(rownames(exp_matrix), file = file.path(OUTPUT, "exp_matrix/genes.tsv"))
-Matrix::writeMM(exp_matrix, file = file.path(OUTPUT, "exp_matrix/matrix.mtx"))
+write(colnames(exp_matrix), file = file.path(OUTPUT, "matrices/sparse/barcodes.tsv"))
+write(rownames(exp_matrix), file = file.path(OUTPUT, "matrices/sparse/genes.tsv"))
+Matrix::writeMM(exp_matrix, file = file.path(OUTPUT, "matrices/sparse/matrix.mtx"))
 
 print('Matrix saving - DONE')
 
@@ -700,7 +791,7 @@ print('Project saving ')
 
 #save seurat output file
 
-saveRDS(UMI, file = file.path(OUTPUT, "Results.rds"))
+saveRDS(UMI, file = file.path(OUTPUT, "rds/Results.rds"))
 
 print('Project saving - DONE')
 

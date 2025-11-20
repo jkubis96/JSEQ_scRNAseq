@@ -3,10 +3,10 @@
 #ref fiile generate
 
 function create_ref {
-cpu=$(grep -c ^processor /proc/cpuinfo)
-cpu=$cpu-2
+	cpu=$(grep -c ^processor /proc/cpuinfo)
+	cpu=$cpu-2
 
-samtools dict $(pwd)/genome/$species/genome.fa > $(pwd)/genome/$species/genome.dict 
+	samtools dict $(pwd)/genome/$species/genome.fa > $(pwd)/genome/$species/genome.dict 
 
 }
 
@@ -59,7 +59,7 @@ then
 		start
 	fi
 
-	name=$(basename "$d")
+	species=$(basename "$d")
 
 	if ! compgen -G "$d"/*.gtf* > /dev/null || ! compgen -G "$d"/*.fa* > /dev/null; 
 	then
@@ -69,7 +69,7 @@ then
 	
 	fi
 
-	cd genome/$name
+	cd genome/$species
 
 	for file in $(pwd)/*; do
     
@@ -99,10 +99,11 @@ then
 	cd ..
 	cd ..
 	
+
 	echo -e "\033[0;34m $(date) Creating genome reference files"
 	create_ref  
 
-	Rscript $source/genome_prep.R $name $(pwd)/genome/$name/annotation.gtf $(pwd)/genome/$name
+	Rscript $(pwd)/scripts/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
 	
 	echo -e "\033[0;34m $(date) Generating of the intervals"
 	rna_intervals
@@ -127,7 +128,6 @@ else
 	custom_annotation=$custom_annotation
 
 	species=$(echo $species | tr '[:upper:]' '[:lower:]')
-	source=$(pwd)/scripts
 	input_mice=$(pwd)/genome/$species/annotation_mice.gtf
 	input_human=$(pwd)/genome/$species/annotation_human.gtf
 
@@ -149,7 +149,7 @@ else
 			echo -e "\033[0;34m $(date) Creating genome reference files"
 			create_ref  
 		
-			Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+			Rscript $(pwd)/scripts/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
 			
 			echo -e "\033[0;34m $(date) Generating of the intervals"
 			rna_intervals
@@ -178,7 +178,7 @@ else
 			echo -e "\033[0;34m $(date) Creating genome reference files"
 			create_ref  
 		
-			Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+			Rscript $(pwd)/scripts/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
 			
 			echo -e "\033[0;34m $(date) Generating of the intervals"
 			rna_intervals
@@ -207,7 +207,7 @@ else
 			echo -e "\033[0;34m $(date) Creating genome reference files"
 			create_ref  
 		
-			Rscript $source/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+			Rscript $(pwd)/scripts/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
 			
 			echo -e "\033[0;34m $(date) Generating of the intervals"
 			rna_intervals

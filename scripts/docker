@@ -10,7 +10,7 @@ function start {
 
 echo ''
 echo -e '\033[1;36m Select option:'
-echo -e '\033[1;36m  -> Download RefGenome [1]'
+echo -e '\033[1;36m  -> Prepare RefGenome [1]'
 echo -e '\033[1;36m  -> Creat new project [2]'
 echo -e '\033[1;36m  -> Start analysis [3]'
 echo -e '\033[1;36m  -> Quit [q]'
@@ -83,7 +83,7 @@ function experiment_selection {
 		start
 		
 		
-elif	[[$d  == *'_exp'* ]]; then
+elif	[[ $d  == *'_exp'* ]]; then
 
 		log=$(pwd)/projects/$project_name_mode/results/process.log.out
 		
@@ -101,6 +101,7 @@ elif	[[$d  == *'_exp'* ]]; then
 		echo ''
 		echo -e "\033[1;33m Check $project_name_mode for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 		echo ''
+		start
 else
         echo ''
 		echo -e "\033[0;31m Experiment failed - check all the data from project"
