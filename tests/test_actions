@@ -74,7 +74,7 @@ function test_fucntions {
 	cd ..
 
 
-	check_path=$(pwd)/projects/test_mode_fq
+	check_path=$(pwd)/projects/test_actions_fq
 
 	if [ -d $check_path ]; then
 		echo ''
@@ -90,7 +90,7 @@ function test_fucntions {
 	fi 
 
 
-	cd $(pwd)/projects/test_mode_fq
+	cd $(pwd)/projects/test_actions_fq
 	source config
 	project_name=$project_name
 	project_name_mode=$project_name_mode 
@@ -108,7 +108,7 @@ function test_fucntions {
 	seurat >> $log 2>&1
 
 
-	check_path=$(pwd)/projects/test_mode_fq/results/Report.html
+	check_path=$(pwd)/projects/test_actions_fq/results/Report.html
 
 	if [ -f $check_path ]; then
 	
