@@ -105,7 +105,7 @@ function test_fucntions {
 
 	source=$(pwd)/scripts
 	source $source/analysis_species
-	seurat >> $log 2>&1
+	seurat 
 
 
 	check_path=$(pwd)/projects/test_actions_fq/results/Report.html
