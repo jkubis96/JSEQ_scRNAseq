@@ -68,8 +68,8 @@ function test_fucntions {
 	cd projects
 
 	gdown 1r1s8oYDh3XXLC7Z5SM9dqLJjGCR8-w1r
-	tar -xzvf test_mode_fq.tar.gz
-	rm -f test_mode_fq.tar.gz
+	tar -xzvf test_actions_fq.tar.gz
+	rm -f test_actions_fq.tar.gz
 	
 	cd ..
 
