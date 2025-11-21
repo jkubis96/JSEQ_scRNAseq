@@ -55,7 +55,21 @@ GTF3 <- GTF.tool::add_CDS(GTF2)
 
 if (extend) {
   
-  GTF3 <- GTF.tool::add_UTR(GTF3, five_prime_utr = five_prime_utr , three_prime_utr = three_prime_utr)
+  if ((sum(toupper(GTF3$annotationType) %in% c('TRANSCRIPT', 'CDS', 'MRNA') & GTF3$gene_type == "protein_coding")) / length(toupper(GTF3$annotationType) %in% c('TRANSCRIPT', 'CDS', 'MRNA')) < 0.20) {
+    GTF3 <- GTF.tool::add_UTR(GTF3, 
+                              five_prime_utr = five_prime_utr , 
+                              three_prime_utr = three_prime_utr, 
+                              biotype = NULL, transcript_limit = 300
+                              )
+    
+  } else {
+    GTF3 <- GTF.tool::add_UTR(GTF3, 
+                              five_prime_utr = five_prime_utr , 
+                              three_prime_utr = three_prime_utr,
+                              biotype = 'protein_coding')
+    
+  }
+  
   
   GTF4 <- GTF.tool::create_full_GTF(GTF3)
   
