@@ -417,6 +417,8 @@ echo 'MTX conversion'
 if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
 then
 
+	PATH_PROJECT=$(pwd)/projects/$project_name_mode
+
 	path_convert=$(pwd)/projects/$project_name_mode/sc_data
 	mkdir -p $path_convert
 	path_tmp_mtx=$(pwd)/projects/$project_name_mode/tmp
@@ -458,7 +460,33 @@ then
 	cp $SCRIPTS_EXTRACT/manual_species.R $PATH_PROJECT/results
 	mv $PATH_PROJECT/results/manual_species.R $PATH_PROJECT/results/manual_analysis.R 
 
-	rm -rf $PATH_PROJECT/results/UMAP_subtypes_files
+	rm -rf $PATH_PROJECT/results/figures/UMAP_subtypes_files
+	
+	if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" ]; then
+    mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_counts.png"
+	fi
+
+	if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_knee.png" ]; then
+		mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_knee.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_knee.png"
+	fi
+
+	if [ -f "$PATH_PROJECT/results/scRNAmetrics.jpeg" ]; then
+		mv "$PATH_PROJECT/results/scRNAmetrics.jpeg" "$PATH_PROJECT/results/figures/scRNAmetrics.jpeg"
+	fi
+
+	if [ -f "$PATH_PROJECT/results/scRNAmetrics.pdf" ]; then
+		mv "$PATH_PROJECT/results/scRNAmetrics.pdf" "$PATH_PROJECT/results/figures/scRNAmetrics.pdf"
+	fi
+
+	if [ -f "$PATH_PROJECT/results/scRNAmetrics.txt" ]; then
+		mv "$PATH_PROJECT/results/scRNAmetrics.txt" "$PATH_PROJECT/results/metadata/scRNAmetrics.txt"
+	fi
+
+	if [ -f "$PATH_PROJECT/results/Completed.bam" ]; then
+		mkdir -p "$PATH_PROJECT/results/bam"
+		mv "$PATH_PROJECT/results/Completed.bam" "$PATH_PROJECT/results/bam/Completed.bam"
+	fi
+
 
 
 fi
