@@ -1,0 +1,514 @@
+---
+title: "JSEQ_scRNAseq - manual analysis report"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly       
+    highlight: tango
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    self_contained: true
+    css: "../../../scripts/custom.css"
+---
+
+
+```{r setup, include=FALSE}
+
+install_if_missing <- function(pkg){
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg, dependencies = TRUE)
+  }
+}
+
+packages <- c("knitr", "dplyr", "kableExtra")
+lapply(packages, install_if_missing)
+
+library(knitr)
+library(dplyr)
+library(kableExtra)
+
+set.seed(123)
+
+read_config <- function(path) {
+  conf <- read.csv(path, header = FALSE, sep = ":", row.names = 1, comment.char = "#", stringsAsFactors = FALSE)
+  conf_list <- setNames(as.list(conf$V2), rownames(conf))
+  conf_list <- lapply(conf_list, function(x) {
+    if (x %in% c("TRUE", "FALSE")) return(as.logical(x))
+    if (suppressWarnings(!is.na(as.numeric(x)))) return(as.numeric(x))
+    return(as.character(x))
+  })
+  return(conf_list)
+}
+
+
+project_path <- getwd()
+
+config <- read_config("../../../requirements_file/config_file.conf")
+
+results_dir <- file.path(project_path, "manual_results")
+
+chceck_fq <- grepl("_fq", results_dir)
+
+
+show_image <- function(path, caption = NULL, width = NULL, height = NULL) {
+  if (file.exists(path)) {
+    if (!is.null(caption)) cat(sprintf("%s\n", caption))
+    knitr::include_graphics(path, dpi = 300, auto_pdf = FALSE)
+  } 
+}
+
+```
+
+
+---
+
+**The report was generated using the JSEQ_scRNAseq single-cell analysis pipeline.**
+**For more information, please visit: [https://github.com/jkubis96/JSEQ_scRNAseq](https://github.com/jkubis96/JSEQ_scRNAseq)**
+
+---
+
+
+# Analysis Configuration Parameters
+
+```{r echo=FALSE}
+params_df <- data.frame(
+  Parameter = names(config),
+  Value = unlist(config)
+)
+
+params_df <- params_df[!params_df$Parameter %in% c('down', 'up'),]
+
+params_df %>%
+  kbl(caption = "", row.names = FALSE) %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+
+**The parameters above were used during the current analysis.**  
+**If you need to apply different analysis conditions, modify the parameters in the configuration file.**
+
+
+**Parameters description:**
+
+- **mt_per**  
+  Maximum percentage of mitochondrial genes per cell.  
+  *Default: 25%*
+- **down**  
+  Lower threshold for the number of genes per cell.  
+  *Default: NA (automatically computed if NA)*
+- **up**  
+  Upper threshold for the number of genes per cell.  
+  *Default: NA (automatically computed if NA)*
+- **scale_factor**  
+  Scale factor used for data normalization.
+- **n_features**  
+  Number of variable features to detect for clustering.
+- **c_res**  
+  Clustering resolution — higher values produce more clusters.
+- **heterogeneity**  
+  Method for estimating cluster heterogeneity.  
+  Options: `var` (within-cluster variance), `deg` (deregulated gene profiles).  
+  *Default: deg*
+- **mt_cssg**  
+  Whether to include mitochondrial genes when creating subclasses and subtypes.  
+  Options: `TRUE`, `FALSE`.  
+  *Default: FALSE*
+- **m_val**  
+  Maximum p-value threshold for marker detection in advanced subtype analyses.  
+  *Default: 0.05*
+- **top_m**  
+  Maximum number of top markers used for naming clusters based on effect size metrics.  
+  *Default: 50*
+- **max_genes**  
+  Maximum number of input genes considered in cluster heterogeneity discovery.  
+  *Default: 1000*
+- **max_combine**  
+  Maximum number of initial combinations for each iteration during heterogeneity discovery.  
+  *Default: 1000*
+- **loss_val**  
+  Assigned value for potentially unclassified cells within a cluster.
+- **s_factor**  
+  Maximum split factor for gene occurrence in heterogeneity discovery (0.2–1).  
+  *Default: 0.8*
+- **p_bin**  
+  Minimum cell proportion required for population presence based on binomial test p-value.  
+  *Default: 0.05*
+- **min_c**  
+  Minimum cell proportion required for population presence as defined by the user (independent of binomial test).  
+  *Default: 10*
+- **drop**  
+  Boolean indicating whether to drop non-significant subtypes based on `p_bin` and `min_c`.  
+  *Default: TRUE*
+
+**The configuration file is available in the directory:**  
+`JSEQ_scRNAseq/requirements_file/config_file.conf`
+
+**Additional configuration files for other analysis steps can also be found in:**  
+`JSEQ_scRNAseq/requirements_file`
+
+**For more information, please visit:**  
+[https://github.com/jkubis96/JSEQ_scRNAseq](https://github.com/jkubis96/JSEQ_scRNAseq)
+
+---
+
+\
+
+# Cell content analysis
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+if (chceck_fq ){
+
+  show_image(file.path(getwd(), "figures/scRNAmetrics.jpeg"), "## Read distribution across genomic features")
+  
+}
+
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+if (chceck_fq ){
+  
+show_image(file.path(getwd(), "figures/expect_whitelist_cell_barcode_counts.png"), "## Count (UMI) per barcode (cell)")
+  
+}
+
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+
+if (chceck_fq ){
+  
+show_image(file.path(getwd(), "figures/expect_whitelist_cell_barcode_knee.png"), "## Cell barcode knee plot")
+  
+}
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+if (chceck_fq){
+  
+cat('*The above graph illustrates general trends and quality metrics at the initial stage of single-cell analysis; however, it does not represent the final number of detected cells.*')
+
+cat('<br><br>')
+
+}
+```
+
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+show_image(file.path(results_dir, "figures/counts~genes_QC.svg"), "## Ratio of number of genes to counts")
+
+```
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+show_image(file.path(results_dir, "figures/counts~genes.svg"), "## Number of genes and counts per cell")
+
+```
+
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+
+file_path <- file.path(results_dir, "figures/Ribo~Mito.svg")
+
+if (file.exists(file_path)) {
+  
+ show_image(file.path(results_dir, "figures/Ribo~Mito.svg"), "## Percentage of ribosomal and mitochondrial genes [%]")
+
+}
+
+
+```
+
+
+---
+
+\
+
+# Quality control of cell content
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/DropletQC_hist.svg"), "## Genes per cell content & thresholds")
+
+
+```
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/DropletQC.svg"), "## Genes upper & lower thresholds per cell")
+
+
+```
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/Cells.svg"), "## Number of cells across different stages of analysis")
+
+
+```
+
+
+
+---
+
+\
+
+# Gene expression analysis across cells
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/variable_genes.svg"), "## Top highly variable genes in the dataset")
+
+```
+
+
+---
+
+\
+
+# Princilpe component selection
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/Elbow.svg"), "## ElbowPlot - principal components cutoff")
+
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/JackStrawPlot.svg"), "## JackStrawPlot - PC significance")
+
+```
+
+
+---
+
+\
+
+# Cells clustering
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/UMAP_clusters.svg"), "## UMAP clusters")
+
+
+```
+
+
+---
+
+\
+
+# Subclasses identification based on marker genes
+
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/PCA_DimPlot_subclasses.svg"), "## PCA cisualization of subclasses")
+
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/UMAP_DimPlot_subclasses.svg"), "## UMAP visualization of subclasses")
+
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/subclasses_composition.svg"), "## Subclasses - cell composition")
+
+
+```
+
+\
+
+## Subclasses markers - top 25
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, align="center", results='asis'}
+markers <- read.csv(file = file.path(results_dir, 'markers/markers_subclasses.csv'), header = T, sep = ',', row.names = 1)
+
+
+markers <- markers %>%
+  filter(p_val < 0.05) %>%        
+  group_by(cluster) %>%
+  top_n(25, esm) %>%             
+  arrange(cluster, desc(esm))     
+
+
+
+markers %>%
+  kable("html", caption = "Top 25 merkers", escape = FALSE) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center"
+  ) %>%
+  scroll_box(width = "100%", height = "550px")
+```
+
+
+\
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/heatmap_cells_subclasses.svg"), "## Heatmap of cell subclasses - log(CPM + 1)")
+
+```
+
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/heatmap_cells_subclasses_scaled.svg"), "## Heatmap of cell subclasses - scale(log(CPM + 1))")
+
+```
+
+\
+
+
+---
+
+\
+
+# Subtypes identification based on CSSG genes
+
+
+
+## UMAP visualization
+
+\
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+plot_meta <- read.csv(file = file.path(results_dir, 'metadata/metadata.csv'), header = T, sep = ',', row.names = 1)
+
+plot_meta <- plot_meta[plot_meta$reduced == FALSE,]
+
+plot_meta$names <- paste0('Subtype:\n' ,plot_meta$subtypes, '\nn: ',  plot_meta$n_subtype)
+p <- plotly::plot_ly(
+  data = plot_meta,
+  x = ~fUMAP1,
+  y = ~fUMAP2,
+  color = ~subtypes,
+  text = ~names,
+  colors = "Set2",
+  type = "scatter",
+  mode = "markers",
+  marker = list(size = 6, opacity = 0.9),
+  hoverinfo = "text",
+  hovertemplate = "%{text}<extra></extra>"
+) %>%
+  plotly::layout(
+    xaxis = list(title = "fUMAP_1", zeroline = FALSE),
+    yaxis = list(title = "fUMAP_2", zeroline = FALSE),
+    legend = list(
+      orientation = "v",
+      x = 1.02,
+      y = 0.5,
+      xanchor = "left",
+      yanchor = "middle",
+      tracegroupgap = 3,
+      itemwidth = 50,
+      font = list(size = 9)
+    ),
+    margin = list(t = 60, b = 120, l = 60, r = 120),
+    hovermode = "closest",
+    autosize = TRUE
+  )
+
+p <- plotly::layout(p, height = 850, width = 1350)
+
+p
+
+```
+
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/subtypes_composition.svg"), "## Subtypes - cell composition")
+
+
+```
+
+\
+
+## Subtypes markers - top 25
+
+\
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, align="center", }
+markers <- read.csv(file = file.path(results_dir, 'markers/markers_subtypes.csv'), header = T, sep = ',', row.names = 1)
+
+
+markers <- markers %>%
+  filter(p_val < 0.05) %>%        
+  group_by(cluster) %>%
+  top_n(25, esm) %>%             
+  arrange(cluster, desc(esm))     
+
+
+
+markers %>%
+  kable("html", caption = "Top 25 markers", escape = FALSE) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = FALSE,
+    position = "center"
+  ) %>%
+  scroll_box(width = "100%", height = "550px")
+```
+
+\
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/heatmap_cells_subtypes.svg"), "## Heatmap of cell subtypes - log(CPM + 1)")
+
+```
+
+
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+
+show_image(file.path(results_dir, "figures/heatmap_cells_subtypes_scaled.svg"), "## Heatmap of cell subtypes - scale(log(CPM + 1))")
+
+```
+
+\
+
+---
+
+\
+
+# Disclaimer
+
+The analysis was performed through the non-profit and open-source pipeline **JSEQ_scRNAseq**.
+Remember, *in silico* analysis must be validated *in vitro* or *in vivo*. For more information, visit GitHub or contact us. 
+**JSEQ_scRNAseq** was created at the Institute of Bioorganic Chemistry, Polish Academy of Sciences.
+
+---
+
+\
