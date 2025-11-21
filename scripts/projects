@@ -247,14 +247,25 @@ function PARAMETRS_fq {
 		echo  -e '\033[1;36m Select marker set'
 		echo ''
 
-		marker_input=$(pwd)/requirements_file/*xlsx
+		marker_input=( "$(pwd)/requirements_file/"*.xlsx )
 
-		if [[ "${marker_input[0]}" == "$(pwd)/requirements_file/*xlsx" ]]; then
-		marker_input=()  
+		if [[ ${marker_input[0]} == "$(pwd)/requirements_file/*.xlsx" ]]; then
+			marker_input=()
 		fi
 
-		select m in $marker_input; do test -n "$m" && break; echo ">>> Invalid Selection"; done
-		marker_path=$m
+		if [[ ${#marker_input[@]} -eq 0 ]]; then
+			echo ">>> No XLSX files found!"
+			exit 1
+		fi
+
+		select m in "${marker_input[@]}"; do
+			if [[ -n "$m" ]]; then
+				marker_path="$m"
+				break
+			else
+				echo ">>> Invalid Selection"
+			fi
+		done
 
 		echo ''
 		echo ''
