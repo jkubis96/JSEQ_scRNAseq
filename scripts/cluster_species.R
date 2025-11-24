@@ -358,6 +358,8 @@ sc_project <- CSSG.toolkit::get_cluster_stats(sc_project = sc_project, type = 'p
 
 print('Clusters naming - subclasses')
 
+# Subclass naming
+
 sc_project <- CSSG.toolkit::namign_genes_selection(sc_project, type = 'primary', top_n = top_m,
                                                    p_val = m_val, select_stat = "p_val",
                                                    mito_content = FALSE, ribo_content = FALSE)
@@ -385,6 +387,7 @@ if (!identical(names_in_data, names_in_naming_data)) {
 sc_project@metadata$naming_markers <- sc_project@metadata$naming_markers[!sc_project@metadata$naming_markers$cluster %in% '0',]
 
 
+
 sc_project <- CSSG.toolkit::subclass_naming(sc_project = sc_project, 
                                             class_markers = markers_class, 
                                             subclass_markers = markers_subclass, 
@@ -394,6 +397,12 @@ sc_project <- CSSG.toolkit::subclass_naming(sc_project = sc_project,
 
 # no genetic background for distinguishing data
 sc_project@names$subclass[grepl(' NA ', sc_project@names$subclass)] <- 'Undefined'
+
+idx <- substr(sc_project@names$subclass, 
+              nchar(sc_project@names$subclass) - 2, 
+              nchar(sc_project@names$subclass)) == " NA"
+
+sc_project@names$subclass[idx] <- "Undefined"
 
 # unique(sc_project@names$subclass)
 
@@ -504,6 +513,24 @@ dev.off()
 
 print('Searching for clusters / subclasses marker genes - DONE')
 
+#################################################################################
+
+# adding names to seurat project
+Idents(UMI) <- sc_project@names$subclass
+
+select_list <- unique(sc_project@names$subclass)
+
+select_list <- select_list[select_list != "Undefined"]
+
+# reduce undefined
+
+if ('Undefinde' %in% Idents(UMI)) {
+  
+  UMI <- subset(UMI, idents = select_list)
+  
+  sc_project <- CSSG.toolkit::subset_project(sc_project = sc_project, type = 'subclasses', select_list = select_list)
+  
+}
 
 ################################################################################
 
