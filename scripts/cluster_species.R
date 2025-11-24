@@ -271,7 +271,7 @@ if (mt_cssg == F) {
   var_features = var_features[!grepl("^(MT-|MT\\.)", toupper(var_features))]
 }
 
-UMI <- RunPCA(UMI, features = VariableFeatures(object = UMI))
+UMI <- RunPCA(UMI, features = var_features)
 
 ###########################################################################################################################################################
 
@@ -315,7 +315,6 @@ UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
 
 UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
 
-#CHANGE
 
 
 width <- 10 + (length(unique(Idents(UMI))))/5
@@ -346,9 +345,6 @@ print('Searching for clusters / subclasses marker genes')
 # clusters /  subclasses
 
 
-
-
-
 sc_project <- CSSG.toolkit::create_project_from_seurat(UMI)
 
 # get markers  for subclass naming
@@ -366,6 +362,27 @@ sc_project <- CSSG.toolkit::namign_genes_selection(sc_project, type = 'primary',
                                                    p_val = m_val, select_stat = "p_val",
                                                    mito_content = FALSE, ribo_content = FALSE)
 
+# check if marker genes occur !
+names_in_data <- sort(as.character(unique(sc_project@names$primary)))
+names_in_naming_data <- sort(as.character(unique(sc_project@metadata$naming_markers$cluster)))
+
+if (!identical(names_in_data, names_in_naming_data)) {
+  missing_in_naming <- setdiff(names_in_data, names_in_naming_data)
+  tmp_markers <- sc_project@metadata$naming_markers
+  tmp_markers <- tmp_markers[tmp_markers$cluster %in% missing_in_naming,]
+  tmp_markers <- tmp_markers %>%
+    arrange(cluster, desc(pct_occurrence), desc(esm)) %>%  
+    group_by(cluster) %>%
+    slice_head(n = 5) %>%                                   
+    ungroup()
+  
+  sc_project@metadata$naming_markers <- rbind(sc_project@metadata$naming_markers, tmp_markers)
+  
+  rm(tmp_markers)
+}
+
+
+sc_project@metadata$naming_markers <- sc_project@metadata$naming_markers[!sc_project@metadata$naming_markers$cluster %in% '0',]
 
 
 sc_project <- CSSG.toolkit::subclass_naming(sc_project = sc_project, 
@@ -373,6 +390,10 @@ sc_project <- CSSG.toolkit::subclass_naming(sc_project = sc_project,
                                             subclass_markers = markers_subclass, 
                                             species = species, 
                                             chunk_size = 5000)
+
+
+# no genetic background for distinguishing data
+sc_project@names$subclass[grepl(' NA ', sc_project@names$subclass)] <- 'Undefined'
 
 # unique(sc_project@names$subclass)
 
