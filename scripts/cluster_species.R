@@ -515,16 +515,14 @@ print('Searching for clusters / subclasses marker genes - DONE')
 
 #################################################################################
 
-# adding names to seurat project
-Idents(UMI) <- sc_project@names$subclass
-
+# reduce undefined clusters
 select_list <- unique(sc_project@names$subclass)
 
 select_list <- select_list[select_list != "Undefined"]
 
 # reduce undefined
 
-if ('Undefinde' %in% Idents(UMI)) {
+if ('Undefined' %in% sc_project@names$subclass) {
   
   UMI <- subset(UMI, idents = select_list)
   
