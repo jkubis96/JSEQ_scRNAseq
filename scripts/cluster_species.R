@@ -366,7 +366,7 @@ sc_project <- CSSG.toolkit::naming_genes_selection(sc_project, type = 'primary',
 
 
 # debug
-sc_project@metadata$naming_markers <- sc_project@metadata$naming_markers[!sc_project@metadata$naming_markers$cluster %in% '0',]
+# sc_project@metadata$naming_markers <- sc_project@metadata$naming_markers[!sc_project@metadata$naming_markers$cluster %in% '0',]
 
 
 

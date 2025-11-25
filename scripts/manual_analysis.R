@@ -414,7 +414,6 @@ sc_project <- CSSG.toolkit::naming_genes_selection(sc_project, type = 'primary',
                                                    mito_content = FALSE, ribo_content = FALSE)
 
 
-sc_project@metadata$naming_markers <- sc_project@metadata$naming_markers[!sc_project@metadata$naming_markers$cluster %in% '0',]
 
 
 sc_project <- CSSG.toolkit::subclass_naming(sc_project = sc_project,
