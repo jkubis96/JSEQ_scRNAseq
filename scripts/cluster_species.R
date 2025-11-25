@@ -9,9 +9,9 @@ args <- commandArgs()
 
 #Paths and arguments from env
 {
-  
+
   print(args)
-  
+
   path <- args[6]
   markers <-args[7]
   species <- args[8]
@@ -29,11 +29,11 @@ args <- commandArgs()
   dir.create(path = file.path(OUTPUT,'markers'))
   dir.create(path = file.path(OUTPUT,'rds'))
   dir.create(path = file.path(OUTPUT,'metadata'))
-  
-  
-  
-  
-  
+
+
+
+
+
 }
 
 #Configuration file
@@ -41,9 +41,9 @@ args <- commandArgs()
 
 
 {
-  
-  
-  
+
+
+
   conf_file <- read.csv(
     file = file.path(getwd(), 'requirements_file/config_file.conf'),
     header = FALSE,
@@ -51,45 +51,45 @@ args <- commandArgs()
     row.names = 1,
     comment.char = "#"
   )
-  
-  
+
+
   mt_per <- as.numeric(as.character(conf_file$V2[grep(pattern = 'mt_per', rownames(conf_file))]))
-  
+
   down_tr <- as.numeric(as.character(conf_file$V2[grep(pattern = 'down', rownames(conf_file))]))
-  
+
   up_tr <- as.numeric(as.character(conf_file$V2[grep(pattern = 'up', rownames(conf_file))]))
-  
+
   mt_cssg <- as.logical(conf_file$V2[grep(pattern = 'mt_cssg', rownames(conf_file))])
-  
+
   s_factor <- as.numeric(as.character(conf_file$V2[grep(pattern = 's_factor', rownames(conf_file))]))
-  
+
   m_val <- as.numeric(as.character(conf_file$V2[grep(pattern = 'm_val', rownames(conf_file))]))
-  
+
   max_genes <- as.numeric(as.character(conf_file$V2[grep(pattern = 'max_genes', rownames(conf_file))]))
-  
+
   max_combine <- as.numeric(as.character(conf_file$V2[grep(pattern = 'max_combine', rownames(conf_file))]))
-  
+
   loss_val <- as.numeric(as.character(conf_file$V2[grep(pattern = 'loss_val', rownames(conf_file))]))
-  
+
   p_bin <- as.numeric(as.character(conf_file$V2[grep(pattern = 'p_bin', rownames(conf_file))]))
-  
+
   scale_factor <- as.numeric(as.character(conf_file$V2[grep(pattern = 'scale_factor', rownames(conf_file))]))
-  
+
   n_features <- as.numeric(as.character(conf_file$V2[grep(pattern = 'n_features', rownames(conf_file))]))
-  
+
   heterogeneity <- as.character(as.character(conf_file$V2[grep(pattern = 'heterogeneity', rownames(conf_file))]))
-  
+
   drop_sub <- as.logical(as.character(conf_file$V2[grep(pattern = 'drop', rownames(conf_file))]))
-  
+
   min_c <- as.numeric(as.character(conf_file$V2[grep(pattern = 'min_c', rownames(conf_file))]))
-  
+
   c_res <- as.numeric(as.character(conf_file$V2[grep(pattern = 'c_res', rownames(conf_file))]))
-  
+
   top_m <- as.numeric(as.character(conf_file$V2[grep(pattern = 'top_m', rownames(conf_file))]))
-  
-  
+
+
   if(length(data) == 0) {data = 3}
-  
+
 }
 
 ###########################################################################################################################################################
@@ -102,10 +102,10 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
 {
   # Load the raw dataset by UMI
   UMI_raw <- Read10X(seurat_umi, gene.column = 1)
-  
+
   #Create SeuratObject
   UMI <- CreateSeuratObject(counts = UMI_raw, project = project_name, min.cells = 1, min.features = 1)
-  
+
   cell_input <- ncol(UMI)
 }
 
@@ -141,13 +141,13 @@ dev.off()
 
 
 if (!any(is.na(UMI@meta.data$MitoPercent)) && !any(is.na(UMI@meta.data$RiboPercent))) {
-  
+
   MR_plot <- VlnPlot(UMI, features = c("RiboPercent", "MitoPercent"), ncol = 2)
   svg(file.path(OUTPUT, "figures/Ribo~Mito.svg"), width=15, height=10)
   print(MR_plot)
   rm(MR_plot)
   dev.off()
-  
+
 }
 
 
@@ -217,14 +217,14 @@ rm(thresholds)
 #Selecting right cells
 
 if (!any(is.na(UMI@meta.data$MitoPercent))) {
-  
+
   UMI <- subset(UMI, subset = nGenes > down_tr & nGenes <= n_gen & MitoPercent < mt_per)
-  
+
 } else {
-  
+
   UMI <- subset(UMI, subset = nGenes > down_tr & nGenes <= n_gen)
-  
-  
+
+
 }
 
 
@@ -286,7 +286,7 @@ dim <- CSSG.toolkit::dim_reuction_pcs(dims)
 
 
 svg(file.path(OUTPUT, "figures/Elbow.svg"), width=10, height=7)
-Elbow <- Elbow + geom_vline(xintercept = dim, color = 'red') +   
+Elbow <- Elbow + geom_vline(xintercept = dim, color = 'red') +
   geom_text(aes(x = dim + 3, y = round(max(Elbow$data$stdev)/1.5,0), label = paste("Dim =", dim)), color = 'red', vjust = -1)
 Elbow
 dev.off()
@@ -360,49 +360,22 @@ print('Clusters naming - subclasses')
 
 # Subclass naming
 
-sc_project <- CSSG.toolkit::namign_genes_selection(sc_project, type = 'primary', top_n = top_m,
+sc_project <- CSSG.toolkit::naming_genes_selection(sc_project, type = 'primary', top_n = top_m,
                                                    p_val = m_val, select_stat = "p_val",
                                                    mito_content = FALSE, ribo_content = FALSE)
 
-# check if marker genes occur !
-names_in_data <- sort(as.character(unique(sc_project@names$primary)))
-names_in_naming_data <- sort(as.character(unique(sc_project@metadata$naming_markers$cluster)))
 
-if (!identical(names_in_data, names_in_naming_data)) {
-  missing_in_naming <- setdiff(names_in_data, names_in_naming_data)
-  tmp_markers <- sc_project@metadata$naming_markers
-  tmp_markers <- tmp_markers[tmp_markers$cluster %in% missing_in_naming,]
-  tmp_markers <- tmp_markers %>%
-    arrange(cluster, desc(pct_occurrence), desc(esm)) %>%  
-    group_by(cluster) %>%
-    slice_head(n = 5) %>%                                   
-    ungroup()
-  
-  sc_project@metadata$naming_markers <- rbind(sc_project@metadata$naming_markers, tmp_markers)
-  
-  rm(tmp_markers)
-}
-
-
+# debug
 sc_project@metadata$naming_markers <- sc_project@metadata$naming_markers[!sc_project@metadata$naming_markers$cluster %in% '0',]
 
 
 
-sc_project <- CSSG.toolkit::subclass_naming(sc_project = sc_project, 
-                                            class_markers = markers_class, 
-                                            subclass_markers = markers_subclass, 
-                                            species = species, 
+sc_project <- CSSG.toolkit::subclass_naming(sc_project = sc_project,
+                                            class_markers = markers_class,
+                                            subclass_markers = markers_subclass,
+                                            species = species,
                                             chunk_size = 5000)
 
-
-# no genetic background for distinguishing data
-sc_project@names$subclass[grepl(' NA ', sc_project@names$subclass)] <- 'Undefined'
-
-idx <- substr(sc_project@names$subclass, 
-              nchar(sc_project@names$subclass) - 2, 
-              nchar(sc_project@names$subclass)) == " NA"
-
-sc_project@names$subclass[idx] <- "Undefined"
 
 # unique(sc_project@names$subclass)
 
@@ -523,19 +496,22 @@ select_list <- select_list[select_list != "Undefined"]
 # reduce undefined
 
 if ('Undefined' %in% sc_project@names$subclass) {
-  
+
   UMI <- subset(UMI, idents = select_list)
-  
+
   sc_project <- CSSG.toolkit::subset_project(sc_project = sc_project, type = 'subclasses', select_list = select_list)
-  
+
+  meta_data <- meta_data[meta_data$clusters %in% sc_project@names$primary, ]
+
 }
+
 
 ################################################################################
 
 print('Searching for CSSG markers')
 
 if (tolower(heterogeneity) == 'var') {
-  
+
   sc_project <- CSSG.toolkit::heterogeneity_select_variance(sc_project = sc_project,
                                                             heterogeneity_factor = s_factor,
                                                             max_genes = max_genes,
@@ -543,9 +519,9 @@ if (tolower(heterogeneity) == 'var') {
                                                             min_exp = 0.01,
                                                             rep_factor = 0.2,
                                                             mito_content = mt_cssg)
-  
+
 } else {
-  
+
   sc_project <- CSSG.toolkit::heterogeneity_select_specificity(sc_project = sc_project,
                                                                type = 'primary',
                                                                heterogeneity_factor = s_factor,
@@ -622,13 +598,13 @@ Idents(UMI) <- sc_project@names$subtypes
 
 
 if (drop_sub) {
-  
+
   select_list <- thr_data$data$names[thr_data$data$test %in% c("Good marked types", "Renamed")]
-  
+
 } else {
-  
+
   select_list <- thr_data$data$names[thr_data$data$test %in% c("Good marked types", "Renamed", "Non-significant")]
-  
+
 }
 
 print('Select list set')
