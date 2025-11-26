@@ -460,8 +460,6 @@ then
 	cp $SCRIPTS_EXTRACT/manual_analysis.R $PATH_PROJECT/results
 	cp $SCRIPTS_EXTRACT/report_manual.Rmd $PATH_PROJECT/results
 
-	mv $PATH_PROJECT/results/manual_species.R $PATH_PROJECT/results/manual_analysis.R 
-
 	rm -rf $PATH_PROJECT/results/figures/UMAP_subtypes_files
 	
 	if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" ]; then

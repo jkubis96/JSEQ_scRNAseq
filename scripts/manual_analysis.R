@@ -160,8 +160,15 @@ UMI@meta.data$orig.ident  <- make.unique(as.character(names(Idents(UMI))))
 # Cell content quality
 
 
-UMI[["MitoPercent"]] <- PercentageFeatureSet(UMI, pattern = "^(MT-|MT\\.)")
-UMI[["RiboPercent"]] <- PercentageFeatureSet(UMI, pattern = "^(RPS|RPL|MRPL|MRPS|RS-)")
+UMI[["MitoPercent"]] <- PercentageFeatureSet(
+  UMI, 
+  features = rownames(UMI)[grepl("^(MT-|MT\\.)", toupper(rownames(UMI)))]
+)
+
+UMI[["RiboPercent"]] <- PercentageFeatureSet(
+  UMI, 
+  features = rownames(UMI)[grepl("^(RPS|RPL|MRPL|MRPS|RS-)", toupper(rownames(UMI)))]
+)
 
 
 UMI@meta.data <- UMI@meta.data %>%
