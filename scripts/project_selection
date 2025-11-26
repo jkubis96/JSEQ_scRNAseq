@@ -2,95 +2,94 @@
 
 function select_analysis {
 
-echo -e '\033[1;36m Analysis of data for:\n  [1] fastq analysis project\n  [2] counts / expression analysis project\n\n  <<<\n  [b] back'
+	echo -e '\033[1;36m Analysis of data for:\n  [1] fastq analysis project\n  [2] counts / expression analysis project\n\n  <<<\n  [b] back'
 
-read p 
-p=$(echo $p | tr '[:upper:]' '[:lower:]')
+	read p
+	p=$(echo $p | tr '[:upper:]' '[:lower:]')
 
-if [[ $p == '2' ]]
-then
+	if [[ $p == '2' ]]; then
 
-	select_project_seurat		
-	
-elif [[ $p == '1' ]]
-then
+		select_project_seurat
 
-	select_project_fastq
+	elif [[ $p == '1' ]]; then
 
-elif [[ $p == 'b' ]]
-then
-	start
+		select_project_fastq
 
-else
-       select_analysis
-fi
+	elif [[ $p == 'b' ]]; then
+		start
+
+	else
+		select_analysis
+	fi
 
 }
-
 
 function select_project_seurat {
 
-INFASTP=$(pwd)/projects/*'exp'*
+	INFASTP=$(pwd)/projects/*'exp'*
 
-if [[ "${INFASTP[0]}" == "$(pwd)/projects/*'exp'*" ]]; then
-    INFASTP=()  
-fi
+	if [[ "${INFASTP[0]}" == "$(pwd)/projects/*'exp'*" ]]; then
+		INFASTP=()
+	fi
 
-select d in $INFASTP Back; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
+	select d in $INFASTP Back; do
+		test -n "$d" && break
+		echo -e "\033[0;31m >>> Invalid Selection"
+	done
 
-if [ $d == Back ]
-then
+	if [ $d == Back ]; then
 
-	start
+		start
 
-else
-	cd $d
-	source config
-	project_name=$project_name
-	project_name_mode=$project_name_mode 
-	READS_LENGHT=$READS_LENGHT 
-	species=$species 
-	cell=$cell
-	marker_path=$marker_path
+	else
+		cd $d
+		source config
+		project_name=$project_name
+		project_name_mode=$project_name_mode
+		READS_LENGHT=$READS_LENGHT
+		species=$species
+		cell=$cell
+		marker_path=$marker_path
 
-	cd ..
+		cd ..
 
-	cd ..
+		cd ..
 
-fi
+	fi
 
 }
 
-
 function select_project_fastq {
 
-INFASTP=$(pwd)/projects/*'fq'*
+	INFASTP=$(pwd)/projects/*'fq'*
 
-if [[ "${INFASTP[0]}" == "$(pwd)/projects/*'fq'*" ]]; then
-    INFASTP=()  
-fi
+	if [[ "${INFASTP[0]}" == "$(pwd)/projects/*'fq'*" ]]; then
+		INFASTP=()
+	fi
 
-select d in $INFASTP Back; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
+	select d in $INFASTP Back; do
+		test -n "$d" && break
+		echo -e "\033[0;31m >>> Invalid Selection"
+	done
 
-if [ $d == Back ]
-then
+	if [ $d == Back ]; then
 
-	start
+		start
 
-else
-	cd $d
-	source config
-	project_name=$project_name
-	project_name_mode=$project_name_mode 
-	READS_LENGHT=$READS_LENGHT 
-	species=$species 
-	cell=$cell
-	marker_path=$marker_path
+	else
+		cd $d
+		source config
+		project_name=$project_name
+		project_name_mode=$project_name_mode
+		READS_LENGHT=$READS_LENGHT
+		species=$species
+		cell=$cell
+		marker_path=$marker_path
 
-	cd ..
+		cd ..
 
-	cd ..
+		cd ..
 
-fi
+	fi
 
 }

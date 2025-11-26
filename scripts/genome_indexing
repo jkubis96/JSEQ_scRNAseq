@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #ref fiile generate
 
@@ -6,134 +6,123 @@ function create_ref {
 	cpu=$(grep -c ^processor /proc/cpuinfo)
 	cpu=$cpu-2
 
-	samtools dict $(pwd)/genome/$species/genome.fa > $(pwd)/genome/$species/genome.dict 
+	samtools dict $(pwd)/genome/$species/genome.fa >$(pwd)/genome/$species/genome.dict
 
 }
 
-
 function rna_intervals {
 
-java -jar /tools/DropSeq/jar/dropseq.jar CreateIntervalsFiles \
-        REDUCED_GTF=$(pwd)/genome/$species/reduced_annotation.gtf \
-        SEQUENCE_DICTIONARY=$(pwd)/genome/$species/genome.dict \
-        O=$(pwd)/genome/$species/ \
-        PREFIX='/annotation'
+	java -jar /tools/DropSeq/jar/dropseq.jar CreateIntervalsFiles \
+		REDUCED_GTF=$(pwd)/genome/$species/reduced_annotation.gtf \
+		SEQUENCE_DICTIONARY=$(pwd)/genome/$species/genome.dict \
+		O=$(pwd)/genome/$species/ \
+		PREFIX='/annotation'
 }
 
 #########################################################################################################################
 
-
 function GENOME {
 
-echo -e '\033[1;36m Enter the species [human/mice/custom]:'
-echo -e '\033[1;36m Prepare inputed genome [input]:'
-echo -e '\033[1;36m If quit [q]:'
-echo ''
+	echo -e '\033[1;36m Enter the species [human/mice/custom]:'
+	echo -e '\033[1;36m Prepare inputed genome [input]:'
+	echo -e '\033[1;36m If quit [q]:'
+	echo ''
 
-read species
-
-species=$(echo $species | tr '[:upper:]' '[:lower:]')
-
-if [ -z $species ] 
-then
-
-species=_
-
-fi
-
-if [ $species == q ]
-then
-
-	start
-
-elif [[ $species == 'input' ]]
-then
-
-	
-	dirs=($(for d in $(pwd)/genome/*/; do [ ! -f "$d/genome.dict" ] && echo "$d"; done))
-
-	select d in $dirs Back; do test -n "$d" && break; echo -e "\033[0;31m >>> Invalid Selection"; done
-
-	if [ "$d" == "Back" ];
-	then
-		start
-	fi
-
-	species=$(basename "$d")
-
-	if ! compgen -G "$d"/*.gtf* > /dev/null || ! compgen -G "$d"/*.fa* > /dev/null; 
-	then
-
-		echo "In directory $d files *.gtf and *.fa not found"
-		start
-	
-	fi
-
-	cd genome/$species
-
-	for file in $(pwd)/*; do
-    
-    # --- GTF ---
-    if [[ "$file" == *.gtf.gz ]]; then
-        echo "Decompressing $file -> annotation.gtf"
-        gunzip -c "$file" > annotation.gtf
-        rm "$file"   
-    elif [[ "$file" == *.gtf ]]; then
-        echo "Renaming $file -> annotation.gtf"
-        mv "$file" annotation.gtf
-    fi
-
-    # --- FASTA ---
-    if [[ "$file" == *.fa.gz ]]; then
-        echo "Decompressing $file -> genome.fa"
-        gunzip -c "$file" > genome.fa
-        rm "$file"
-    elif [[ "$file" == *.fa ]]; then
-        echo "Renaming $file -> genome.fa"
-        mv "$file" genome.fa
-    fi
-
-	done
-
-	
-	cd ..
-	cd ..
-	
-
-	echo -e "\033[0;34m $(date) Creating genome reference files"
-	create_ref  
-
-	Rscript $(pwd)/scripts/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
-	
-	echo -e "\033[0;34m $(date) Generating of the intervals"
-	rna_intervals
-	
-	echo -e "\033[0;32m $(date) Process DONE!"
-
-		
-	start
-
-else
-	
-
-	#config
-	source $(pwd)/requirements_file/genome.conf
-	human_genome=$human_genome
-	human_annotation=$human_annotation
-
-	mice_genome=$mice_genome
-	mice_annotation=$mice_annotation
-
-	custom_genome=$custom_genome
-	custom_annotation=$custom_annotation
+	read species
 
 	species=$(echo $species | tr '[:upper:]' '[:lower:]')
-	input_mice=$(pwd)/genome/$species/annotation_mice.gtf
-	input_human=$(pwd)/genome/$species/annotation_human.gtf
 
+	if [ -z $species ]; then
 
-	if [[ $species == 'human' ]]
-	then
+		species=_
+
+	fi
+
+	if [ $species == q ]; then
+
+		start
+
+	elif [[ $species == 'input' ]]; then
+
+		dirs=($(for d in $(pwd)/genome/*/; do [ ! -f "$d/genome.dict" ] && echo "$d"; done))
+
+		select d in $dirs Back; do
+			test -n "$d" && break
+			echo -e "\033[0;31m >>> Invalid Selection"
+		done
+
+		if [ "$d" == "Back" ]; then
+			start
+		fi
+
+		species=$(basename "$d")
+
+		if ! compgen -G "$d"/*.gtf* >/dev/null || ! compgen -G "$d"/*.fa* >/dev/null; then
+
+			echo "In directory $d files *.gtf and *.fa not found"
+			start
+
+		fi
+
+		cd genome/$species
+
+		for file in $(pwd)/*; do
+
+			# --- GTF ---
+			if [[ "$file" == *.gtf.gz ]]; then
+				echo "Decompressing $file -> annotation.gtf"
+				gunzip -c "$file" >annotation.gtf
+				rm "$file"
+			elif [[ "$file" == *.gtf ]]; then
+				echo "Renaming $file -> annotation.gtf"
+				mv "$file" annotation.gtf
+			fi
+
+			# --- FASTA ---
+			if [[ "$file" == *.fa.gz ]]; then
+				echo "Decompressing $file -> genome.fa"
+				gunzip -c "$file" >genome.fa
+				rm "$file"
+			elif [[ "$file" == *.fa ]]; then
+				echo "Renaming $file -> genome.fa"
+				mv "$file" genome.fa
+			fi
+
+		done
+
+		cd ..
+		cd ..
+
+		echo -e "\033[0;34m $(date) Creating genome reference files"
+		create_ref
+
+		Rscript $(pwd)/scripts/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
+
+		echo -e "\033[0;34m $(date) Generating of the intervals"
+		rna_intervals
+
+		echo -e "\033[0;32m $(date) Process DONE!"
+
+		start
+
+	else
+
+		#config
+		source $(pwd)/requirements_file/genome.conf
+		human_genome=$human_genome
+		human_annotation=$human_annotation
+
+		mice_genome=$mice_genome
+		mice_annotation=$mice_annotation
+
+		custom_genome=$custom_genome
+		custom_annotation=$custom_annotation
+
+		species=$(echo $species | tr '[:upper:]' '[:lower:]')
+		input_mice=$(pwd)/genome/$species/annotation_mice.gtf
+		input_human=$(pwd)/genome/$species/annotation_human.gtf
+
+		if [[ $species == 'human' ]]; then
 
 			mkdir -p genome
 			mkdir -p genome/$species
@@ -142,162 +131,141 @@ else
 			gunzip annotation.gtf.gz
 			wget ${human_genome} -O genome.fa.gz
 			gunzip genome.fa.gz
-			
+
 			cd ..
 			cd ..
-			
+
 			echo -e "\033[0;34m $(date) Creating genome reference files"
-			create_ref  
-		
+			create_ref
+
 			Rscript $(pwd)/scripts/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
-			
+
 			echo -e "\033[0;34m $(date) Generating of the intervals"
 			rna_intervals
-			
+
 			echo -e "\033[0;32m $(date) Process DONE!"
 
-			
-			
-		
-	start
+			start
 
-	elif [[ $species == 'mice' ]]
-	then
+		elif [[ $species == 'mice' ]]; then
 			mkdir -p genome
 			mkdir -p genome/$species
 			cd genome/$species
-			
+
 			wget ${mice_annotation} -O annotation.gtf.gz
 			gunzip annotation.gtf.gz
 			wget ${mice_genome} -O genome.fa.gz
 			gunzip genome.fa.gz
-			
+
 			cd ..
 			cd ..
-			
+
 			echo -e "\033[0;34m $(date) Creating genome reference files"
-			create_ref  
-		
+			create_ref
+
 			Rscript $(pwd)/scripts/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
-			
+
 			echo -e "\033[0;34m $(date) Generating of the intervals"
 			rna_intervals
-			
+
 			echo -e "\033[0;32m $(date) Process DONE!"
 
+			start
 
-	start
-
-
-
-	elif [[ $species == 'custom' ]]
-	then
+		elif [[ $species == 'custom' ]]; then
 			mkdir -p genome
 			mkdir -p genome/$species
 			cd genome/$species
-			
+
 			wget ${custom_annotation} -O annotation.gtf.gz
 			gunzip annotation.gtf.gz
 			wget ${custom_genome} -O genome.fa.gz
 			gunzip genome.fa.gz
-			
+
 			cd ..
 			cd ..
-			
+
 			echo -e "\033[0;34m $(date) Creating genome reference files"
-			create_ref  
-		
+			create_ref
+
 			Rscript $(pwd)/scripts/genome_prep.R $species $(pwd)/genome/$species/annotation.gtf $(pwd)/genome/$species
-			
+
 			echo -e "\033[0;34m $(date) Generating of the intervals"
 			rna_intervals
-			
+
 			echo -e "\033[0;32m $(date) Process DONE!"
 
-			
-	start
+			start
 
-	else
+		else
 
-	GENOME
+			GENOME
 
-	fi 
+		fi
 
-fi
+	fi
 
 }
 
-
-
 function index_file {
 
-index_files=$(pwd)/genome/$species/index/*
+	index_files=$(pwd)/genome/$species/index/*
 
+	for i in $index_files; do
+		r=$(basename $i)
+		if [[ $r == $READS_LENGHT ]]; then
 
-for i in $index_files
-do
-r=$(basename $i)
-if [[ $r == $READS_LENGHT ]]
-then
+			check_index=$READS_LENGHT
 
-check_index=$READS_LENGHT
-
-
-fi
-done
+		fi
+	done
 
 }
 
 function INDEXING {
 
-index_file
+	index_file
 
-echo ''
-echo -e "\033[0;34m $(date) Genome indexing start..."
-echo ''
+	echo ''
+	echo -e "\033[0;34m $(date) Genome indexing start..."
+	echo ''
 
+	if [[ $check_index != $READS_LENGHT ]]; then
 
-if [[ $check_index != $READS_LENGHT ]]
-then
+		echo ''
+		echo -e "\033[0;34m Start indexing"
+		echo ''
 
-echo ''
-echo -e "\033[0;34m Start indexing"
-echo ''
+		mkdir -p genome/$species/index/$READS_LENGHT
+		cpu=$(grep -c ^processor /proc/cpuinfo)
+		cpu=$cpu-2
+		DIR=$(pwd)/genome/$species/index/$READS_LENGHT
+		GENOME=$(pwd)/genome/$species
+		lenght=$READS_LENGHT
 
-mkdir -p genome/$species/index/$READS_LENGHT 
-cpu=$(grep -c ^processor /proc/cpuinfo)
-cpu=$cpu-2
-DIR=$(pwd)/genome/$species/index/$READS_LENGHT 
-GENOME=$(pwd)/genome/$species
-lenght=$READS_LENGHT
+		mem=$(($(getconf _PHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))
+		mem=$(($mem * 1000000))
 
-mem=$(($(getconf _PHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))
-mem=$[$mem * 1000000]
+		STAR --runThreadN $cpu --runMode genomeGenerate --genomeDir $DIR --genomeFastaFiles $GENOME/*.fa --sjdbGTFfile $GENOME/correct_annotation.gtf --limitGenomeGenerateRAM $mem --sjdbOverhang $lenght
 
-STAR --runThreadN $cpu  --runMode genomeGenerate --genomeDir $DIR  --genomeFastaFiles $GENOME/*.fa  --sjdbGTFfile $GENOME/correct_annotation.gtf --limitGenomeGenerateRAM $mem --sjdbOverhang $lenght
+		echo -e "\033[0;32m $(date) Genome indexing done"
 
-echo -e "\033[0;32m $(date) Genome indexing done"
+		echo ''
+		echo ''
 
+		start
 
-echo ''
-echo ''
+	elif [[ $check_index == $READS_LENGHT ]]; then
 
-start
+		echo ''
+		echo -e "\033[0;34m Index' $READS_LENGHT 'for' $species 'already exist"
+		echo -e "\033[0;34m You can run analysis"
+		echo ''
 
-elif [[ $check_index == $READS_LENGHT ]]
-then	
-	
-echo ''
-echo -e "\033[0;34m Index' $READS_LENGHT 'for' $species 'already exist"
-echo -e "\033[0;34m You can run analysis"
-echo ''
+		species=
 
-species=
+		start
 
-start
-
-fi
+	fi
 
 }
-
-

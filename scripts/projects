@@ -1,253 +1,223 @@
 #!/bin/bash
 
 function merge_fq {
- 
 
-fq=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
-for i in $fq;
-do
-if      [[ $i == *"R1"* ]];
-then
-		r1+=$(basename $i)' '
-elif 	[[ $i == *"R2"* ]];
-then
-		r2+=$(basename $i)' '
-fi
-done;
+	fq=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
+	for i in $fq; do
+		if [[ $i == *"R1"* ]]; then
+			r1+=$(basename $i)' '
+		elif [[ $i == *"R2"* ]]; then
+			r2+=$(basename $i)' '
+		fi
+	done
 
-cd projects/$project_name_mod/fast_data
-cat $r1 > input_R1.fastq.gz
-cat $r2 > input_R2.fastq.gz
-rm $r1 $r2
+	cd projects/$project_name_mod/fast_data
+	cat $r1 >input_R1.fastq.gz
+	cat $r2 >input_R2.fastq.gz
+	rm $r1 $r2
 
-r1=
-r2=
+	r1=
+	r2=
 
-cd ..
-cd ..
-cd ..
+	cd ..
+	cd ..
+	cd ..
 
 }
 
-
 function checkfq {
-		echo ''
-		echo  -e '\033[1;36m Put fastq data into => projects/'$project_name_mod/'fast_data'
-		echo  -e '\033[1;36m If you did it, push ENTER'
-		read enter
-		
-		fast=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
-	
-for i in $fast;
-do
-		r+=$i
-done;
+	echo ''
+	echo -e '\033[1;36m Put fastq data into => projects/'$project_name_mod/'fast_data'
+	echo -e '\033[1;36m If you did it, push ENTER'
+	read enter
 
-if      [[ $r == *"R1"* ]] && [[ $r == *"R2"* ]];
-then
-        echo ''
+	fast=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
+
+	for i in $fast; do
+		r+=$i
+	done
+
+	if [[ $r == *"R1"* ]] && [[ $r == *"R2"* ]]; then
+		echo ''
 		echo -e "\033[0;32m Project done"
 		echo ''
-		echo  -e '\033[1;36m Merge fastq file for Read1 and Read2 - if more than one'
+		echo -e '\033[1;36m Merge fastq file for Read1 and Read2 - if more than one'
 		echo ''
 		merge_fq
 		echo ''
 		source=$(pwd)/scripts/genome_indexing
 		source $source
 		INDEXING
-		
-else
-        echo -e '\033[0;31m Fastq data not found'
+
+	else
+		echo -e '\033[0;31m Fastq data not found'
 		echo -e '\033[0;31m Put data'
 		checkfq
-		
-fi
- 
-	
-		
+
+	fi
+
 }
 
 function checkseurat_1 {
-		echo ''
-		echo  -e '\033[1;36m Put count genes matrix into => projects/'$project_name_mod/'sc_data'
-		echo  -e '\033[1;36m Available matrix format .csv | .tsv | .txt'
-		echo  -e '\033[1;36m If you did it, push ENTER'
-		read enter
-		
-		fast=$(pwd)/projects/$project_name_mod/sc_data/*
-	
-		for i in $fast;
-		do
-				r+=$i
-		done; 		
-				
-		if      [[ $r == *".tsv"* ]]
-		then
+	echo ''
+	echo -e '\033[1;36m Put count genes matrix into => projects/'$project_name_mod/'sc_data'
+	echo -e '\033[1;36m Available matrix format .csv | .tsv | .txt'
+	echo -e '\033[1;36m If you did it, push ENTER'
+	read enter
 
-        echo  -e "\033[1;36m $(date) Data converting"
-	
+	fast=$(pwd)/projects/$project_name_mod/sc_data/*
+
+	for i in $fast; do
+		r+=$i
+	done
+
+	if [[ $r == *".tsv"* ]]; then
+
+		echo -e "\033[1;36m $(date) Data converting"
+
 		format=tsv
 		con=NULL
 		null=NULL
 		converter=$(pwd)/scripts/converter.R
 		Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
-		
-	
+
 		echo ''
 		echo -e "\033[0;32m Project done"
 		echo -e "\033[0;32m Start analysis"
 		echo ''
-		
-		
+
 		start
-	
-elif     [[ $r == *".csv"* ]] 
-then
-        echo  -e "\033[1;36m $(date) Data converting"
-	
+
+	elif [[ $r == *".csv"* ]]; then
+		echo -e "\033[1;36m $(date) Data converting"
+
 		format=csv
 		con=NULL
 		null=NULL
 		converter=$(pwd)/scripts/converter.R
 		Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
-	
+
 		echo ''
 		echo -e "\033[0;32m Project done"
 		echo -e "\033[0;32m Start analysis"
 		echo ''
-	
+
 		jseq=$(pwd)/JSEQ
 		source jseq
 		start
-	
-elif    [[ $r == *".txt"* ]]
-then
-        
-		echo  -e "\033[1;36m $(date) Data converting"
-		
+
+	elif [[ $r == *".txt"* ]]; then
+
+		echo -e "\033[1;36m $(date) Data converting"
+
 		format=txt
 		con=NULL
 		null=NULL
 		converter=$(pwd)/scripts/converter.R
 		Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
-		
+
 		echo ''
 		echo -e "\033[0;32m Project done"
 		echo -e "\033[0;32m Start analysis"
 		echo ''
-	
-	
+
 		start
-		
-		
-else
-        echo -e '\033[1;31m Expression data not found'
+
+	else
+		echo -e '\033[1;31m Expression data not found'
 		echo -e '\033[1;31m Put data'
 		checkseurat_1
-fi
+	fi
 
-	
-		
 }
-
-
 
 function checkseurat_3 {
-		echo ''
-		echo  -e '\033[1;36m Put genes name data as genes.tsv into => projects/'$project_name_mod/'sc_data'
-		echo  -e '\033[1;36m Put barcodes data as barcodes.tsv into => projects/'$project_name_mod/'sc_data'
-		echo  -e '\033[1;36m Put count matrix data as matrix.mtx into => projects/'$project_name_mod/'sc_data'
-		echo  -e '\033[1;36m If you did it, push ENTER'
-		read enter
-		
-		fast=$(pwd)/projects/$project_name_mod/sc_data/*
-	
-		for i in $fast;
-		do
-				r+=$i
-		done; 		
-				
-		if      [[ $r == *"matrix"* ]] && [[ $r == *"genes"* ]] && [[ $r == *"barcodes"* ]];
-		then
+	echo ''
+	echo -e '\033[1;36m Put genes name data as genes.tsv into => projects/'$project_name_mod/'sc_data'
+	echo -e '\033[1;36m Put barcodes data as barcodes.tsv into => projects/'$project_name_mod/'sc_data'
+	echo -e '\033[1;36m Put count matrix data as matrix.mtx into => projects/'$project_name_mod/'sc_data'
+	echo -e '\033[1;36m If you did it, push ENTER'
+	read enter
 
-			echo ''
-			echo -e "\033[0;32m Project done"
-			echo -e "\033[0;32m Start analysis"
-			echo ''
-		
-	
-			start
-		
-		
-		else
-				echo -e '\033[0;31m Expression data not found'
-				echo -e '\033[0;31m Put data'
-				checkseurat_3
-		fi
-		
+	fast=$(pwd)/projects/$project_name_mod/sc_data/*
+
+	for i in $fast; do
+		r+=$i
+	done
+
+	if [[ $r == *"matrix"* ]] && [[ $r == *"genes"* ]] && [[ $r == *"barcodes"* ]]; then
+
+		echo ''
+		echo -e "\033[0;32m Project done"
+		echo -e "\033[0;32m Start analysis"
+		echo ''
+
+		start
+
+	else
+		echo -e '\033[0;31m Expression data not found'
+		echo -e '\033[0;31m Put data'
+		checkseurat_3
+	fi
+
 }
 
-
 function PARAMETRS_fq {
-	echo -e '\033[1;36m Project name:' 
+	echo -e '\033[1;36m Project name:'
 	echo -e '\033[1;36m If quit [q]:'
 
 	echo ''
-			read project_name
-			project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
+	read project_name
+	project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
 
-
-	if [ -z $project_name ] 
-	then
+	if [ -z $project_name ]; then
 
 		project_name=_
 
 	fi
 
-	if [ $project_name == q ]
-	then
+	if [ $project_name == q ]; then
 
 		start
 
 	else
 
-		echo  -e '\033[1;36m Enter operation paramets:'
+		echo -e '\033[1;36m Enter operation paramets:'
 		echo ''
-		echo  -e '\033[1;36m ReadsLenght:'
+		echo -e '\033[1;36m ReadsLenght:'
 		echo ''
-				read READS_LENGHT
+		read READS_LENGHT
 
-
-		echo  -e '\033[1;36m Genome [select number]:'
+		echo -e '\033[1;36m Genome [select number]:'
 		echo ''
-				genomes=( "$(pwd)"/genome/* )
+		genomes=("$(pwd)"/genome/*)
 
-				if [[ "${genomes[0]}" == "$(pwd)/genome/*" ]]; then
-					genomes=()  
-				fi
+		if [[ "${genomes[0]}" == "$(pwd)/genome/*" ]]; then
+			genomes=()
+		fi
 
-				select d in "${genomes[@]}" Back; do
-					if [[ -n "$d" ]]; then
-						species=$(basename "$d")
-						break
-					else
-						echo -e "\033[0;31m >>> Invalid Selection"
-					fi
-				done
+		select d in "${genomes[@]}" Back; do
+			if [[ -n "$d" ]]; then
+				species=$(basename "$d")
+				break
+			else
+				echo -e "\033[0;31m >>> Invalid Selection"
+			fi
+		done
 
-				if [[ "$d" == "Back" ]]; then
-					species=_
-					start
-				fi
+		if [[ "$d" == "Back" ]]; then
+			species=_
+			start
+		fi
 
-		echo  -e '\033[1;36m Estimated number of cells'
+		echo -e '\033[1;36m Estimated number of cells'
 		echo ''
-			read cell
+		read cell
 
-		echo  -e '\033[1;36m Select marker set'
+		echo -e '\033[1;36m Select marker set'
 		echo ''
 
-		marker_input=( "$(pwd)/requirements_file/"*.xlsx )
+		marker_input=("$(pwd)/requirements_file/"*.xlsx)
 
 		if [[ ${marker_input[0]} == "$(pwd)/requirements_file/*.xlsx" ]]; then
 			marker_input=()
@@ -270,64 +240,59 @@ function PARAMETRS_fq {
 		echo ''
 		echo ''
 
-		if [[ $READS_LENGHT -lt 1000 && $READS_LENGHT -gt 0 ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]];
-		then
+		if [[ $READS_LENGHT -lt 1000 && $READS_LENGHT -gt 0 ]] && [[ $cell -lt 1000000 && $cell -gt 0 ]]; then
 
-		echo -e "\033[0;32m Parametrs correct"
-		echo ''
+			echo -e "\033[0;32m Parametrs correct"
+			echo ''
 		else
-				echo ''
-				echo -e '\033[0;31m Wrong parametrs'
-				echo -e '\033[0;31m Write right parametrs'
-				echo ''
-				PARAMETRS_fq
+			echo ''
+			echo -e '\033[0;31m Wrong parametrs'
+			echo -e '\033[0;31m Write right parametrs'
+			echo ''
+			PARAMETRS_fq
 
 		fi
 
-fi
+	fi
 
 }
 
 function PARAMETRS_se {
-	echo -e '\033[1;36m Project name:' 
+	echo -e '\033[1;36m Project name:'
 	echo -e '\033[1;36m If quit [q]:'
 	echo ''
 
 	read project_name
 	project_name=$(echo $project_name | tr '[:upper:]' '[:lower:]')
 
-	if [ -z $project_name ] 
-	then
+	if [ -z $project_name ]; then
 
 		project_name=_
 
 	fi
 
-	if [ $project_name == q ]
-	then
+	if [ $project_name == q ]; then
 
 		start
 
 	else
 
-		echo  -e '\033[1;36m Enter operation paramets:'
+		echo -e '\033[1;36m Enter operation paramets:'
 		echo ''
 
-		echo  -e '\033[1;36m Species [human/mice/*custom name*]:'
+		echo -e '\033[1;36m Species [human/mice/*custom name*]:'
 		echo ''
-				read species
-				species=$(echo $species | tr '[:upper:]' '[:lower:]')
+		read species
+		species=$(echo $species | tr '[:upper:]' '[:lower:]')
 
-
-		echo  -e '\033[1;36m Estimated number of cells'
+		echo -e '\033[1;36m Estimated number of cells'
 		echo ''
-			read cell
-			
-		echo  -e '\033[1;36m Select marker set'
+		read cell
+
+		echo -e '\033[1;36m Select marker set'
 		echo ''
 
-
-		marker_input=( "$(pwd)/requirements_file/"*.xlsx )
+		marker_input=("$(pwd)/requirements_file/"*.xlsx)
 
 		if [[ ${marker_input[0]} == "$(pwd)/requirements_file/*.xlsx" ]]; then
 			marker_input=()
@@ -353,50 +318,44 @@ function PARAMETRS_se {
 		echo -e '\033[1;36m Data format:\n  [1] count_matrix\n  [2] normalized_expression matrix\n  [3] separate matrix - genes.tsv / names.tsv / matrix.mtx files'
 
 		echo ''
-			read data
+		read data
 
-		if  [[ $cell -lt 1000000 && $cell -gt 0 ]] && [[ $data == '1' || $data == '2' || $data == '3' ]];
-		then
+		if [[ $cell -lt 1000000 && $cell -gt 0 ]] && [[ $data == '1' || $data == '2' || $data == '3' ]]; then
 
-		echo -e "\033[0;32m Parametrs correct"
-		echo ''
+			echo -e "\033[0;32m Parametrs correct"
+			echo ''
 		else
-				echo ''
-				echo -e '\033[0;31m Wrong parametrs'
-				echo -e '\033[0;31m Write right parametrs'
-				echo ''
-				PARAMETRS_se
+			echo ''
+			echo -e '\033[0;31m Wrong parametrs'
+			echo -e '\033[0;31m Write right parametrs'
+			echo ''
+			PARAMETRS_se
 		fi
-fi
+	fi
 
 }
 
 function data_select {
 
-		if [[ $data = 1 ]]
-		then
-			checkseurat_1
-		elif [[ $data = 2 ]]
-		then
-			checkseurat_1
-		elif [[ $data = 3 ]]
-		then
-			checkseurat_3
-fi
+	if [[ $data = 1 ]]; then
+		checkseurat_1
+	elif [[ $data = 2 ]]; then
+		checkseurat_1
+	elif [[ $data = 3 ]]; then
+		checkseurat_3
+	fi
 }
 
 function PROJECT {
 
-echo -e '\033[1;36m Create project for:\n  [1] fastq data\n  [2] counts / expression data\n\n  <<<\n  [b] back'
+	echo -e '\033[1;36m Create project for:\n  [1] fastq data\n  [2] counts / expression data\n\n  <<<\n  [b] back'
 
+	read p
+	p=$(echo $p | tr '[:upper:]' '[:lower:]')
 
-read p 
-p=$(echo $p | tr '[:upper:]' '[:lower:]')
-
-if [[ $p == '2' ]]
-then
+	if [[ $p == '2' ]]; then
 		PARAMETRS_se
-		
+
 		project_name_mod=$(date +'%d-%m-%Y')'_'$project_name'_exp'
 		mkdir -p projects/$project_name_mod
 		mkdir -p projects/$project_name_mod/results
@@ -404,23 +363,22 @@ then
 		echo ''
 		echo -e "\033[0;32m Complete"
 		echo ''
-        echo  -e '\033[1;36m Next step =>'
+		echo -e '\033[1;36m Next step =>'
 		echo ''
-		
-		echo project_name=$project_name > $(pwd)/projects/$project_name_mod/config
-		echo project_name_mode=$project_name_mod >> $(pwd)/projects/$project_name_mod/config
-		echo species=$species >> $(pwd)/projects/$project_name_mod/config
-		echo cell=$cell >> $(pwd)/projects/$project_name_mod/config
-		echo data=$data >> $(pwd)/projects/$project_name_mod/config
-		echo marker_path=$marker_path >> $(pwd)/projects/$project_name_mod/config
+
+		echo project_name=$project_name >$(pwd)/projects/$project_name_mod/config
+		echo project_name_mode=$project_name_mod >>$(pwd)/projects/$project_name_mod/config
+		echo species=$species >>$(pwd)/projects/$project_name_mod/config
+		echo cell=$cell >>$(pwd)/projects/$project_name_mod/config
+		echo data=$data >>$(pwd)/projects/$project_name_mod/config
+		echo marker_path=$marker_path >>$(pwd)/projects/$project_name_mod/config
 
 		data_select
-		
-elif [[ $p == '1' ]]
-then
+
+	elif [[ $p == '1' ]]; then
 
 		PARAMETRS_fq
-		
+
 		project_name_mod=$(date +'%d-%m-%Y')'_'$project_name'_fq'
 		mkdir -p projects/$project_name_mod
 		mkdir -p projects/$project_name_mod/tmp
@@ -429,27 +387,25 @@ then
 		echo ''
 		echo -e "\033[0;32m Complete"
 		echo ''
-        echo  -e '\033[1;36m Next step =>'
+		echo -e '\033[1;36m Next step =>'
 		echo ''
-		
-		echo project_name=$project_name > $(pwd)/projects/$project_name_mod/config
-		echo project_name_mode=$project_name_mod >> $(pwd)/projects/$project_name_mod/config
-		echo READS_LENGHT=$READS_LENGHT >> $(pwd)/projects/$project_name_mod/config
-		echo species=$species >> $(pwd)/projects/$project_name_mod/config
-		echo cell=$cell >> $(pwd)/projects/$project_name_mod/config
-		echo data=$data >> $(pwd)/projects/$project_name_mod/config
-		echo marker_path=$marker_path >> $(pwd)/projects/$project_name_mod/config
+
+		echo project_name=$project_name >$(pwd)/projects/$project_name_mod/config
+		echo project_name_mode=$project_name_mod >>$(pwd)/projects/$project_name_mod/config
+		echo READS_LENGHT=$READS_LENGHT >>$(pwd)/projects/$project_name_mod/config
+		echo species=$species >>$(pwd)/projects/$project_name_mod/config
+		echo cell=$cell >>$(pwd)/projects/$project_name_mod/config
+		echo data=$data >>$(pwd)/projects/$project_name_mod/config
+		echo marker_path=$marker_path >>$(pwd)/projects/$project_name_mod/config
 
 		checkfq
 
-elif [[ $p == 'b' ]]
-then
+	elif [[ $p == 'b' ]]; then
 
-	start
+		start
 
-
-else
-        PROJECT
-fi
+	else
+		PROJECT
+	fi
 
 }

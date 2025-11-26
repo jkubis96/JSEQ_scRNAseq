@@ -1,5 +1,4 @@
-#!/bin/bash 
-
+#!/bin/bash
 
 # loading configs & paths
 
@@ -12,288 +11,239 @@ INFASTP=$(pwd)/projects/$project_name_mode/fast_data
 tmp=$(pwd)/projects/$project_name_mode/tmp
 SCRIPTS_EXTRACT=$(pwd)/scripts
 
-
 function TRIMMING {
 
+	echo Trimming Start
 
-echo Trimming Start
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
+		for i in $INFASTP/*.fastq.gz; do
+			if [[ $i == *"input_R1"* ]]; then
+				R1=$i
+				R1_NAME=$(basename $i)
+			elif
+				[[ $i == *"input_R2"* ]]
+			then
+				R2=$i
+				R2_NAME=$(basename $i)
+			else
+				echo 'Not fastq'
 
+			fi
+		done
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
+		source $(pwd)/requirements_file/genome.conf
+		qc_reads=$qc_reads
 
-	for i in $INFASTP/*.fastq.gz;
-	do
-	if       [[ $i == *"input_R1"* ]];
-	then
-			R1=$i
-		R1_NAME=$(basename $i)
-	elif
-			[[ $i == *"input_R2"* ]];
-	then
-			R2=$i
-		R2_NAME=$(basename $i)
+		cd $INFASTP
+
+		if [[ $qc_reads == *"ON"* ]]; then
+
+			fastp -i $R1_NAME -I $R2_NAME -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --trim_poly_x --length_required $(($umi_length + $barcode_length)) --html $RESULT/QC_RAPORT.html
+
+		elif [[ $qc_reads == *"OFF"* ]]; then
+
+			fastp -i $R1_NAME -I $R2_NAME -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS -Q --trim_poly_x --length_required $(($umi_length + $barcode_length)) --html $RESULT/QC_RAPORT.html
+
+		fi
+
+		cd ..
+		cd ..
+		cd ..
+
 	else
-			echo 'Not fastq'
+
+		echo 'Trimming was done before'
 
 	fi
-	done;
-	
-	source $(pwd)/requirements_file/genome.conf
-	qc_reads=$qc_reads
-	
-	cd $INFASTP
-
-
-	if [[ $qc_reads == *"ON"* ]];
-	then
-
-	fastp -i $R1_NAME -I $R2_NAME -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS --trim_poly_x --length_required $[$umi_length + $barcode_length]  --html $RESULT/QC_RAPORT.html 
-	
-	elif [[ $qc_reads == *"OFF"* ]];
-	then
-
-	fastp -i $R1_NAME -I $R2_NAME -o R1_out.fastq.gz -O R2_out.fastq.gz --adapter_fasta $ADAPTERS -Q --trim_poly_x --length_required $[$umi_length + $barcode_length]  --html $RESULT/QC_RAPORT.html 
-	
-	fi
-
-
-	cd ..
-	cd ..
-	cd ..
-
-else 
-
-	echo 'Trimming was done before'
-	
-fi
 
 }
-
 
 function whitelist {
 
-echo 'Whitelist'
+	echo 'Whitelist'
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
+		for i in $INFASTP/*.fastq.gz; do
+			if [[ $i == *"R1_out"* ]]; then
+				R1_out=$i
+				R1_NAME_out=$(basename $i)
+			elif
+				[[ $i == *"R2_out"* ]]
+			then
+				R2=$i
+				R2_NAME_out=$(basename $i)
 
+			fi
+		done
 
-	for i in $INFASTP/*.fastq.gz;
-	do
-	if       [[ $i == *"R1_out"* ]];
-	then
-			R1_out=$i
-			R1_NAME_out=$(basename $i)
-	elif
-			[[ $i == *"R2_out"* ]];
-	then
-			R2=$i
-			R2_NAME_out=$(basename $i)
-	
+		cd $(pwd)/projects/$project_name_mode/fast_data
+
+		if [[ $BU_READ == *"1"* ]]; then
+
+			umi_tools whitelist --stdin $R1_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --error-correct-threshold=$error_threshold --ed-above-threshold=discard --plot-prefix=$RESULT/expect_whitelist --log2stderr >$tmp/whitelist.csv
+			umi_tools extract --bc-pattern=$barcode --extract-method=regex --stdin=$R1_NAME_out --stdout=R1_out_extracted.fastq.gz --read2-in=$R2_NAME_out --read2-out=R2_out_extracted.fastq.gz --error-correct-cell --reconcile-pairs --whitelist=$tmp/whitelist.csv
+			gunzip R2_out_extracted.fastq.gz
+			rm R1_out_extracted.fastq.gz
+
+		elif [[ $BU_READ == *"2"* ]]; then
+
+			umi_tools whitelist --stdin $R2_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --error-correct-threshold=$error_threshold --ed-above-threshold=discard --plot-prefix=$RESULT/expect_whitelist --log2stderr >$tmp/whitelist.csv
+			umi_tools extract --bc-pattern=$barcode --extract-method=regex --stdin=$R2_NAME_out --stdout=R2_out_extracted.fastq.gz --read2-in=$R1_NAME_out --read2-out=R1_out_extracted.fastq.gz --error-correct-cell --reconcile-pairs --whitelist=$tmp/whitelist.csv
+			gunzip R1_out_extracted.fastq.gz
+			rm R2_out_extracted.fastq.gz
+
+		fi
+
+		cat $tmp/whitelist.csv | cut -f 1 >$tmp/whitelist_barcodes.csv
+
+		cell=$(cat $tmp/whitelist_barcodes.csv | wc -l)
+
+		echo 'Cells detected - ' $cell
+
+		rm R1_out.fastq.gz
+
+		cd ..
+		cd ..
+		cd ..
+
+	else
+
+		echo 'Whitelist was done before'
+
 	fi
-	done;
-
-
-	cd $(pwd)/projects/$project_name_mode/fast_data
-
-	
-	if [[ $BU_READ == *"1"* ]];
-	then
-
-		umi_tools whitelist --stdin $R1_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --error-correct-threshold=$error_threshold --ed-above-threshold=discard --plot-prefix=$RESULT/expect_whitelist --log2stderr > $tmp/whitelist.csv ;
-		umi_tools extract --bc-pattern=$barcode --extract-method=regex --stdin=$R1_NAME_out --stdout=R1_out_extracted.fastq.gz --read2-in=$R2_NAME_out --read2-out=R2_out_extracted.fastq.gz --error-correct-cell --reconcile-pairs  --whitelist=$tmp/whitelist.csv
-		gunzip R2_out_extracted.fastq.gz
-		rm R1_out_extracted.fastq.gz
-
-	elif [[ $BU_READ == *"2"* ]];
-	then
-
-		umi_tools whitelist --stdin $R2_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --error-correct-threshold=$error_threshold --ed-above-threshold=discard --plot-prefix=$RESULT/expect_whitelist --log2stderr > $tmp/whitelist.csv ;
-		umi_tools extract --bc-pattern=$barcode --extract-method=regex --stdin=$R2_NAME_out --stdout=R2_out_extracted.fastq.gz --read2-in=$R1_NAME_out --read2-out=R1_out_extracted.fastq.gz --error-correct-cell --reconcile-pairs  --whitelist=$tmp/whitelist.csv
-		gunzip R1_out_extracted.fastq.gz
-		rm R2_out_extracted.fastq.gz
-
-	fi
-
-	cat $tmp/whitelist.csv | cut -f 1 > $tmp/whitelist_barcodes.csv ;
-
-	cell=`cat $tmp/whitelist_barcodes.csv  | wc -l`
-
-	echo 'Cells detected - ' $cell
-
-	rm R1_out.fastq.gz
-	
-	cd ..
-	cd ..
-	cd ..
-	
-else 
-
-	echo 'Whitelist was done before'
-	
-fi
-
 
 }
 
-
-
-
 function STAR_MAPPING {
 
-echo Mapping Start
+	echo Mapping Start
 
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
+		cpu=$(grep -c ^processor /proc/cpuinfo)
+		cpu=$(($cpu - 2))
+		DIR=$(pwd)/genome/$species/index/$READS_LENGHT
 
+		for i in $INFASTP/*.fastq; do
+			if [[ $i == *"R1_out_extracted"* ]]; then
+				R1_map=$i
+				R1_NAME_map=$(basename $i)
+			elif
+				[[ $i == *"R2_out_extracted"* ]]
+			then
+				R2_map=$i
+				R2_NAME_map=$(basename $i)
+			else
+				echo 'Next step =>'
+			fi
+		done
 
-	cpu=$(grep -c ^processor /proc/cpuinfo)
-	cpu=$[$cpu-2]
-	DIR=$(pwd)/genome/$species/index/$READS_LENGHT 
+		if [[ $BU_READ == *"1"* ]]; then
 
+			R2_FILE=$INFASTP'/'$R2_NAME_map
+			STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outFileNamePrefix $tmp/ --outStd Log >$RESULT/Log.final.out 2>&1
+			rm R2_FILE
 
-	for i in $INFASTP/*.fastq;
-	do
-	if       [[ $i == *"R1_out_extracted"* ]];
-	then
-			R1_map=$i
-			R1_NAME_map=$(basename $i)
-	elif
-			[[ $i == *"R2_out_extracted"* ]];
-	then
-			R2_map=$i
-			R2_NAME_map=$(basename $i)
+		elif [[ $BU_READ == *"2"* ]]; then
+
+			R1_FILE=$INFASTP'/'$R1_NAME_map
+			STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread --runThreadN $cpu --genomeDir $DIR --readFilesIn $R1_FILE --outFileNamePrefix $tmp/ --outStd Log >$RESULT/Log.final.out 2>&1
+			rm R1_FILE
+
+		fi
+
 	else
-        echo 'Next step =>'
-	fi
-	done;
 
-
-	if [[ $BU_READ == *"1"* ]];
-	then
-
-		R2_FILE=$INFASTP'/'$R2_NAME_map
-		STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread  --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outFileNamePrefix $tmp/ --outStd Log  > $RESULT/Log.final.out 2>&1
-		rm R2_FILE
-
-
-	elif [[ $BU_READ == *"2"* ]];
-	then
-
-		R1_FILE=$INFASTP'/'$R1_NAME_map
-		STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread  --runThreadN $cpu --genomeDir $DIR --readFilesIn $R1_FILE --outFileNamePrefix $tmp/ --outStd Log  > $RESULT/Log.final.out 2>&1
-		rm R1_FILE
+		echo 'Mapping was done before'
 
 	fi
-
-else 
-
-	echo 'Mapping was done before'
-	
-fi
-
 
 }
 
 function add_tags {
 
-echo 'Tags adding'
+	echo 'Tags adding'
 
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
+		samtools view -h $tmp/*.out.bam | sed 's/_/XC:Z:/' | grep -oE "XC:Z:[acgtnACGTN-]+" >$tmp/barcodes.sam
+		samtools view -h $tmp/*.out.bam | sed 's/_/XC:Z:/' | sed 's/_/XM:Z:/' | grep -oE "XM:Z:[acgtnACGTN-]+" >$tmp/umis.sam
 
-	samtools view -h $tmp/*.out.bam | sed 's/_/XC:Z:/' | grep -oE "XC:Z:[acgtnACGTN-]+" > $tmp/barcodes.sam
-	samtools view -h $tmp/*.out.bam | sed 's/_/XC:Z:/' | sed 's/_/XM:Z:/' | grep -oE "XM:Z:[acgtnACGTN-]+" > $tmp/umis.sam
+		python3 $SCRIPTS_EXTRACT/add_tags.py $tmp/barcodes.sam $tmp/umis.sam $tmp/*.out.bam $tmp/final.bam $barcode_length $umi_length
 
-	python3 $SCRIPTS_EXTRACT/add_tags.py $tmp/barcodes.sam $tmp/umis.sam $tmp/*.out.bam $tmp/final.bam $barcode_length $umi_length
-	
-	rm $CHECK/tmp/Aligned.out.bam
-	rm $tmp/barcodes.sam
-	rm $tmp/umis.sam
+		rm $CHECK/tmp/Aligned.out.bam
+		rm $tmp/barcodes.sam
+		rm $tmp/umis.sam
 
-else 
+	else
 
-	echo 'Tags were added before'
-	
-fi
+		echo 'Tags were added before'
 
+	fi
 
 }
 
-
-
-
-
 function dropSEQ {
 
-echo 'TagReadWithGeneFunction'
+	echo 'TagReadWithGeneFunction'
 
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
-
-	java -jar /tools/DropSeq/jar/dropseq.jar TagReadWithGeneFunction \
+		java -jar /tools/DropSeq/jar/dropseq.jar TagReadWithGeneFunction \
 			INPUT=$(pwd)/projects/$project_name_mode/tmp/final.bam \
 			OUTPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged.bam \
-			ANNOTATIONS_FILE=$(pwd)/genome/$species/correct_annotation.refFlat 
-	
-	rm $CHECK/tmp/final.bam
+			ANNOTATIONS_FILE=$(pwd)/genome/$species/correct_annotation.refFlat
 
-else 
+		rm $CHECK/tmp/final.bam
 
-	echo 'TagGene was done before'
-	
-fi
+	else
 
+		echo 'TagGene was done before'
+
+	fi
 
 }
 
 function final_exon {
 
-echo 'DetectBeadSubstitutionErrors'
+	echo 'DetectBeadSubstitutionErrors'
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
-	cpu=$(grep -c ^processor /proc/cpuinfo)
-	cpu=$[$cpu-2]
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
+		cpu=$(grep -c ^processor /proc/cpuinfo)
+		cpu=$(($cpu - 2))
 
-	java -jar /tools/DropSeq/jar/dropseq.jar DetectBeadSubstitutionErrors \
+		java -jar /tools/DropSeq/jar/dropseq.jar DetectBeadSubstitutionErrors \
 			I=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged.bam \
 			O=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged_error.bam \
 			OUTPUT_REPORT=$(pwd)/projects/$project_name_mode/tmp/beadSubstitutionReport.txt \
 			OUTPUT_SUMMARY=$(pwd)/projects/$project_name_mode/tmp/beadSubstitutionSummary.txt \
 			NUM_THREADS=$cpu
 
-	rm $CHECK/tmp/gene_exon_tagged.bam
+		rm $CHECK/tmp/gene_exon_tagged.bam
 
-else 
+	else
 
-	echo 'Barcodes repair was done before'
-	
-fi
+		echo 'Barcodes repair was done before'
 
+	fi
 
 }
 
 function completed_bam {
 
-echo 'DetectBeadSynthesisErrors'
+	echo 'DetectBeadSynthesisErrors'
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
-	cell=`cat $tmp/whitelist_barcodes.csv  | wc -l`
-	cpu=$(grep -c ^processor /proc/cpuinfo)
-	cpu=$[$cpu-2]
+		cell=$(cat $tmp/whitelist_barcodes.csv | wc -l)
+		cpu=$(grep -c ^processor /proc/cpuinfo)
+		cpu=$(($cpu - 2))
 
-	source $(pwd)/requirements_file/smart_primer
+		source $(pwd)/requirements_file/smart_primer
 
-	java -jar /tools/DropSeq/jar/dropseq.jar DetectBeadSynthesisErrors \
+		java -jar /tools/DropSeq/jar/dropseq.jar DetectBeadSynthesisErrors \
 			INPUT=$(pwd)/projects/$project_name_mode/tmp/gene_exon_tagged_error.bam \
 			OUTPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam \
 			OUTPUT_STATS=$(pwd)/projects/$project_name_mode/tmp/synthesis_stats.txt \
@@ -302,50 +252,44 @@ then
 			PRIMER_SEQUENCE=$smart \
 			NUM_THREADS=$cpu
 
-	rm $CHECK/tmp/gene_exon_tagged_error.bam
+		rm $CHECK/tmp/gene_exon_tagged_error.bam
 
-else 
+	else
 
-	echo 'SynthesisError was done before'
-	
-fi
+		echo 'SynthesisError was done before'
 
+	fi
 
 }
-
-
 
 ##EXPRESSION FILE AND STATS
 function umi_extract {
 
-echo 'Barcode/UMI extraction'
+	echo 'Barcode/UMI extraction'
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
-	#
-	samtools view $RESULT/Completed.bam | grep -oE "XC:Z:[acgtnACGTN-]+" > $tmp/repaired_barcodes.sam
-	cat $tmp/repaired_barcodes.sam | sort | uniq -c | sort -nr | sed 's/XC:Z:/\t/' > $tmp/barcode_stat.txt
-	# awk '{if($1 > $umi_deep) print $2}' $tmp/barcode_stat.txt > $tmp/selected_cells.sc
-	awk 'NR==FNR {whitelist[$1]; next} ($1 > $umi_deep) && ($2 in whitelist) {print $2}' $tmp/whitelist_barcodes.csv $tmp/barcode_stat.txt > $tmp/selected_cells.sc
-	rm $tmp/repaired_barcodes.sam
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
+		#
+		samtools view $RESULT/Completed.bam | grep -oE "XC:Z:[acgtnACGTN-]+" >$tmp/repaired_barcodes.sam
+		cat $tmp/repaired_barcodes.sam | sort | uniq -c | sort -nr | sed 's/XC:Z:/\t/' >$tmp/barcode_stat.txt
+		# awk '{if($1 > $umi_deep) print $2}' $tmp/barcode_stat.txt > $tmp/selected_cells.sc
+		awk 'NR==FNR {whitelist[$1]; next} ($1 > $umi_deep) && ($2 in whitelist) {print $2}' $tmp/whitelist_barcodes.csv $tmp/barcode_stat.txt >$tmp/selected_cells.sc
+		rm $tmp/repaired_barcodes.sam
 
-else 
+	else
 
-	echo 'UMI extraction was done before'
-	
-fi
+		echo 'UMI extraction was done before'
 
+	fi
 
 }
 
 function umi_expression {
 
-echo 'DigitalExpression'
+	echo 'DigitalExpression'
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
-	java -jar /tools/DropSeq/jar/dropseq.jar DigitalExpression \
+		java -jar /tools/DropSeq/jar/dropseq.jar DigitalExpression \
 			I=$(pwd)/projects/$project_name_mode/results/Completed.bam \
 			O=$(pwd)/projects/$project_name_mode/tmp/umi_expression.tsv \
 			EDIT_DISTANCE=$EDIT_DISTANCE \
@@ -355,141 +299,124 @@ then
 			LOCUS_FUNCTION_LIST={INTERGENIC,INTRONIC,UTR,CODING,RIBOSOMAL} \
 			MIN_BC_READ_THRESHOLD=$MIN_BC_READ_THRESHOLD \
 			CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/selected_cells.sc
-			
-else 
 
-	echo 'DE was done before'
-	
-fi
+	else
 
+		echo 'DE was done before'
+
+	fi
 
 }
-
 
 function scRNAmetrics {
 
-echo 'SingleCellRnaSeqMetricsCollector'
+	echo 'SingleCellRnaSeqMetricsCollector'
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
-	java -jar /tools/DropSeq/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
-			INPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam\
-			OUTPUT=$(pwd)/projects/$project_name_mode/results/scRNAmetrics.txt\
-			ANNOTATIONS_FILE=$(pwd)/genome/$species/correct_annotation.refFlat \
+		java -jar /tools/DropSeq/jar/dropseq.jar SingleCellRnaSeqMetricsCollector \
+			INPUT=$(pwd)/projects/$project_name_mode/results/Completed.bam OUTPUT=$(pwd)/projects/$project_name_mode/results/scRNAmetrics.txt ANNOTATIONS_FILE=$(pwd)/genome/$species/correct_annotation.refFlat \
 			CELL_BC_FILE=$(pwd)/projects/$project_name_mode/tmp/selected_cells.sc \
 			RIBOSOMAL_INTERVALS=$(pwd)/genome/$species/annotation.rRNA.intervals
-        
-else 
 
-	echo 'Metrics were done before'
-	
-fi	
+	else
+
+		echo 'Metrics were done before'
+
+	fi
 
 }
-
 
 function metric_plot {
 
-echo 'SingleCellRnaSeqMetricsCollector - graph'
+	echo 'SingleCellRnaSeqMetricsCollector - graph'
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
+		Rscript $SCRIPTS_EXTRACT/rna_metrics.R $RESULT $RESULT
 
-	Rscript $SCRIPTS_EXTRACT/rna_metrics.R $RESULT $RESULT
+	else
 
-else 
+		echo 'Plot was done before'
 
-	echo 'Plot was done before'
-	
-fi
+	fi
 
 }
-
-
-
 
 function convert_mtx_umi {
 
-echo 'MTX conversion'
+	echo 'MTX conversion'
 
-if ! [[ -f $CHECK/sc_data/matrix.mtx ]];
-then
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
-	PATH_PROJECT=$(pwd)/projects/$project_name_mode
+		PATH_PROJECT=$(pwd)/projects/$project_name_mode
 
-	path_convert=$(pwd)/projects/$project_name_mode/sc_data
-	mkdir -p $path_convert
-	path_tmp_mtx=$(pwd)/projects/$project_name_mode/tmp
+		path_convert=$(pwd)/projects/$project_name_mode/sc_data
+		mkdir -p $path_convert
+		path_tmp_mtx=$(pwd)/projects/$project_name_mode/tmp
 
-	format=tsv
-	con=raw
-	null=NULL
-	converter=$(pwd)/scripts/converter.R
-	Rscript $converter $format $path_convert $null $path_tmp_mtx $con
+		format=tsv
+		con=raw
+		null=NULL
+		converter=$(pwd)/scripts/converter.R
+		Rscript $converter $format $path_convert $null $path_tmp_mtx $con
 
-	mv $PATH_PROJECT/tmp/Log.final.out $PATH_PROJECT/results/STAR_mapping.out
-	mv $PATH_PROJECT/tmp/Log.out $PATH_PROJECT/results/STAR_process.log.out
-	rm -rf $PATH_PROJECT/tmp
-	
-else 
+		mv $PATH_PROJECT/tmp/Log.final.out $PATH_PROJECT/results/STAR_mapping.out
+		mv $PATH_PROJECT/tmp/Log.out $PATH_PROJECT/results/STAR_process.log.out
+		rm -rf $PATH_PROJECT/tmp
 
-	echo 'Conversion was done before'
-	
-fi
+	else
+
+		echo 'Conversion was done before'
+
+	fi
 
 }
 
-
 function seurat {
 
-echo 'Data analysis'
+	echo 'Data analysis'
 
-PATH_PROJECT=$(pwd)/projects/$project_name_mode
-MARKERS=$marker_path
-data=3
+	PATH_PROJECT=$(pwd)/projects/$project_name_mode
+	MARKERS=$marker_path
+	data=3
 
-CHECK=$(pwd)/projects/$project_name_mode/sc_data
+	CHECK=$(pwd)/projects/$project_name_mode/sc_data
 
-if [[ -f $CHECK/matrix.mtx ]];
-then	
+	if [[ -f $CHECK/matrix.mtx ]]; then
 
-	Rscript $SCRIPTS_EXTRACT/cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell
+		Rscript $SCRIPTS_EXTRACT/cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell
 
-	cp $SCRIPTS_EXTRACT/manual_analysis.R $PATH_PROJECT/results
-	cp $SCRIPTS_EXTRACT/report_manual.Rmd $PATH_PROJECT/results
+		cp $SCRIPTS_EXTRACT/manual_analysis.R $PATH_PROJECT/results
+		cp $SCRIPTS_EXTRACT/report_manual.Rmd $PATH_PROJECT/results
 
-	rm -rf $PATH_PROJECT/results/figures/UMAP_subtypes_files
-	
-	if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" ]; then
-    mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_counts.png"
+		rm -rf $PATH_PROJECT/results/figures/UMAP_subtypes_files
+
+		if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" ]; then
+			mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_counts.png"
+		fi
+
+		if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_knee.png" ]; then
+			mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_knee.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_knee.png"
+		fi
+
+		if [ -f "$PATH_PROJECT/results/scRNAmetrics.jpeg" ]; then
+			mv "$PATH_PROJECT/results/scRNAmetrics.jpeg" "$PATH_PROJECT/results/figures/scRNAmetrics.jpeg"
+		fi
+
+		if [ -f "$PATH_PROJECT/results/scRNAmetrics.pdf" ]; then
+			mv "$PATH_PROJECT/results/scRNAmetrics.pdf" "$PATH_PROJECT/results/figures/scRNAmetrics.pdf"
+		fi
+
+		if [ -f "$PATH_PROJECT/results/scRNAmetrics.txt" ]; then
+			mv "$PATH_PROJECT/results/scRNAmetrics.txt" "$PATH_PROJECT/results/metadata/scRNAmetrics.txt"
+		fi
+
+		if [ -f "$PATH_PROJECT/results/Completed.bam" ]; then
+			mkdir -p "$PATH_PROJECT/results/bam"
+			mv "$PATH_PROJECT/results/Completed.bam" "$PATH_PROJECT/results/bam/Completed.bam"
+		fi
+
 	fi
-
-	if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_knee.png" ]; then
-		mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_knee.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_knee.png"
-	fi
-
-	if [ -f "$PATH_PROJECT/results/scRNAmetrics.jpeg" ]; then
-		mv "$PATH_PROJECT/results/scRNAmetrics.jpeg" "$PATH_PROJECT/results/figures/scRNAmetrics.jpeg"
-	fi
-
-	if [ -f "$PATH_PROJECT/results/scRNAmetrics.pdf" ]; then
-		mv "$PATH_PROJECT/results/scRNAmetrics.pdf" "$PATH_PROJECT/results/figures/scRNAmetrics.pdf"
-	fi
-
-	if [ -f "$PATH_PROJECT/results/scRNAmetrics.txt" ]; then
-		mv "$PATH_PROJECT/results/scRNAmetrics.txt" "$PATH_PROJECT/results/metadata/scRNAmetrics.txt"
-	fi
-
-	if [ -f "$PATH_PROJECT/results/Completed.bam" ]; then
-		mkdir -p "$PATH_PROJECT/results/bam"
-		mv "$PATH_PROJECT/results/Completed.bam" "$PATH_PROJECT/results/bam/Completed.bam"
-	fi
-
-
-
-fi
-
 
 }

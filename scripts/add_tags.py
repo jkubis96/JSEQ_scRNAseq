@@ -1,5 +1,6 @@
-import pysam
 import sys
+
+import pysam
 from tqdm import tqdm
 
 # Arguments
@@ -13,24 +14,27 @@ umi_len = int(sys.argv[6])
 count = 0
 
 # Open files in streaming mode
-with open(barcodes_path, 'r') as barcodes_file, \
-     open(umis_path, 'r') as umis_file, \
-     pysam.AlignmentFile(input_bam, "rb", check_sq=False) as infile_bam, \
-     pysam.AlignmentFile(output_bam, "wb", template=infile_bam) as outfile:
+with open(barcodes_path, "r") as barcodes_file, open(
+    umis_path, "r"
+) as umis_file, pysam.AlignmentFile(
+    input_bam, "rb", check_sq=False
+) as infile_bam, pysam.AlignmentFile(
+    output_bam, "wb", template=infile_bam
+) as outfile:
 
     # Iterate line by line with progress bar
     for bam_read, barcode_line, umi_line in tqdm(
-            zip(infile_bam.fetch(until_eof=True), barcodes_file, umis_file),
-            desc="Processing BAM", unit="reads", leave=True):
+        zip(infile_bam.fetch(until_eof=True), barcodes_file, umis_file),
+        desc="Processing BAM",
+        unit="reads",
+        leave=True,
+    ):
 
-        barcode = barcode_line[5:5+barcode_len]
-        umi = umi_line[5:5+umi_len]
+        barcode = barcode_line[5 : 5 + barcode_len]
+        umi = umi_line[5 : 5 + umi_len]
 
         tags = bam_read.get_tags()
-        tags.extend([
-            ('XC', barcode, 'Z'),
-            ('XM', umi, 'Z')
-        ])
+        tags.extend([("XC", barcode, "Z"), ("XM", umi, "Z")])
         bam_read.set_tags(tags)
         outfile.write(bam_read)
         count += 1
