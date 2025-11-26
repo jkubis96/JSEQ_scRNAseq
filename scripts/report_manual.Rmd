@@ -302,9 +302,9 @@ markers <- read.csv(file = file.path(results_dir, "markers/markers_subclasses.cs
 
 markers <- markers %>%
   filter(p_val < 0.05) %>%
-  group_by(cluster) %>%
+  group_by(subclass) %>%
   top_n(25, esm) %>%
-  arrange(cluster, desc(esm))
+  arrange(subclass, desc(esm))
 
 
 
@@ -408,9 +408,9 @@ markers <- read.csv(file = file.path(results_dir, "markers/markers_subtypes.csv"
 
 markers <- markers %>%
   filter(p_val < 0.05) %>%
-  group_by(cluster) %>%
+  group_by(subtype) %>%
   top_n(25, esm) %>%
-  arrange(cluster, desc(esm))
+  arrange(subtype, desc(esm))
 
 
 
