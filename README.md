@@ -80,7 +80,7 @@ The pipeline was developed and tested on more than one million cells from multip
 4.3 [Component selection algorithm](#pca) \
 4.4 [CSSG (Cell Subtypes Selection by Gene) algorithm](#aaCSSG) \
 4.5 [Cell naming algorithm](#aacn) \
-4.6 [Removing outlier results - algorithms](#out) \
+4.6 [Removing outlier results - algorithms](#out) 
 5. [Used techniques](#used) \
 5.1 [Ribosomal & mitochondrial gene thresholds](#used1) \
 5.2 [Data normalization](#used2) \
