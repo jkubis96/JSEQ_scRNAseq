@@ -9,6 +9,7 @@ RESULT=$(pwd)/projects/$project_name_mode/results/
 ADAPTERS=$(pwd)/requirements_file/Adapters.fa
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
 tmp=$(pwd)/projects/$project_name_mode/tmp
+mkdir -p "$tmp"
 SCRIPTS_EXTRACT=$(pwd)/scripts
 
 function TRIMMING {
@@ -416,6 +417,11 @@ function seurat {
 			mkdir -p "$PATH_PROJECT/results/bam"
 			mv "$PATH_PROJECT/results/Completed.bam" "$PATH_PROJECT/results/bam/Completed.bam"
 		fi
+
+		if [ -f "$PATH_PROJECT/tmp" ]; then
+			rm -rf $PATH_PROJECT/tmp
+		fi
+		
 
 	fi
 

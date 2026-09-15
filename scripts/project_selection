@@ -2,18 +2,40 @@
 
 function select_analysis {
 
-	echo -e '\033[1;36m Analysis of data for:\n  [1] fastq analysis project\n  [2] counts / expression analysis project\n\n  <<<\n  [b] back'
+
+	echo -e '\033[1;36m Select single-cell analysis workflow:
+[1] Upstream Processing  (FASTQ -> Count Matrix)
+[2] Downstream Analysis  (Count Matrix -> Final Report) 
+[3] Full Pipeline        (FASTQ -> Final Report)
+[4] Custom Matrix Input  (Matrix: Count/Normalized/Sparse -> Final Report)\n
+<<<\n 
+[b] Back'
+
 
 	read p
 	p=$(echo $p | tr '[:upper:]' '[:lower:]')
 
-	if [[ $p == '2' ]]; then
+	if [[ $p == '4' ]]; then
 
 		select_project_seurat
 
+	elif [[ $p == '3' ]]; then
+
+		ANALYSIS_TYPE='full'
+		select_project_fastq
+	
+
+	elif [[ $p == '2' ]]; then
+
+		ANALYSIS_TYPE='fq_2'
+		select_project_fastq
+
+
 	elif [[ $p == '1' ]]; then
 
+		ANALYSIS_TYPE='fq_1'
 		select_project_fastq
+		
 
 	elif [[ $p == 'b' ]]; then
 		start
@@ -77,18 +99,47 @@ function select_project_fastq {
 		start
 
 	else
-		cd $d
-		source config
-		project_name=$project_name
-		project_name_mode=$project_name_mode
-		READS_LENGHT=$READS_LENGHT
-		species=$species
-		cell=$cell
-		marker_path=$marker_path
 
-		cd ..
+		if [[ $ANALYSIS_TYPE == 'fq_2' ]]; then
+			if [ -f $d/sc_data/matrix.mtx ]; then
+		
+				cd $d
+				source config
+				project_name=$project_name
+				project_name_mode=$project_name_mode
+				READS_LENGHT=$READS_LENGHT
+				species=$species
+				cell=$cell
+				marker_path=$marker_path
 
-		cd ..
+				cd ..
+
+				cd ..
+
+			else
+
+				echo ''
+				echo -e "\033[1;31m[ERROR]\033[0m Upstream output not found. Please run Upstream Processing first or select Full Pipeline."
+				echo ''
+				select_analysis
+			fi
+
+
+		else
+
+			cd $d
+			source config
+			project_name=$project_name
+			project_name_mode=$project_name_mode
+			READS_LENGHT=$READS_LENGHT
+			species=$species
+			cell=$cell
+			marker_path=$marker_path
+
+			cd ..
+			cd ..
+			
+		fi
 
 	fi
 
