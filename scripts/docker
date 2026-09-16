@@ -114,7 +114,7 @@ function start {
 					echo ''
 					echo -e "\033[0;32m Process completed"
 					echo ''
-					echo -e "\033[1;33mCheck $project_name_mode for the results. If the 'sc_data' directory is missing or empty, check the process.log file for errors."					echo ''
+					echo -e "\033[1;33mCheck $project_name_mode for the results. If the 'sc_data' directory is missing or empty, check the process.log file for errors."
 					start
 
 				elif [[ $ANALYSIS_TYPE == 'fq_2' ]]; then
