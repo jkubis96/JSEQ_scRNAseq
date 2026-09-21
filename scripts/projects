@@ -688,6 +688,8 @@ function PROJECT {
 
 		project_name_mod=$(date +'%d-%m-%Y')'_'$project_name'_fq'
 		mkdir -p projects/$project_name_mod
+		mkdir -p projects/$project_name_mod/results
+
 
 		if (( samples > 1 )); then 
 			for (( i=1; i<=samples; i++ )); do
@@ -701,7 +703,6 @@ function PROJECT {
 			BASE_DIR="projects/$project_name_mod"
 
 			mkdir -p "$BASE_DIR/tmp"
-			mkdir -p "$BASE_DIR/results"
 			mkdir -p "$BASE_DIR/fast_data"
 		fi
 

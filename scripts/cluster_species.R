@@ -17,11 +17,16 @@ args <- commandArgs()
   if (tolower(species) == "human") {
     species <- "Homo sapiens"
   }
-  seurat_umi <- file.path(path, "sc_data/")
+
+  #TUZ-REM
   OUTPUT <- file.path(path, "results")
   project_name <- args[9]
   data <- args[10]
   estimated_cells <- args[11]
+  #TUZ
+  sets_n <- as.integer(args[12])
+
+
   dir.create(path = file.path(OUTPUT, "matrices"))
   dir.create(path = file.path(OUTPUT, "matrices/sparse"))
   dir.create(path = file.path(OUTPUT, "figures"))
@@ -91,16 +96,52 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
 
 ###########################################################################################################################################################
 
-{
+#TUZ
+
+if (sets_n > 1) {
+
+  samples <- list()
+
+  for (s in 1:sets_n) {
+
+    samples[[paste0('sample_', as.character(s))]] <- file.path(path, paste0('sample_', as.character(s)), "sc_data")
+
+  }
+
+  seurat_list <- lapply(names(samples), function(sample_name) {
+    raw_counts <- Read10X(data.dir = samples[[sample_name]], gene.column = 1)
+    
+    obj <- CreateSeuratObject(
+      counts = raw_counts, 
+      project = sample_name, 
+      min.cells = 1, 
+      min.features = 1
+    )
+    return(obj)
+  })
+
+  UMI <- merge(
+    x = seurat_list[[1]], 
+    y = seurat_list[2:length(seurat_list)], 
+    add.cell.ids = names(samples), 
+    project = "integrated"
+  )
+
+} else {
   # Load the raw dataset by UMI
   UMI_raw <- Read10X(seurat_umi, gene.column = 1)
 
   # Create SeuratObject
   UMI <- CreateSeuratObject(counts = UMI_raw, project = project_name, min.cells = 1, min.features = 1)
 
-  cell_input <- ncol(UMI)
+
 }
 
+cell_input <- ncol(UMI)
+
+
+
+#TUZ
 
 UMI@meta.data$orig.ident <- make.unique(as.character(names(Idents(UMI))))
 

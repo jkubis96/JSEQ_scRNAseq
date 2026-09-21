@@ -9,10 +9,11 @@ RESULT=$(pwd)/projects/$project_name_mode/results/
 ADAPTERS=$(pwd)/requirements_file/Adapters.fa
 INFASTP=$(pwd)/projects/$project_name_mode/fast_data
 tmp=$(pwd)/projects/$project_name_mode/tmp
-mkdir -p "$tmp"
+# mkdir -p "$tmp" -> debug
 SCRIPTS_EXTRACT=$(pwd)/scripts
 
 function TRIMMING {
+
 
 	echo Trimming Start
 
@@ -48,9 +49,17 @@ function TRIMMING {
 
 		fi
 
-		cd ..
-		cd ..
-		cd ..
+		if (( samples > 1 )); then 
+			cd ..
+			cd ..
+			cd ..
+			cd ..
+
+		else
+			cd ..
+			cd ..
+			cd ..
+		fi
 
 	else
 
@@ -63,6 +72,8 @@ function TRIMMING {
 function whitelist {
 
 	echo 'Whitelist'
+
+
 
 	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
@@ -105,9 +116,17 @@ function whitelist {
 
 		rm R1_out.fastq.gz
 
-		cd ..
-		cd ..
-		cd ..
+		if (( samples > 1 )); then 
+			cd ..
+			cd ..
+			cd ..
+			cd ..
+
+		else
+			cd ..
+			cd ..
+			cd ..
+		fi
 
 	else
 
@@ -348,9 +367,9 @@ function convert_mtx_umi {
 
 	echo 'MTX conversion'
 
-	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
+	PATH_PROJECT=$(pwd)/projects/$project_name_mode
 
-		PATH_PROJECT=$(pwd)/projects/$project_name_mode
+	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
 		path_convert=$(pwd)/projects/$project_name_mode/sc_data
 		mkdir -p $path_convert
@@ -372,26 +391,7 @@ function convert_mtx_umi {
 
 	fi
 
-}
-
-function seurat {
-
-	echo 'Data analysis'
-
-	PATH_PROJECT=$(pwd)/projects/$project_name_mode
-	MARKERS=$marker_path
-	data=3
-
-	CHECK=$(pwd)/projects/$project_name_mode/sc_data
-
-	if [[ -f $CHECK/matrix.mtx ]]; then
-
-		Rscript $SCRIPTS_EXTRACT/cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell
-
-		cp $SCRIPTS_EXTRACT/manual_analysis.R $PATH_PROJECT/results
-		cp $SCRIPTS_EXTRACT/report_manual.Rmd $PATH_PROJECT/results
-
-		rm -rf $PATH_PROJECT/results/figures/UMAP_subtypes_files
+	if [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
 		if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" ]; then
 			mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_counts.png"
@@ -421,7 +421,34 @@ function seurat {
 		if [ -f "$PATH_PROJECT/tmp" ]; then
 			rm -rf $PATH_PROJECT/tmp
 		fi
-		
+
+	
+	fi
+
+}
+
+function seurat {
+
+	echo 'Data analysis'
+
+		PATH_PROJECT=$(pwd)/projects/$project_name_mode
+		MARKERS=$marker_path
+		data=3
+	
+	if (( samples > 1 )); then 
+		CHECK=$(pwd)/projects/$project_name_mode/Sample_1/sc_data
+	else
+		CHECK=$(pwd)/projects/$project_name_mode/sc_data
+	fi
+
+	if [[ -f $CHECK/matrix.mtx ]]; then
+
+		Rscript $SCRIPTS_EXTRACT/cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell $samples
+
+		cp $SCRIPTS_EXTRACT/manual_analysis.R $PATH_PROJECT/results
+		cp $SCRIPTS_EXTRACT/report_manual.Rmd $PATH_PROJECT/results
+
+		rm -rf $PATH_PROJECT/results/figures/UMAP_subtypes_files
 
 	fi
 

@@ -72,6 +72,7 @@ function select_project_seurat {
 		species=$species
 		cell=$cell
 		marker_path=$marker_path
+		
 
 		cd ..
 
@@ -101,7 +102,8 @@ function select_project_fastq {
 	else
 
 		if [[ $ANALYSIS_TYPE == 'fq_2' ]]; then
-			if [ -f $d/sc_data/matrix.mtx ]; then
+
+			if [[ -f "$d/Sample_1/sc_data/matrix.mtx" || -f "$d/sc_data/matrix.mtx" ]]; then
 		
 				cd $d
 				source config
@@ -138,7 +140,7 @@ function select_project_fastq {
 
 			cd ..
 			cd ..
-			
+
 		fi
 
 	fi
