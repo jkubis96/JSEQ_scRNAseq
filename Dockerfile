@@ -69,6 +69,7 @@ RUN R -e "Sys.setenv(R_INSTALL_STAGED = FALSE); \
             remotes::install_github('haozhu233/kableExtra'); \
             remotes::install_url('https://github.com/jkubis96/GTF-tool/raw/refs/heads/main/packages/GTF.tool_0.1.3.tar.gz', dependencies=TRUE); \
             remotes::install_url('https://github.com/jkubis96/CSSG/raw/refs/heads/main/packages/CSSG.toolkit_0.1.2.tar.gz', dependencies=TRUE); \
+	    remotes::install_version("harmony", version = "0.1.1", repos = "https://cloud.r-project.org"); \
             "
 
           
