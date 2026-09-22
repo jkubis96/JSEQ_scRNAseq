@@ -83,6 +83,8 @@ args <- commandArgs()
 
   top_m <- as.numeric(as.character(conf_file$V2[grep(pattern = "top_m", rownames(conf_file))]))
 
+  harmonize <- as.logical(conf_file$V2[grep(pattern = "harmonize", rownames(conf_file))])
+
 
   if (length(data) == 0) {
     data <- 3
@@ -305,7 +307,10 @@ if (mt_cssg == F) {
   var_features <- var_features[!grepl("^(MT-|MT\\.)", toupper(var_features))]
 }
 
+
 UMI <- RunPCA(UMI, features = var_features)
+
+
 
 ###########################################################################################################################################################
 
@@ -341,21 +346,112 @@ svg(file.path(OUTPUT, "figures/JackStrawPlot.svg"), width = 10, height = 7)
 JackStrawPlot(UMI, dims = dim)
 dev.off()
 
-UMI <- FindNeighbors(UMI, dims = dim, reduction = "pca")
 
 
-UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
+##########################################################################################################################################################
+
+#TUZ
+
+if (sets_n > 1) { 
+  library(harmony)
+  UMI <- RunHarmony(
+    object = UMI, 
+    group.by.vars = "orig.ident", 
+    dims = dim,
+    plot_convergence = TRUE
+  )
+  
+}
+
+###########################################################################################################################################################
+#TUZ
+
+if (sets_n > 1 && harmonize) {
+
+  UMI <- FindNeighbors(UMI, dims = dim, reduction = "pca")
 
 
-UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
+  UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
+
+
+  UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
+
+
+  width <- 10 + (length(unique(Idents(UMI)))) / 5
+
+  svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
+  DimPlot(UMI, reduction = "umap", raster = FALSE)
+  dev.off()
+
+  svg(file.path(OUTPUT, "figures/UMAP_samples.svg"), width = width, height = 10)
+  DimPlot(UMI, reduction = "umap", group.by = "orig.ident", raster = FALSE)
+  dev.off()
+
+
+  UMI <- FindNeighbors(UMI, dims = dim, reduction = "harmony")
+
+
+  UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
+
+
+  UMI <- RunUMAP(UMI, dims = dim, reduction = "harmony", umap.method = "umap-learn")
+
+
+  width <- 10 + (length(unique(Idents(UMI)))) / 5
+
+  svg(file.path(OUTPUT, "figures/UMAP_clusters_harmony.svg"), width = width, height = 10)
+  DimPlot(UMI, reduction = "umap", raster = FALSE)
+  dev.off()
+
+  svg(file.path(OUTPUT, "figures/UMAP_samples_harmony.svg"), width = width, height = 10)
+  DimPlot(UMI, reduction = "umap", group.by = "orig.ident", raster = FALSE)
+  dev.off()
 
 
 
-width <- 10 + (length(unique(Idents(UMI)))) / 5
+} else if (sets_n > 1 && harmonize == FALSE) {
 
-svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
-DimPlot(UMI, reduction = "umap", raster = FALSE)
-dev.off()
+  UMI <- FindNeighbors(UMI, dims = dim, reduction = "pca")
+
+
+  UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
+
+
+  UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
+
+
+  width <- 10 + (length(unique(Idents(UMI)))) / 5
+
+  svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
+  DimPlot(UMI, reduction = "umap", raster = FALSE)
+  dev.off()
+
+  svg(file.path(OUTPUT, "figures/UMAP_samples.svg"), width = width, height = 10)
+  DimPlot(UMI, reduction = "umap", group.by = "orig.ident", raster = FALSE)
+  dev.off()
+
+
+} else {
+
+  UMI <- FindNeighbors(UMI, dims = dim, reduction = "pca")
+
+
+  UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
+
+
+  UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
+
+
+
+  width <- 10 + (length(unique(Idents(UMI)))) / 5
+
+  svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
+  DimPlot(UMI, reduction = "umap", raster = FALSE)
+  dev.off()
+
+}
+
+
 
 ###########################################################################################################################################################
 
