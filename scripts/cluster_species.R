@@ -18,12 +18,10 @@ args <- commandArgs()
     species <- "Homo sapiens"
   }
 
-  #TUZ-REM
   OUTPUT <- file.path(path, "results")
   project_name <- args[9]
   data <- args[10]
   estimated_cells <- args[11]
-  #TUZ
   sets_n <- as.integer(args[12])
 
 
@@ -98,52 +96,51 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
 
 ###########################################################################################################################################################
 
-#TUZ
-
 if (sets_n > 1) {
-
   samples <- list()
 
   for (s in 1:sets_n) {
+    sample_id <- paste0("sample_", as.character(s))
+    sample_path <- file.path(path, sample_id, "sc_data")
 
-    samples[[paste0('sample_', as.character(s))]] <- file.path(path, paste0('sample_', as.character(s)), "sc_data")
-
+    if (dir.exists(sample_path)) {
+      samples[[sample_id]] <- sample_path
+    } else {
+      warning(paste0(sample_id, " not found. Check if it was intentionally excluded from the analysis or if this is an error."))
+    }
   }
+
+  sets_n <- length(samples)
 
   seurat_list <- lapply(names(samples), function(sample_name) {
     raw_counts <- Read10X(data.dir = samples[[sample_name]], gene.column = 1)
-    
+
     obj <- CreateSeuratObject(
-      counts = raw_counts, 
-      project = sample_name, 
-      min.cells = 1, 
+      counts = raw_counts,
+      project = sample_name,
+      min.cells = 1,
       min.features = 1
     )
     return(obj)
   })
 
   UMI <- merge(
-    x = seurat_list[[1]], 
-    y = seurat_list[2:length(seurat_list)], 
-    add.cell.ids = names(samples), 
+    x = seurat_list[[1]],
+    y = seurat_list[2:length(seurat_list)],
+    add.cell.ids = names(samples),
     project = "integrated"
   )
 
+  UMI@meta.data$sample <- gsub("^(sample_[0-9]+)_.*$", "\\1", UMI@meta.data$orig.ident)
 } else {
   # Load the raw dataset by UMI
   UMI_raw <- Read10X(seurat_umi, gene.column = 1)
 
   # Create SeuratObject
   UMI <- CreateSeuratObject(counts = UMI_raw, project = project_name, min.cells = 1, min.features = 1)
-
-
 }
 
 cell_input <- ncol(UMI)
-
-
-
-#TUZ
 
 UMI@meta.data$orig.ident <- make.unique(as.character(names(Idents(UMI))))
 
@@ -350,24 +347,26 @@ dev.off()
 
 ##########################################################################################################################################################
 
-#TUZ
+if (sets_n > 1) {
+  Key.character <- function(object, ...) {
+    return(paste0(toupper(object), "_"))
+  }
 
-if (sets_n > 1) { 
-  library(harmony)
-  UMI <- RunHarmony(
-    object = UMI, 
-    group.by.vars = "orig.ident", 
-    dims = dim,
-    plot_convergence = TRUE
+  registerS3method("Key", "character", Key.character)
+
+  UMI <- harmony::RunHarmony(
+    object = UMI,
+    group.by.vars = "sample",
+    reduction = "pca",
+    reduction.save = "harmony",
+    dims.use = dim,
+    plot_convergence = FALSE
   )
-  
 }
 
 ###########################################################################################################################################################
-#TUZ
 
 if (sets_n > 1 && harmonize) {
-
   UMI <- FindNeighbors(UMI, dims = dim, reduction = "pca")
 
 
@@ -380,11 +379,11 @@ if (sets_n > 1 && harmonize) {
   width <- 10 + (length(unique(Idents(UMI)))) / 5
 
   svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
-  DimPlot(UMI, reduction = "umap", raster = FALSE)
+  print(DimPlot(UMI, reduction = "umap", raster = FALSE))
   dev.off()
 
   svg(file.path(OUTPUT, "figures/UMAP_samples.svg"), width = width, height = 10)
-  DimPlot(UMI, reduction = "umap", group.by = "orig.ident", raster = FALSE)
+  print(DimPlot(UMI, reduction = "umap", group.by = "sample", raster = FALSE))
   dev.off()
 
 
@@ -400,17 +399,13 @@ if (sets_n > 1 && harmonize) {
   width <- 10 + (length(unique(Idents(UMI)))) / 5
 
   svg(file.path(OUTPUT, "figures/UMAP_clusters_harmony.svg"), width = width, height = 10)
-  DimPlot(UMI, reduction = "umap", raster = FALSE)
+  print(DimPlot(UMI, reduction = "umap", raster = FALSE))
   dev.off()
 
   svg(file.path(OUTPUT, "figures/UMAP_samples_harmony.svg"), width = width, height = 10)
-  DimPlot(UMI, reduction = "umap", group.by = "orig.ident", raster = FALSE)
+  print(DimPlot(UMI, reduction = "umap", group.by = "sample", raster = FALSE))
   dev.off()
-
-
-
 } else if (sets_n > 1 && harmonize == FALSE) {
-
   UMI <- FindNeighbors(UMI, dims = dim, reduction = "pca")
 
 
@@ -423,16 +418,13 @@ if (sets_n > 1 && harmonize) {
   width <- 10 + (length(unique(Idents(UMI)))) / 5
 
   svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
-  DimPlot(UMI, reduction = "umap", raster = FALSE)
+  print(DimPlot(UMI, reduction = "umap", raster = FALSE))
   dev.off()
 
   svg(file.path(OUTPUT, "figures/UMAP_samples.svg"), width = width, height = 10)
-  DimPlot(UMI, reduction = "umap", group.by = "orig.ident", raster = FALSE)
+  print(DimPlot(UMI, reduction = "umap", group.by = "sample", raster = FALSE))
   dev.off()
-
-
 } else {
-
   UMI <- FindNeighbors(UMI, dims = dim, reduction = "pca")
 
 
@@ -446,12 +438,9 @@ if (sets_n > 1 && harmonize) {
   width <- 10 + (length(unique(Idents(UMI)))) / 5
 
   svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
-  DimPlot(UMI, reduction = "umap", raster = FALSE)
+  print(DimPlot(UMI, reduction = "umap", raster = FALSE))
   dev.off()
-
 }
-
-
 
 ###########################################################################################################################################################
 
@@ -459,6 +448,9 @@ if (sets_n > 1 && harmonize) {
 ########## METADATA STEP
 
 meta_data <- as.data.frame(Idents(UMI))
+if (sets_n > 1) {
+  meta_data$samples <- as.character(UMI@meta.data$sample)
+}
 colnames(meta_data)[1] <- "clusters"
 meta_data$barcodes <- as.character(rownames(meta_data))
 UMAP_coordinates <- as.data.frame(Embeddings(UMI, reduction = "umap"))
@@ -466,7 +458,6 @@ meta_data$UMAP1 <- as.numeric(UMAP_coordinates[, 1])
 meta_data$UMAP2 <- as.numeric(UMAP_coordinates[, 2])
 
 #########
-
 
 # find markers for every cluster compared to all remaining cells, report only the positive ones
 

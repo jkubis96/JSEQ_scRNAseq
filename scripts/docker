@@ -43,18 +43,18 @@ function start {
 					log=$(pwd)/projects/$project_name_mode/results/process.log.out
 					source=$(pwd)/scripts
 
-					if (( samples > 1 )); then 
+					if ((samples > 1)); then
 
 						project_name_mode_tmp=$project_name_mode
 
-						for (( inx=1; inx<=samples; inx++ )); do
+						for ((inx = 1; inx <= samples; inx++)); do
 
 							project_name_mode=$project_name_mode_tmp'/sample_'$inx
 							source $source/analysis_species
 
 							echo -e '\033[0;34m Sample_'$inx >>$log 2>&1
 
-							echo ''			
+							echo ''
 							echo -e '\033[0;34m Sample '$inx
 
 							echo ''
@@ -120,11 +120,9 @@ function start {
 						metric_plot >>$log 2>&1
 						echo -e "\033[0;34m $(date) Creating matrix of counts"
 						convert_mtx_umi >>$log 2>&1
-						
 
 					fi
 
-					
 					echo -e "\033[0;34m $(date) Counts analysis and creating report"
 					seurat >>$log 2>&1
 					echo ''
@@ -133,25 +131,24 @@ function start {
 					echo -e "\033[1;33m Check $project_name_mode for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 					echo ''
 					start
-				
+
 				elif [[ $ANALYSIS_TYPE == 'fq_1' ]]; then
 
 					log=$(pwd)/projects/$project_name_mode/results/process.log.out
 					source=$(pwd)/scripts
-					
-					
-					if (( samples > 1 )); then 
+
+					if ((samples > 1)); then
 
 						project_name_mode_tmp=$project_name_mode
 
-						for (( inx=1; inx<=samples; inx++ )); do
+						for ((inx = 1; inx <= samples; inx++)); do
 
 							project_name_mode=$project_name_mode_tmp'/sample_'$inx
 							source $source/analysis_species
 
 							echo -e 'Sample_'$inx >>$log 2>&1
 
-							echo ''			
+							echo ''
 							echo -e '\033[0;34m Sample '$inx
 
 							echo ''
@@ -217,7 +214,6 @@ function start {
 						metric_plot >>$log 2>&1
 						echo -e "\033[0;34m $(date) Creating matrix of counts"
 						convert_mtx_umi >>$log 2>&1
-						
 
 					fi
 
@@ -226,7 +222,6 @@ function start {
 					echo ''
 					echo -e "\033[1;33mCheck $project_name_mode for the results. If the 'sc_data' directory is missing or empty, check the process.log file for errors."
 					start
-
 
 				elif [[ $ANALYSIS_TYPE == 'fq_2' ]]; then
 
@@ -246,7 +241,6 @@ function start {
 					echo -e "\033[1;33m Check $project_name_mode for the results (REPORT). If you don't see the REPORT file, so check process.log file for some errors"
 					echo ''
 					start
-
 
 				fi
 

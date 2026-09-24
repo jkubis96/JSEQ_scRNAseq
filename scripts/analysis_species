@@ -14,7 +14,6 @@ SCRIPTS_EXTRACT=$(pwd)/scripts
 
 function TRIMMING {
 
-
 	echo Trimming Start
 
 	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
@@ -49,7 +48,7 @@ function TRIMMING {
 
 		fi
 
-		if (( samples > 1 )); then 
+		if ((samples > 1)); then
 			cd ..
 			cd ..
 			cd ..
@@ -72,8 +71,6 @@ function TRIMMING {
 function whitelist {
 
 	echo 'Whitelist'
-
-
 
 	if ! [[ -f $CHECK/sc_data/matrix.mtx ]]; then
 
@@ -116,7 +113,7 @@ function whitelist {
 
 		rm R1_out.fastq.gz
 
-		if (( samples > 1 )); then 
+		if ((samples > 1)); then
 			cd ..
 			cd ..
 			cd ..
@@ -422,7 +419,6 @@ function convert_mtx_umi {
 			rm -rf $PATH_PROJECT/tmp
 		fi
 
-	
 	fi
 
 }
@@ -431,11 +427,11 @@ function seurat {
 
 	echo 'Data analysis'
 
-		PATH_PROJECT=$(pwd)/projects/$project_name_mode
-		MARKERS=$marker_path
-		data=3
-	
-	if (( samples > 1 )); then 
+	PATH_PROJECT=$(pwd)/projects/$project_name_mode
+	MARKERS=$marker_path
+	data=3
+
+	if ((samples > 1)); then
 		CHECK=$(pwd)/projects/$project_name_mode/Sample_1/sc_data
 	else
 		CHECK=$(pwd)/projects/$project_name_mode/sc_data

@@ -7,7 +7,7 @@ function seurat_start {
 	MARKERS=$marker_path
 
 	SCRIPTS_EXTRACT=$(pwd)/scripts
-	Rscript $SCRIPTS_EXTRACT/cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell
+	Rscript $SCRIPTS_EXTRACT/cluster_species.R $PATH_PROJECT $MARKERS $species $project_name $data $cell $samples
 
 	cp $SCRIPTS_EXTRACT/manual_analysis.R $PATH_PROJECT/results
 	cp $SCRIPTS_EXTRACT/report_manual.Rmd $PATH_PROJECT/results

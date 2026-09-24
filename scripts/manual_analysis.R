@@ -1,12 +1,12 @@
 # title: "JSEQ_scRNAseq - manual analysis"
 #
-# Before start you have to install required packages
-# Pipeline include Seurat version 3.1.5
-# You can use other versions of seurat but some functions may not work properly
-# Belowe script was adjusted for use with Seurat > 3
-# but due to different Seurat and R versions
-# can be the difference in results in comparison to pipeline results
-# More information and instruction on https://satijalab.org/seurat/articles/install.html
+# Before starting, install all required packages.
+# The pipeline includes Seurat version 3.1.5.
+# Other Seurat versions can be used, but some functions may not work properly.
+# The script below has been adapted for use with Seurat versions > 3.
+# However, differences in Seurat and R versions may lead to differences
+# in the results compared with those obtained using the pipeline.
+# More information and installation instructions are available at: https://satijalab.org/seurat/articles/install.html
 
 
 
@@ -107,6 +107,9 @@ c_res <- as.numeric(as.character(conf_file$V2[grep(pattern = "c_res", rownames(c
 
 top_m <- as.numeric(as.character(conf_file$V2[grep(pattern = "top_m", rownames(conf_file))]))
 
+harmonize <- as.logical(conf_file$V2[grep(pattern = "harmonize", rownames(conf_file))])
+
+
 
 
 # These sections can be adjusted manually, independent of the config file
@@ -129,6 +132,7 @@ species <- as.character(project_config$V2[grep(pattern = "species", rownames(pro
 if (tolower(species) == "human") {
   species <- "Homo sapiens"
 }
+sets_n <- as.integer(project_config$V2[grep(pattern = "samples", rownames(project_config))])
 
 
 #################################################################################
@@ -144,13 +148,51 @@ markers_subclass <- readxl::read_xlsx(markers, sheet = 2, col_names = F)
 
 #################################################################################
 
-
 # Load single-cell data
 
+if (sets_n > 1) {
+  samples <- list()
 
-UMI_raw <- Read10X("../sc_data/", gene.column = 1)
+  for (s in 1:sets_n) {
+    sample_id <- paste0("sample_", as.character(s))
+    sample_path <- file.path(path, sample_id, "sc_data")
 
-UMI <- CreateSeuratObject(counts = UMI_raw, project = project_name, min.cells = 1, min.features = 1)
+    if (dir.exists(sample_path)) {
+      samples[[sample_id]] <- sample_path
+    } else {
+      warning(paste0(sample_id, " not found. Check if it was intentionally excluded from the analysis or if this is an error."))
+    }
+  }
+
+  sets_n <- length(samples)
+
+  seurat_list <- lapply(names(samples), function(sample_name) {
+    raw_counts <- Read10X(data.dir = samples[[sample_name]], gene.column = 1)
+
+    obj <- CreateSeuratObject(
+      counts = raw_counts,
+      project = sample_name,
+      min.cells = 1,
+      min.features = 1
+    )
+    return(obj)
+  })
+
+  UMI <- merge(
+    x = seurat_list[[1]],
+    y = seurat_list[2:length(seurat_list)],
+    add.cell.ids = names(samples),
+    project = "integrated"
+  )
+
+  UMI@meta.data$sample <- gsub("^(sample_[0-9]+)_.*$", "\\1", UMI@meta.data$orig.ident)
+} else {
+  # Load the raw dataset by UMI
+  UMI_raw <- Read10X(seurat_umi, gene.column = 1)
+
+  # Create SeuratObject
+  UMI <- CreateSeuratObject(counts = UMI_raw, project = project_name, min.cells = 1, min.features = 1)
+}
 
 cell_input <- ncol(UMI)
 
@@ -363,25 +405,107 @@ JackStrawPlot(UMI, dims = dim)
 dev.off()
 
 #################################################################################
+# Multiple data harmonization (harmony)
+
+if (sets_n > 1) {
+  Key.character <- function(object, ...) {
+    return(paste0(toupper(object), "_"))
+  }
+
+  registerS3method("Key", "character", Key.character)
+
+  UMI <- harmony::RunHarmony(
+    object = UMI,
+    group.by.vars = "sample",
+    reduction = "pca",
+    reduction.save = "harmony",
+    dims.use = dim,
+    plot_convergence = FALSE
+  )
+}
+
+#################################################################################
 
 
 # Clustering analysis
 
 
-UMI <- FindNeighbors(UMI, dims = dim, reduction = "pca")
+if (sets_n > 1 && harmonize) {
+  UMI <- FindNeighbors(UMI, dims = dim, reduction = "pca")
 
 
-UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
+  UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
 
 
-UMI <- RunUMAP(UMI, dims = dim)
+  UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
 
 
-width <- 10 + (length(unique(Idents(UMI)))) / 5
+  width <- 10 + (length(unique(Idents(UMI)))) / 5
 
-svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
-DimPlot(UMI, reduction = "umap", raster = FALSE)
-dev.off()
+  svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
+  print(DimPlot(UMI, reduction = "umap", raster = FALSE))
+  dev.off()
+
+  svg(file.path(OUTPUT, "figures/UMAP_samples.svg"), width = width, height = 10)
+  print(DimPlot(UMI, reduction = "umap", group.by = "sample", raster = FALSE))
+  dev.off()
+
+
+  UMI <- FindNeighbors(UMI, dims = dim, reduction = "harmony")
+
+
+  UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
+
+
+  UMI <- RunUMAP(UMI, dims = dim, reduction = "harmony", umap.method = "umap-learn")
+
+
+  width <- 10 + (length(unique(Idents(UMI)))) / 5
+
+  svg(file.path(OUTPUT, "figures/UMAP_clusters_harmony.svg"), width = width, height = 10)
+  print(DimPlot(UMI, reduction = "umap", raster = FALSE))
+  dev.off()
+
+  svg(file.path(OUTPUT, "figures/UMAP_samples_harmony.svg"), width = width, height = 10)
+  print(DimPlot(UMI, reduction = "umap", group.by = "sample", raster = FALSE))
+  dev.off()
+} else if (sets_n > 1 && harmonize == FALSE) {
+  UMI <- FindNeighbors(UMI, dims = dim, reduction = "pca")
+
+
+  UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
+
+
+  UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
+
+
+  width <- 10 + (length(unique(Idents(UMI)))) / 5
+
+  svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
+  print(DimPlot(UMI, reduction = "umap", raster = FALSE))
+  dev.off()
+
+  svg(file.path(OUTPUT, "figures/UMAP_samples.svg"), width = width, height = 10)
+  print(DimPlot(UMI, reduction = "umap", group.by = "sample", raster = FALSE))
+  dev.off()
+} else {
+  UMI <- FindNeighbors(UMI, dims = dim, reduction = "pca")
+
+
+  UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
+
+
+  UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
+
+
+
+  width <- 10 + (length(unique(Idents(UMI)))) / 5
+
+  svg(file.path(OUTPUT, "figures/UMAP_clusters.svg"), width = width, height = 10)
+  print(DimPlot(UMI, reduction = "umap", raster = FALSE))
+  dev.off()
+}
+
 
 #################################################################################
 
@@ -390,6 +514,9 @@ dev.off()
 
 meta_data <- as.data.frame(Idents(UMI))
 colnames(meta_data)[1] <- "clusters"
+if (sets_n > 1) {
+  meta_data$samples <- as.character(UMI@meta.data$sample)
+}
 meta_data$barcodes <- as.character(rownames(meta_data))
 UMAP_coordinates <- as.data.frame(Embeddings(UMI, reduction = "umap"))
 meta_data$UMAP1 <- as.numeric(UMAP_coordinates[, 1])

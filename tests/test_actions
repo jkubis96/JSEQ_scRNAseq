@@ -98,6 +98,7 @@ function test_fucntions {
 	species=$species 
 	cell=$cell
 	marker_path=$marker_path
+	samples=$samples
 
 	cd ..
 	cd ..
@@ -109,6 +110,76 @@ function test_fucntions {
 
 
 	check_path=$(pwd)/projects/test_actions_fq/results/Report.html
+
+	if [ -f $check_path ]; then
+	
+		echo ''
+		echo ''
+    	
+		echo -e '\033[1;32m All tests passed successfully'
+	else
+    	echo ''
+		echo ''
+		
+		echo -e '\033[1;31m Test failed - analysis'
+		exit 1 
+
+
+	fi 
+
+
+	# multisamples test
+
+	echo ''
+	echo ''
+
+	echo -e '\033[1;32m Multisample analysis test'
+
+	cd projects
+
+	gdown 1Sd06wJIYrYdjQ76pJJ5Bib9n1W31mqht
+	tar -xzvf test_multisample_exp.tar.gz
+	rm -f test_multisample_exp.tar.gz
+	
+	cd ..
+
+
+	check_path=$(pwd)/projects/test_multisample_exp
+
+	if [ -d $check_path ]; then
+		echo ''
+		echo ''
+
+    	echo -e '\033[1;32m Test passed successfully'
+	else
+		echo ''
+		echo ''
+
+    	echo -e '\033[1;31m Test failed - downloading'
+		exit 1 
+	fi 
+
+
+	cd $(pwd)/projects/test_multisample_exp
+	source config
+	project_name=$project_name
+	project_name_mode=$project_name_mode 
+	READS_LENGHT=$READS_LENGHT 
+	species=$species 
+	cell=$cell
+	marker_path=$marker_path
+	samples=$samples
+
+	cd ..
+	cd ..
+
+
+	source=$(pwd)/scripts
+	source $source/analysis_species
+	seurat 
+
+
+	check_path=$(pwd)/projects/test_multisample_exp/results/Report.html
 
 	if [ -f $check_path ]; then
 	

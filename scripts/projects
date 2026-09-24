@@ -2,45 +2,10 @@
 
 function merge_fq {
 
-	if (( samples > 1 )); then 
-			for (( g=1; g<=samples; g++ )); do
-			
-				fq=$(pwd)/projects/$project_name_mod/sample_$g/fast_data/*.fastq.gz
+	if ((samples > 1)); then
+		for ((g = 1; g <= samples; g++)); do
 
-				r1=()
-				r2=()
-
-				for i in $fq; do
-					if [[ "$i" == *"R1"* ]]; then
-						r1+=("$(basename "$i")")
-					elif [[ "$i" == *"R2"* ]]; then
-						r2+=("$(basename "$i")")
-					fi
-				done
-
-				cd "projects/$project_name_mod/sample_$g/fast_data" || return 1
-
-				if [[ ${#r1[@]} -eq 1 && "${r1[0]}" == "input_R1.fastq.gz" ]]; then
-					echo "R1 is already merged: input_R1.fastq.gz"
-				else
-					cat "${r1[@]}" > input_R1.fastq.gz
-					rm "${r1[@]}"
-				fi
-
-				if [[ ${#r2[@]} -eq 1 && "${r2[0]}" == "input_R2.fastq.gz" ]]; then
-					echo "R2 is already merged: input_R2.fastq.gz"
-				else
-					cat "${r2[@]}" > input_R2.fastq.gz
-					rm "${r2[@]}"
-				fi
-
-				cd ../../../..
-			
-			done
-			
-		else
-
-			fq=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
+			fq=$(pwd)/projects/$project_name_mod/sample_$g/fast_data/*.fastq.gz
 
 			r1=()
 			r2=()
@@ -53,36 +18,69 @@ function merge_fq {
 				fi
 			done
 
-			cd "projects/$project_name_mod/fast_data" || return 1
+			cd "projects/$project_name_mod/sample_$g/fast_data" || return 1
 
 			if [[ ${#r1[@]} -eq 1 && "${r1[0]}" == "input_R1.fastq.gz" ]]; then
 				echo "R1 is already merged: input_R1.fastq.gz"
 			else
-				cat "${r1[@]}" > input_R1.fastq.gz
+				cat "${r1[@]}" >input_R1.fastq.gz
 				rm "${r1[@]}"
 			fi
 
 			if [[ ${#r2[@]} -eq 1 && "${r2[0]}" == "input_R2.fastq.gz" ]]; then
 				echo "R2 is already merged: input_R2.fastq.gz"
 			else
-				cat "${r2[@]}" > input_R2.fastq.gz
+				cat "${r2[@]}" >input_R2.fastq.gz
 				rm "${r2[@]}"
 			fi
 
-			cd ../../..
+			cd ../../../..
 
+		done
+
+	else
+
+		fq=$(pwd)/projects/$project_name_mod/fast_data/*.fastq.gz
+
+		r1=()
+		r2=()
+
+		for i in $fq; do
+			if [[ "$i" == *"R1"* ]]; then
+				r1+=("$(basename "$i")")
+			elif [[ "$i" == *"R2"* ]]; then
+				r2+=("$(basename "$i")")
+			fi
+		done
+
+		cd "projects/$project_name_mod/fast_data" || return 1
+
+		if [[ ${#r1[@]} -eq 1 && "${r1[0]}" == "input_R1.fastq.gz" ]]; then
+			echo "R1 is already merged: input_R1.fastq.gz"
+		else
+			cat "${r1[@]}" >input_R1.fastq.gz
+			rm "${r1[@]}"
 		fi
-    
+
+		if [[ ${#r2[@]} -eq 1 && "${r2[0]}" == "input_R2.fastq.gz" ]]; then
+			echo "R2 is already merged: input_R2.fastq.gz"
+		else
+			cat "${r2[@]}" >input_R2.fastq.gz
+			rm "${r2[@]}"
+		fi
+
+		cd ../../..
+
+	fi
 
 }
-
 
 function checkfq {
 
 	echo ''
 
-	if (( samples > 1 )); then 
-		for (( i=1; i<=samples; i++ )); do
+	if ((samples > 1)); then
+		for ((i = 1; i <= samples; i++)); do
 			echo -e '\033[1;36m Put fastq data into => projects/'$project_name_mod'/sample_'$i/'fast_data'
 		done
 	else
@@ -96,16 +94,15 @@ function checkfq {
 	read enter
 	enter=$(echo $enter | tr '[:upper:]' '[:lower:]')
 
-
 	if [[ $enter == "q" ]]; then
 		rm -rf "$(pwd)/projects/$project_name_mod"
 		PROJECT
 	fi
 
 	all_decision=true
-	if (( samples > 1 )); then 
-		
-		for (( i=1; i<=samples; i++ )); do
+	if ((samples > 1)); then
+
+		for ((i = 1; i <= samples; i++)); do
 
 			BASE_DIR="$(pwd)/projects/$project_name_mod/sample_$i"
 
@@ -121,13 +118,11 @@ function checkfq {
 				echo -e "\033[0;31m Missing R1 or R2 file in Sample_$i"
 			fi
 
-			
 			if [[ "$decision" == false ]]; then
 				all_decision=false
 			fi
 
 		done
-
 
 	else
 
@@ -148,9 +143,8 @@ function checkfq {
 		if [[ "$decision" == false ]]; then
 			all_decision=false
 		fi
-			
+
 	fi
-	
 
 	if [[ $all_decision == true ]]; then
 		echo ''
@@ -175,11 +169,10 @@ function checkfq {
 
 function checkseurat_1 {
 
-
 	echo ''
 
-	if (( samples > 1 )); then 
-		for (( i=1; i<=samples; i++ )); do
+	if ((samples > 1)); then
+		for ((i = 1; i <= samples; i++)); do
 			echo -e '\033[1;36m Put data matrix into => projects/'$project_name_mod'/sample_'$i/'sc_data'
 
 		done
@@ -188,7 +181,6 @@ function checkseurat_1 {
 
 	fi
 
-	
 	echo -e '\033[1;36m Available matrix format .csv | .tsv | .txt'
 	echo -e '\033[1;36m If you did it, push ENTER'
 	echo -e '\033[1;36m If you want to quit write "q" and push ENTER'
@@ -196,76 +188,68 @@ function checkseurat_1 {
 	read enter
 	enter=$(echo $enter | tr '[:upper:]' '[:lower:]')
 
-
 	if [[ $enter == "q" ]]; then
 		rm -rf "$(pwd)/projects/$project_name_mod"
 		PROJECT
 	fi
-	
 
 	all_decision=true
-	if (( samples > 1 )); then 
-		
-		for (( g=1; g<=samples; g++ )); do
+	if ((samples > 1)); then
 
-		fast=$(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/*'
+		for ((g = 1; g <= samples; g++)); do
 
-		for i in $fast; do
-			r+=$i
-		done
+			fast=$(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/*'
 
-		if [[ $r == *".tsv"* ]]; then
+			for i in $fast; do
+				r+=$i
+			done
 
-			echo -e "\033[1;36m $(date) Data converting"
+			if [[ $r == *".tsv"* ]]; then
 
-			format=tsv
-			con=NULL
-			null=NULL
-			converter=$(pwd)/scripts/converter.R
-			Rscript $converter $format $(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/' $(basename $r) $null $con
+				echo -e "\033[1;36m $(date) Data converting"
 
-			
+				format=tsv
+				con=NULL
+				null=NULL
+				converter=$(pwd)/scripts/converter.R
+				Rscript $converter $format $(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/' $(basename $r) $null $con
 
-		elif [[ $r == *".csv"* ]]; then
-			echo -e "\033[1;36m $(date) Data converting"
+			elif [[ $r == *".csv"* ]]; then
+				echo -e "\033[1;36m $(date) Data converting"
 
-			format=csv
-			con=NULL
-			null=NULL
-			converter=$(pwd)/scripts/converter.R
-			Rscript $converter $format $(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/' $(basename $r) $null $con
+				format=csv
+				con=NULL
+				null=NULL
+				converter=$(pwd)/scripts/converter.R
+				Rscript $converter $format $(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/' $(basename $r) $null $con
 
-			echo ''
-			echo -e "\033[0;32m Project done"
-			echo -e "\033[0;32m Start analysis"
-			echo ''
+				echo ''
+				echo -e "\033[0;32m Project done"
+				echo -e "\033[0;32m Start analysis"
+				echo ''
 
-	
+			elif [[ $r == *".txt"* ]]; then
 
-		elif [[ $r == *".txt"* ]]; then
+				echo -e "\033[1;36m $(date) Data converting"
 
-			echo -e "\033[1;36m $(date) Data converting"
+				format=txt
+				con=NULL
+				null=NULL
+				converter=$(pwd)/scripts/converter.R
+				Rscript $converter $format $(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/' $(basename $r) $null $con
 
-			format=txt
-			con=NULL
-			null=NULL
-			converter=$(pwd)/scripts/converter.R
-			Rscript $converter $format $(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/' $(basename $r) $null $con
+				echo ''
+				echo -e "\033[0;32m Project done"
+				echo -e "\033[0;32m Start analysis"
+				echo ''
 
-			echo ''
-			echo -e "\033[0;32m Project done"
-			echo -e "\033[0;32m Start analysis"
-			echo ''
+			else
+				all_decision=false
+				echo -e "\033[0;31m Missing expression matrix file in Sample_$g"
 
-		else
-			all_decision=false
-			echo -e "\033[0;31m Missing expression matrix file in Sample_$g"
-			
-		fi
-
+			fi
 
 		done
-
 
 	else
 
@@ -285,8 +269,6 @@ function checkseurat_1 {
 			converter=$(pwd)/scripts/converter.R
 			Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
 
-			
-
 		elif [[ $r == *".csv"* ]]; then
 			echo -e "\033[1;36m $(date) Data converting"
 
@@ -300,8 +282,6 @@ function checkseurat_1 {
 			echo -e "\033[0;32m Project done"
 			echo -e "\033[0;32m Start analysis"
 			echo ''
-
-	
 
 		elif [[ $r == *".txt"* ]]; then
 
@@ -320,11 +300,10 @@ function checkseurat_1 {
 
 		else
 			all_decision=false
-			
+
 		fi
-			
+
 	fi
-	
 
 	if [[ $all_decision == true ]]; then
 		echo ''
@@ -346,8 +325,8 @@ function checkseurat_1 {
 function checkseurat_3 {
 	echo ''
 
-	if (( samples > 1 )); then 
-		for (( i=1; i<=samples; i++ )); do
+	if ((samples > 1)); then
+		for ((i = 1; i <= samples; i++)); do
 			echo -e '\033[1;36m Put data matrix into => projects/'$project_name_mod'/sample_'$i/'sc_data'
 
 		done
@@ -356,7 +335,6 @@ function checkseurat_3 {
 
 	fi
 
-	
 	echo -e '\033[1;36m Available matrix format .csv | .tsv | .txt'
 	echo -e '\033[1;36m If you did it, push ENTER'
 	echo -e '\033[1;36m If you want to quit write "q" and push ENTER'
@@ -364,17 +342,15 @@ function checkseurat_3 {
 	read enter
 	enter=$(echo $enter | tr '[:upper:]' '[:lower:]')
 
-
 	if [[ $enter == "q" ]]; then
 		rm -rf "$(pwd)/projects/$project_name_mod"
 		PROJECT
 	fi
 
-
 	all_decision=true
-	if (( samples > 1 )); then 
-		
-		for (( g=1; g<=samples; g++ )); do
+	if ((samples > 1)); then
+
+		for ((g = 1; g <= samples; g++)); do
 
 			fast=$(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/*'
 
@@ -392,14 +368,13 @@ function checkseurat_3 {
 				start
 
 			else
-			
+
 				all_decision=false
 				echo -e "\033[0;31m Missing expression matrix file in Sample_$g"
-				
+
 			fi
 
 		done
-
 
 	else
 
@@ -421,11 +396,10 @@ function checkseurat_3 {
 		else
 
 			all_decision=false
-			
+
 		fi
-			
+
 	fi
-	
 
 	if [[ $all_decision == true ]]; then
 		echo ''
@@ -441,8 +415,6 @@ function checkseurat_3 {
 		checkseurat_3
 
 	fi
-	
-
 
 }
 
@@ -652,17 +624,16 @@ function PROJECT {
 		mkdir -p projects/$project_name_mod
 		mkdir -p projects/$project_name_mod/results
 
-		if (( samples > 1 )); then 
-			for (( i=1; i<=samples; i++ )); do
+		if ((samples > 1)); then
+			for ((i = 1; i <= samples; i++)); do
 				BASE_DIR="projects/$project_name_mod/sample_$i"
 				mkdir -p "$BASE_DIR/sc_data"
-				
+
 			done
 		else
 			BASE_DIR="projects/$project_name_mod"
 			mkdir -p "$BASE_DIR/sc_data"
 		fi
-
 
 		echo ''
 		echo -e "\033[0;32m Complete"
@@ -678,8 +649,6 @@ function PROJECT {
 		echo marker_path=$marker_path >>$(pwd)/projects/$project_name_mod/config
 		echo samples=$samples >>$(pwd)/projects/$project_name_mod/config
 
-		
-
 		data_select
 
 	elif [[ $p == '1' ]]; then
@@ -690,9 +659,8 @@ function PROJECT {
 		mkdir -p projects/$project_name_mod
 		mkdir -p projects/$project_name_mod/results
 
-
-		if (( samples > 1 )); then 
-			for (( i=1; i<=samples; i++ )); do
+		if ((samples > 1)); then
+			for ((i = 1; i <= samples; i++)); do
 				BASE_DIR="projects/$project_name_mod/sample_$i"
 
 				mkdir -p "$BASE_DIR/tmp"
@@ -705,7 +673,6 @@ function PROJECT {
 			mkdir -p "$BASE_DIR/tmp"
 			mkdir -p "$BASE_DIR/fast_data"
 		fi
-
 
 		echo ''
 		echo -e "\033[0;32m Complete"
@@ -721,7 +688,6 @@ function PROJECT {
 		echo data=$data >>$(pwd)/projects/$project_name_mod/config
 		echo marker_path=$marker_path >>$(pwd)/projects/$project_name_mod/config
 		echo samples=$samples >>$(pwd)/projects/$project_name_mod/config
-
 
 		checkfq
 

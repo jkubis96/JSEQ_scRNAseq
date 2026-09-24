@@ -2,7 +2,6 @@
 
 function select_analysis {
 
-
 	echo -e '\033[1;36m Select single-cell analysis workflow:
 [1] Upstream Processing  (FASTQ -> Count Matrix)
 [2] Downstream Analysis  (Count Matrix -> Final Report) 
@@ -10,7 +9,6 @@ function select_analysis {
 [4] Custom Matrix Input  (Matrix: Count/Normalized/Sparse -> Final Report)\n
 <<<\n 
 [b] Back'
-
 
 	read p
 	p=$(echo $p | tr '[:upper:]' '[:lower:]')
@@ -23,19 +21,16 @@ function select_analysis {
 
 		ANALYSIS_TYPE='full'
 		select_project_fastq
-	
 
 	elif [[ $p == '2' ]]; then
 
 		ANALYSIS_TYPE='fq_2'
 		select_project_fastq
 
-
 	elif [[ $p == '1' ]]; then
 
 		ANALYSIS_TYPE='fq_1'
 		select_project_fastq
-		
 
 	elif [[ $p == 'b' ]]; then
 		start
@@ -72,7 +67,6 @@ function select_project_seurat {
 		species=$species
 		cell=$cell
 		marker_path=$marker_path
-		
 
 		cd ..
 
@@ -104,7 +98,7 @@ function select_project_fastq {
 		if [[ $ANALYSIS_TYPE == 'fq_2' ]]; then
 
 			if [[ -f "$d/Sample_1/sc_data/matrix.mtx" || -f "$d/sc_data/matrix.mtx" ]]; then
-		
+
 				cd $d
 				source config
 				project_name=$project_name
@@ -125,7 +119,6 @@ function select_project_fastq {
 				echo ''
 				select_analysis
 			fi
-
 
 		else
 

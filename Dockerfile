@@ -20,7 +20,7 @@ RUN apt-get update &&\
 
 RUN pip3 install --no-cache-dir \
     numpy==1.21.6 \
-    numba==0.53.1 \
+    numba==0.56.4 \
     pysam==0.16.0.1 \
     biopython==1.78 \
     umi-tools==1.1.2 \
@@ -58,7 +58,9 @@ RUN apt-get install -y r-cran-httr=1.4.1-1ubuntu1 \
 					   rm -rf /var/lib/apt/lists/*
 
 
-					 
+			
+		 
+RUN R -e "remotes::install_version('harmony', version = '0.1.1', repos = 'https://cloud.r-project.org', upgrade = 'never')"
 
 RUN R -e "Sys.setenv(R_INSTALL_STAGED = FALSE); \
             options(repos = c(CRAN = 'https://cran.r-project.org')); \
@@ -70,7 +72,6 @@ RUN R -e "Sys.setenv(R_INSTALL_STAGED = FALSE); \
             remotes::install_url('https://github.com/jkubis96/GTF-tool/raw/refs/heads/main/packages/GTF.tool_0.1.3.tar.gz', dependencies=TRUE); \
             remotes::install_url('https://github.com/jkubis96/CSSG/raw/refs/heads/main/packages/CSSG.toolkit_0.1.2.tar.gz', dependencies=TRUE); \
             "
-RUN R -e "remotes::install_version('harmony', version = '0.1.1', repos = 'https://cloud.r-project.org', upgrade = 'never')"
 
 
 RUN mkdir -p /tools \
