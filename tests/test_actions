@@ -177,7 +177,7 @@ function test_fucntions {
 
 	source=$(pwd)/scripts
 	source $source/sc_analysis
-	seurat 
+	seurat_start 
 
 	cat $(pwd)/projects/test_multisample_exp/results/process.log.out
 
