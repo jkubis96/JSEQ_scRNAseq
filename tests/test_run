@@ -252,8 +252,8 @@ function test_fucntions {
 
 
 	source=$(pwd)/scripts
-	source $source/analysis_species
-	seurat 
+	source $source/sc_analysis
+	seurat_start 
 
 
 	check_path=$(pwd)/projects/test_multisample_exp/results/Report.html
