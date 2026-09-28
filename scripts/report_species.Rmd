@@ -46,9 +46,11 @@ project_path <- args[6]
 
 config <- read_config(file.path("../requirements_file/config_file.conf"))
 
-results_dir <- file.path(project_path, "results")
+chceck_fq <- grepl("_fq", project_path)
 
-chceck_fq <- grepl("_fq", results_dir)
+# TUZ
+sample_dirs <- list.dirs(project_path, full.names = FALSE, recursive = FALSE)
+sample_dirs <- sample_dirs[grepl("^sample_", sample_dirs)]
 
 
 show_image <- function(path, caption = NULL, width = NULL, height = NULL) {
@@ -133,12 +135,16 @@ params_df %>%
 - **p_bin**  
   Minimum cell proportion required for population presence based on binomial test p-value.  
   *Default: 0.05*
-- **min_c**  
-  Minimum cell proportion required for population presence as defined by the user (independent of binomial test).  
-  *Default: 10*
 - **drop**  
   Boolean indicating whether to drop non-significant subtypes based on `p_bin` and `min_c`.  
   *Default: TRUE*
+- **min_c**  
+  Minimum cell proportion required for population presence as defined by the user (independent of binomial test).  
+  *Default: 10*
+- **harmonize**  
+  Boolean indicating whether harmonize data; if multiple samples exist.
+  *Default: TRUE*
+
 
 **The configuration file is available in the directory:**  
 `JSEQ_scRNAseq/requirements_file/config_file.conf`
@@ -158,19 +164,49 @@ params_df %>%
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
 if (chceck_fq) {
-  show_image(file.path(results_dir, "figures/scRNAmetrics.jpeg"), "## Read distribution across genomic features")
+
+  if (length(sample_dirs) > 0) {
+
+    for (s in 1:sample_dirs) {
+            show_image(file.path(project_path, paste0(s, "/results/figures/scRNAmetrics.jpeg")), paste0("## Read distribution across genomic features - ", s))
+    }
+
+  } else {
+      show_image(file.path(project_path, "results/figures/scRNAmetrics.jpeg"), "## Read distribution across genomic features")
+  }
+
 }
 ```
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
 if (chceck_fq) {
-  show_image(file.path(results_dir, "figures/expect_whitelist_cell_barcode_counts.png"), "## Count (UMI) per barcode (cell)")
+
+    if (length(sample_dirs) > 0) {
+
+    for (s in 1:sample_dirs) {
+            show_image(file.path(project_path, paste0(s, "/results/figures/expect_whitelist_cell_barcode_counts.png")), paste0("## Count (UMI) per barcode (cell) - ", s))
+
+    }
+
+  } else {
+    show_image(file.path(project_path, "results/figures/expect_whitelist_cell_barcode_counts.png"), "## Count (UMI) per barcode (cell)")
+  }
 }
 ```
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
 if (chceck_fq) {
-  show_image(file.path(results_dir, "figures/expect_whitelist_cell_barcode_knee.png"), "## Cell barcode knee plot")
+  
+  if (length(sample_dirs) > 0) {
+
+    for (s in 1:sample_dirs) {
+            show_image(file.path(project_path, paste0(s, "/results/figures/expect_whitelist_cell_barcode_knee.png")), paste0("## Cell barcode knee plot - ", s))
+
+    }
+
+  } else {
+    show_image(file.path(project_path, "results/figures/expect_whitelist_cell_barcode_knee.png"), "## Cell barcode knee plot")
+  }
 }
 ```
 
@@ -186,22 +222,18 @@ if (chceck_fq) {
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/counts~genes_QC.svg"), "## Ratio of number of genes to counts")
+show_image(file.path(project_path, "results/figures/counts~genes_QC.svg"), "## Ratio of number of genes to counts")
 ```
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/counts~genes.svg"), "## Number of genes and counts per cell")
+show_image(file.path(project_path, "results/figures/counts~genes.svg"), "## Number of genes and counts per cell")
 ```
 
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-file_path <- file.path(results_dir, "figures/Ribo~Mito.svg")
-
-if (file.exists(file_path)) {
-  show_image(file.path(results_dir, "figures/Ribo~Mito.svg"), "## Percentage of ribosomal and mitochondrial genes [%]")
-}
+show_image(file.path(project_path, "results/figures/Ribo~Mito.svg"), "## Percentage of ribosomal and mitochondrial genes [%]")
 ```
 
 
@@ -212,17 +244,17 @@ if (file.exists(file_path)) {
 # Quality control of cell content
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/DropletQC_hist.svg"), "## Genes per cell content & thresholds")
+show_image(file.path(project_path, "results/figures/DropletQC_hist.svg"), "## Genes per cell content & thresholds")
 ```
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/DropletQC.svg"), "## Genes upper & lower thresholds per cell")
+show_image(file.path(project_path, "results/figures/DropletQC.svg"), "## Genes upper & lower thresholds per cell")
 ```
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/Cells.svg"), "## Number of cells across different stages of analysis")
+show_image(file.path(project_path, "results/figures/Cells.svg"), "## Number of cells across different stages of analysis")
 ```
 
 
@@ -235,7 +267,7 @@ show_image(file.path(results_dir, "figures/Cells.svg"), "## Number of cells acro
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/variable_genes.svg"), "## Top highly variable genes in the dataset")
+show_image(file.path(project_path, "results/figures/variable_genes.svg"), "## Top highly variable genes in the dataset")
 ```
 
 
@@ -247,11 +279,11 @@ show_image(file.path(results_dir, "figures/variable_genes.svg"), "## Top highly 
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/Elbow.svg"), "## ElbowPlot - principal components cutoff")
+show_image(file.path(project_path, "results/figures/Elbow.svg"), "## ElbowPlot - principal components cutoff")
 ```
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/JackStrawPlot.svg"), "## JackStrawPlot - PC significance")
+show_image(file.path(project_path, "results/figures/JackStrawPlot.svg"), "## JackStrawPlot - PC significance")
 ```
 
 
@@ -262,9 +294,20 @@ show_image(file.path(results_dir, "figures/JackStrawPlot.svg"), "## JackStrawPlo
 # Cells clustering
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/UMAP_clusters.svg"), "## UMAP clusters")
+show_image(file.path(project_path, "results/figures/UMAP_clusters.svg"), "## UMAP clusters")
 ```
 
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+show_image(file.path(project_path, "results/figures/UMAP_samples.svg"), "## UMAP samples")
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+show_image(file.path(project_path, "results/figures/UMAP_clusters_harmony.svg"), "## UMAP clusters - harmonized")
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+show_image(file.path(project_path, "results/figures/UMAP_samples_harmony.svg"), "## UMAP samples - harmonized")
+```
 
 ---
 
@@ -275,15 +318,19 @@ show_image(file.path(results_dir, "figures/UMAP_clusters.svg"), "## UMAP cluster
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/PCA_DimPlot_subclasses.svg"), "## PCA cisualization of subclasses")
+show_image(file.path(project_path, "results/figures/PCA_DimPlot_subclasses.svg"), "## PCA cisualization of subclasses")
 ```
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/UMAP_DimPlot_subclasses.svg"), "## UMAP visualization of subclasses")
+show_image(file.path(project_path, "results/figures/UMAP_DimPlot_subclasses.svg"), "## UMAP visualization of subclasses")
 ```
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/subclasses_composition.svg"), "## Subclasses - cell composition")
+show_image(file.path(project_path, "results/figures/UMAP_DimPlot_subclasses.svg"), "## UMAP visualization of subclasses")
+```
+
+```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
+show_image(file.path(project_path, "results/figures/subclasses_composition.svg"), "## Subclasses - cell composition")
 ```
 
 \
@@ -293,7 +340,7 @@ show_image(file.path(results_dir, "figures/subclasses_composition.svg"), "## Sub
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, align="center", results='asis'}
-markers <- read.csv(file = file.path(results_dir, "markers/markers_subclasses.csv"), header = T, sep = ",", row.names = 1)
+markers <- read.csv(file = file.path(project_path, "results/markers/markers_subclasses.csv"), header = T, sep = ",", row.names = 1)
 
 
 markers <- markers %>%
@@ -319,13 +366,13 @@ markers %>%
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/heatmap_cells_subclasses.svg"), "## Heatmap of cell subclasses - log(CPM + 1)")
+show_image(file.path(project_path, "results/figures/heatmap_cells_subclasses.svg"), "## Heatmap of cell subclasses - log(CPM + 1)")
 ```
 
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/heatmap_cells_subclasses_scaled.svg"), "## Heatmap of cell subclasses - scale(log(CPM + 1))")
+show_image(file.path(project_path, "results/figures/heatmap_cells_subclasses_scaled.svg"), "## Heatmap of cell subclasses - scale(log(CPM + 1))")
 ```
 
 \
@@ -345,7 +392,7 @@ show_image(file.path(results_dir, "figures/heatmap_cells_subclasses_scaled.svg")
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-plot_meta <- read.csv(file = file.path(results_dir, "metadata/metadata.csv"), header = T, sep = ",", row.names = 1)
+plot_meta <- read.csv(file = file.path(project_path, "results/metadata/metadata.csv"), header = T, sep = ",", row.names = 1)
 
 plot_meta <- plot_meta[plot_meta$reduced == FALSE, ]
 
@@ -389,7 +436,7 @@ p
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/subtypes_composition.svg"), "## Subtypes - cell composition")
+show_image(file.path(project_path, "results/figures/subtypes_composition.svg"), "## Subtypes - cell composition")
 ```
 
 \
@@ -399,7 +446,7 @@ show_image(file.path(results_dir, "figures/subtypes_composition.svg"), "## Subty
 \
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, align="center", }
-markers <- read.csv(file = file.path(results_dir, "markers/markers_subtypes.csv"), header = T, sep = ",", row.names = 1)
+markers <- read.csv(file = file.path(project_path, "results/markers/markers_subtypes.csv"), header = T, sep = ",", row.names = 1)
 
 
 markers <- markers %>%
@@ -424,13 +471,13 @@ markers %>%
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/heatmap_cells_subtypes.svg"), "## Heatmap of cell subtypes - log(CPM + 1)")
+show_image(file.path(project_path, "results/figures/heatmap_cells_subtypes.svg"), "## Heatmap of cell subtypes - log(CPM + 1)")
 ```
 
 
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
-show_image(file.path(results_dir, "figures/heatmap_cells_subtypes_scaled.svg"), "## Heatmap of cell subtypes - scale(log(CPM + 1))")
+show_image(file.path(project_path, "results/figures/heatmap_cells_subtypes_scaled.svg"), "## Heatmap of cell subtypes - scale(log(CPM + 1))")
 ```
 
 \
