@@ -146,6 +146,8 @@ function test_fucntions {
 
 	check_path=$(pwd)/projects/test_multisample_exp
 
+	echo $check_path
+
 	if [ -d $check_path ]; then
 		echo ''
 		echo ''
