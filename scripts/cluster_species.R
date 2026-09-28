@@ -134,7 +134,7 @@ if (sets_n > 1) {
   UMI@meta.data$sample <- gsub("^(sample_[0-9]+)_.*$", "\\1", UMI@meta.data$orig.ident)
 } else {
   # Load the raw dataset by UMI
-  UMI_raw <- Read10X(seurat_umi, gene.column = 1)
+  UMI_raw <- Read10X(file.path(path, "sc_data/"), gene.column = 1)
 
   # Create SeuratObject
   UMI <- CreateSeuratObject(counts = UMI_raw, project = project_name, min.cells = 1, min.features = 1)
