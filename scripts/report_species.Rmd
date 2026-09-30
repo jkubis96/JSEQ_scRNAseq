@@ -48,16 +48,28 @@ config <- read_config(file.path("../requirements_file/config_file.conf"))
 
 chceck_fq <- grepl("_fq", project_path)
 
-# TUZ
 sample_dirs <- list.dirs(project_path, full.names = FALSE, recursive = FALSE)
 sample_dirs <- sample_dirs[grepl("^sample_", sample_dirs)]
 
-
-show_image <- function(path, caption = NULL, width = NULL, height = NULL) {
-  if (file.exists(path)) {
-    if (!is.null(caption)) cat(sprintf("%s\n", caption))
-    knitr::include_graphics(path, dpi = 300, auto_pdf = FALSE)
+show_image <- function(path, caption = NULL) {
+  if (!file.exists(path)) {
+    return(NULL)
   }
+
+  if (!is.null(caption)) {
+    cat(
+      caption,
+      "\n\n",
+      sep = ""
+    )
+  }
+
+  cat(
+    "![](",
+    path,
+    "){width=100%}\n\n",
+    sep = ""
+  )
 }
 ```
 
@@ -164,30 +176,22 @@ params_df %>%
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
 if (chceck_fq) {
-
   if (length(sample_dirs) > 0) {
-
-    for (s in 1:sample_dirs) {
-            show_image(file.path(project_path, paste0(s, "/results/figures/scRNAmetrics.jpeg")), paste0("## Read distribution across genomic features - ", s))
+    for (s in sample_dirs) {
+      show_image(file.path(project_path, paste0(s, "/results/figures/scRNAmetrics.jpeg")), paste0("## Read distribution across genomic features - ", s))
     }
-
   } else {
-      show_image(file.path(project_path, "results/figures/scRNAmetrics.jpeg"), "## Read distribution across genomic features")
+    show_image(file.path(project_path, "results/figures/scRNAmetrics.jpeg"), "## Read distribution across genomic features")
   }
-
 }
 ```
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
 if (chceck_fq) {
-
-    if (length(sample_dirs) > 0) {
-
-    for (s in 1:sample_dirs) {
-            show_image(file.path(project_path, paste0(s, "/results/figures/expect_whitelist_cell_barcode_counts.png")), paste0("## Count (UMI) per barcode (cell) - ", s))
-
+  if (length(sample_dirs) > 0) {
+    for (s in sample_dirs) {
+      show_image(file.path(project_path, paste0(s, "/results/figures/expect_whitelist_cell_barcode_counts.png")), paste0("## Count (UMI) per barcode (cell) - ", s))
     }
-
   } else {
     show_image(file.path(project_path, "results/figures/expect_whitelist_cell_barcode_counts.png"), "## Count (UMI) per barcode (cell)")
   }
@@ -196,14 +200,10 @@ if (chceck_fq) {
 
 ```{r echo=FALSE, out.width = '100%', fig.align="center", results='asis'}
 if (chceck_fq) {
-  
   if (length(sample_dirs) > 0) {
-
-    for (s in 1:sample_dirs) {
-            show_image(file.path(project_path, paste0(s, "/results/figures/expect_whitelist_cell_barcode_knee.png")), paste0("## Cell barcode knee plot - ", s))
-
+    for (s in sample_dirs) {
+      show_image(file.path(project_path, paste0(s, "/results/figures/expect_whitelist_cell_barcode_knee.png")), paste0("## Cell barcode knee plot - ", s))
     }
-
   } else {
     show_image(file.path(project_path, "results/figures/expect_whitelist_cell_barcode_knee.png"), "## Cell barcode knee plot")
   }

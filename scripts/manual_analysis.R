@@ -48,7 +48,7 @@ library(tidyverse)
 
 set.seed(123)
 
-
+path <- dirname(getwd())
 OUTPUT <- file.path(getwd(), "manual_results")
 dir.create(path = file.path(OUTPUT))
 dir.create(path = file.path(OUTPUT, "matrices"))
@@ -422,6 +422,11 @@ if (sets_n > 1) {
     dims.use = dim,
     plot_convergence = FALSE
   )
+
+  if (exists("JoinLayers", envir = asNamespace("SeuratObject")) ||
+    exists("JoinLayers", envir = asNamespace("Seurat"))) {
+    try(UMI <- JoinLayers(UMI, assay = "RNA"), silent = TRUE)
+  }
 }
 
 #################################################################################
