@@ -141,7 +141,7 @@ function test_fucntions {
 	species=$species 
 	cell=$cell
 	marker_path=$marker_path
-	samples=$sampless
+	samples=$samples
 
 	cd ..
 	cd ..
@@ -251,9 +251,13 @@ function test_fucntions {
 	cd ..
 
 
+	log=$(pwd)/projects/$project_name_mode/results/process.log.out
+
 	source=$(pwd)/scripts
 	source $source/sc_analysis
-	seurat_start 
+	
+	echo -e "\033[0;34m $(date) Counts analysis and creating report"
+	seurat_start >> $log 2>&1
 
 
 	check_path=$(pwd)/projects/test_multisample_exp/results/Report.html

@@ -1,0 +1,55 @@
+.
+├── config
+├── results
+│   ├── Report.html
+│   ├── figures
+│   │   ├── Cells.svg
+│   │   ├── DropletQC.svg
+│   │   ├── DropletQC_hist.svg
+│   │   ├── Elbow.svg
+│   │   ├── JackStrawPlot.svg
+│   │   ├── PCA_DimPlot_subclasses.svg
+│   │   ├── Ribo~Mito.svg
+│   │   ├── UMAP_DimPlot_subclasses.svg
+│   │   ├── UMAP_clusters.svg
+│   │   ├── UMAP_clusters_harmony.svg
+│   │   ├── UMAP_samples.svg
+│   │   ├── UMAP_samples_harmony.svg
+│   │   ├── UMAP_subtypes.html
+│   │   ├── UMAP_subtypes.svg
+│   │   ├── counts~genes.svg
+│   │   ├── counts~genes_QC.svg
+│   │   ├── heatmap_cells_subclasses.svg
+│   │   ├── heatmap_cells_subclasses_scaled.svg
+│   │   ├── heatmap_cells_subtypes.svg
+│   │   ├── heatmap_cells_subtypes_scaled.svg
+│   │   ├── subclasses_composition.svg
+│   │   ├── subtypes_composition.svg
+│   │   └── variable_genes.svg
+│   ├── manual_analysis.R
+│   ├── markers
+│   │   ├── CSSG_marker.csv
+│   │   ├── markers_subclasses.csv
+│   │   └── markers_subtypes.csv
+│   ├── matrices
+│   │   ├── sparse
+│   │   │   ├── barcodes.tsv
+│   │   │   ├── genes.tsv
+│   │   │   └── matrix.mtx
+│   │   ├── subclasses_average_expression.csv
+│   │   └── sybtypes_average_expression.csv
+│   ├── metadata
+│   │   └── metadata.csv
+│   ├── rds
+│   │   └── Results.rds
+│   └── report_manual.Rmd
+├── sample_1
+│   └── sc_data
+│       ├── barcodes.tsv
+│       ├── genes.tsv
+│       └── matrix.mtx
+└── sample_2
+    └── sc_data
+        ├── barcodes.tsv
+        ├── genes.tsv
+        └── matrix.mtx

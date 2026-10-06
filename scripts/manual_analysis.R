@@ -441,8 +441,10 @@ if (sets_n > 1 && harmonize) {
 
   UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
 
+  # If you have installed umap-learn via 'pip install umap-learn', you can use this function:
+  # UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
+  UMI <- RunUMAP(UMI, dims = dim)
 
-  UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
 
 
   width <- 10 + (length(unique(Idents(UMI)))) / 5
@@ -461,8 +463,9 @@ if (sets_n > 1 && harmonize) {
 
   UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
 
-
-  UMI <- RunUMAP(UMI, dims = dim, reduction = "harmony", umap.method = "umap-learn")
+  # If you have installed umap-learn via 'pip install umap-learn', you can use this function:
+  # UMI <- RunUMAP(UMI, dims = dim, reduction = "harmony", umap.method = "umap-learn")
+  UMI <- RunUMAP(UMI, dims = dim, reduction = "harmony")
 
 
   width <- 10 + (length(unique(Idents(UMI)))) / 5
@@ -480,8 +483,9 @@ if (sets_n > 1 && harmonize) {
 
   UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
 
-
-  UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
+  # If you have installed umap-learn via 'pip install umap-learn', you can use this function:
+  # UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
+  UMI <- RunUMAP(UMI, dims = dim)
 
 
   width <- 10 + (length(unique(Idents(UMI)))) / 5
@@ -499,8 +503,9 @@ if (sets_n > 1 && harmonize) {
 
   UMI <- FindClusters(UMI, resolution = c_res, n.start = 10, n.iter = 1000)
 
-
-  UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
+  # If you have installed umap-learn via 'pip install umap-learn', you can use this function:
+  # UMI <- RunUMAP(UMI, dims = dim, umap.method = "umap-learn")
+  UMI <- RunUMAP(UMI, dims = dim)
 
 
 
@@ -819,8 +824,7 @@ plot <- ggplot(meta_data_plot, aes(x = fUMAP1, y = fUMAP2, color = subtypes)) +
 
 
 
-htmlwidgets::saveWidget(plotly::ggplotly(plot), file.path(OUTPUT, "figures/UMAP_subtypes.html"))
-
+# htmlwidgets::saveWidget(plotly::ggplotly(plot), file.path(OUTPUT, "figures/UMAP_subtypes.html"))
 
 
 width <- 15 + (length(unique(Idents(UMI)))) / 5
@@ -831,12 +835,8 @@ plot
 dev.off()
 
 
-
-
 UMI <- subset(UMI, idents = select_list)
 sc_project <- CSSG.toolkit::subset_project(sc_project = sc_project, type = "subtypes", select_list = select_list)
-
-
 
 
 markers <- CSSG.toolkit::get_names_markers(sc_project, type = "subtypes")
@@ -864,7 +864,6 @@ dev.off()
 
 
 
-
 svg(file.path(OUTPUT, "figures/heatmap_cells_subtypes_scaled.svg"), width = width, height = height)
 CSSG.toolkit::marker_heatmap(sc_project,
   type = "subtypes", markers = markers,
@@ -878,7 +877,6 @@ CSSG.toolkit::marker_heatmap(sc_project,
   scale = TRUE
 )
 dev.off()
-
 
 
 

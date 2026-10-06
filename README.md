@@ -24,22 +24,18 @@
 ## Description
 JSEQ_scRNAseq is a comprehensive pipeline designed for advanced and fully integrated analysis of single-cell sequencing data generated using the Drop-seq technique, supporting various UMI + barcode configurations embedded in either Read 1 or Read 2.
 
-***The process of single-cell method performance: A) libraries preparing  B) sequencing and analysis***
 
+***Pipeline workflow***
 
 <p align="center">
-<img  src="fig/sc.png" alt="drawing" width="600" />
+<img  src="fig/jseq.svg" alt="drawing" width="1000" />
 </p>
+
 
 The tool supports analyses starting from raw FASTQ files as well as from count matrices or normalized expression matrices in various formats (TXT, CSV, TSV, and sparse matrix formats). Moreover, the pipeline can be applied to any species, provided that a reference genome is prepared beforehand. By default, users can download and preprocess three reference genomes: human, mouse, or a user-defined custom genome specified by providing appropriate links to the genome and annotation files in the configuration file. Alternatively, users may place any genome directly in the designated directory and perform its preprocessing for subsequent analyses. 
 
 Analyses performed with JSEQ_scRNAseq include UMI and cell barcode selection followed by a two-step correction procedure, read quality control, read mapping, cell feature selection, cell-level quality control, clustering, identification of cell-type markers, and extensive data visualization.
 
-***Pipeline workflow***
-
-<p align="center">
-<img  src="https://github.com/jkubis96/JSEQ_scRNAseq/blob/v2.3.1/setup/fig/JSEQ.jpg?raw=true" alt="drawing" width="1000" />
-</p>
 
 JSEQ_scRNAseq integrates several novel solutions, such as 5′ and 3′ UTR sequence extension using the [GTF.tool](https://github.com/jkubis96/GTF-tool), which improves read mapping within coding regions and increases overall data yield. Additionally, the pipeline incorporates the [CSSG.toolkit](https://github.com/jkubis96/CSSG), which contains the CSSG algorithm (Cell Subtypes Selection Algorithm). This algorithm enables high-resolution exploration of datasets to discover cellular subtypes with exceptional precision. The toolkit also includes automated cell-type annotation algorithms that provide rapid verification of the cell type, class, and subtype, along with their specific genetic markers.
 
@@ -64,9 +60,13 @@ The pipeline was developed and tested on more than one million cells from multip
 3.2.1 [Raw data analysis](#project1) \
 3.2.2 [Pre-analysed (expression) data analysis](#project2) \
 3.3 [Perform analysis](#anal) \
-3.3.1 [Raw data analysis](#anal1) \
-3.3.2 [Pre-analysed (expression) data analysis](#anal2) \
-3.3.3 [Manual analysis](#anal3) \
+3.3.1 [Raw data analysis - (FASTQ -> Count Matrix)](#anal1) \
+3.3.2 [Raw data analysis - (Count Matrix -> Final Report)](#anal1.1) \
+3.3.3 [Raw data analysis - (FASTQ -> Final Report)](#anal1.3) \
+3.3.4 [Raw data analysis - multi-sample - (FASTQ -> Final Report)](#anal1.4) \
+3.3.5 [Pre-analysed (expression/count) data analysis (Matrix -> Final Report)](#anal2) \
+3.3.6 [Pre-analysed (expression/count) data analysis - multi-sample (Matrix -> Final Report)](#anal2.1) \
+3.3.7 [Manual analysis](#anal3) \
 3.4 [Analysis parameters](#analpar) \
 3.4.1 [Smart Primer](#analpar1) \
 3.4.2 [Configuration file](#analpar2) \
@@ -368,6 +368,25 @@ User can create two type of projects:
 
 For more information about markers and naming conventions, see the section on Naming.
 
+In the current version of JSEQ_scRNAseq, multi-sample analysis (e.g., biological replicates within a single run) is available using Harmony-based data integration.
+
+* ***Number of samples / repeats*** –  enter the number of samples for analysis.
+
+If you have only one sample, enter 1.
+<p align="center">
+<img  src="fig/samples1.bmp" alt="drawing" width="300" />
+</p>
+
+If you have multiple samples, enter the corresponding number (e.g., 2).<p align="center">
+<img  src="fig/samples2.bmp" alt="drawing" width="300" />
+</p>
+
+You will need to place all datasets into the specified directories:
+
+<p align="center">
+<img  src="fig/samples2_rep.bmp" alt="drawing" width="400" />
+</p>
+
 ***Warnings:*** 
 
 <p align="center">
@@ -392,6 +411,8 @@ Failure to follow this format will prevent progression to the next step!
 
 <br/>
 
+
+
 #### 3.2.2 Pre-analysed (expression) data analysis [#2] <a id="project2"></a>
 
 <p align="center">
@@ -407,6 +428,26 @@ Failure to follow this format will prevent progression to the next step!
 * ***Data format*** – Select the input data format.
 
 For more information about markers and naming conventions, see the Naming section.
+
+
+In the current version of JSEQ_scRNAseq, multi-sample analysis (e.g., biological replicates within a single run) is available using Harmony-based data integration.
+
+* ***Number of samples / repeats*** –  enter the number of samples for analysis.
+
+If you have only one sample, enter 1.
+<p align="center">
+<img  src="fig/samples1.bmp" alt="drawing" width="300" />
+</p>
+
+If you have multiple samples, enter the corresponding number (e.g., 2).<p align="center">
+<img  src="fig/samples2.bmp" alt="drawing" width="300" />
+</p>
+
+You will need to place all datasets into the specified directories:
+
+<p align="center">
+<img  src="fig/samples2_rep_sc.bmp" alt="drawing" width="400" />
+</p>
 
 <br />
 
@@ -438,16 +479,186 @@ Completing the project requires adding data to the project directory. The data m
 
 ### 3.3 Perform analysis [#3] <a id="anal"></a>
 
+In current version of JSEQ_scRNAseq user can run four (4) types on analusis.
+
 <p align="center">
-<img  src="fig/9.bmp" alt="drawing" width="1000" />
+<img  src="fig/analysis.bmp" alt="drawing" width="600" />
 </p>
 
-#### 3.3.1 Raw data analysis [#1] <a id="anal1"></a>
+#### 3.3.1 Raw data analysis - (FASTQ -> Count Matrix) [#1] <a id="anal1"></a>
 
 Select the set number to be analyzed
 
 <p align="center">
-<img  src="fig/10.bmp" alt="drawing" width="1000" />
+<img  src="fig/1_analysis.bmp" alt="drawing" width="600" />
+</p>
+
+
+Analysis progress output
+
+<p align="center">
+<img  src="fig/analysis_1.bmp" alt="drawing" width="1000" />
+</p>
+
+Final files -> projects/'project_name'/results
+
+<p align="center">
+<img  src="fig/res1.bmp" alt="drawing" width="500" />
+</p>
+
+***Structure:***
+
+```
+.
+├── config
+├── fast_data
+│   ├── R2_out.fastq.gz
+│   ├── R2_out_extracted.fastq
+│   ├── fastp.json
+│   ├── input_R1.fastq.gz
+│   └── input_R2.fastq.gz
+├── results
+│   ├── Log.final.out
+│   ├── QC_RAPORT.html
+│   ├── STAR_mapping.out
+│   ├── STAR_process.log.out
+│   ├── bam
+│   │   └── Completed.bam
+│   ├── expect_whitelist_cell_barcode_counts.png
+│   ├── expect_whitelist_cell_barcode_knee.png
+│   ├── process.log.out
+│   ├── scRNAmetrics.jpeg
+│   ├── scRNAmetrics.pdf
+│   └── scRNAmetrics.txt
+└── sc_data
+    ├── barcodes.tsv
+    ├── genes.tsv
+    └── matrix.mtx
+```
+***Output:***
+
+* ***QC_RAPORT.html*** – quality control report for Read 1 and Read 2 sequencing data
+* ***STAR_mapping.out / STAR_process.log.out*** – logs from the STAR mapping analysis
+* ***bam/*** – directory containing BAM mapping results
+* ***process.log.out*** – log containing information about the entire analysis process
+
+
+QC report example -> [Report.html](https://jkubis96.github.io/example_reports/QC_report_example.html) 
+
+
+
+
+<br/>
+
+
+#### 3.3.2 Raw data analysis - (Count Matrix -> Final Report) [#2] <a id="anal1.1"></a>
+
+Select the set number to be analyzed
+
+<p align="center">
+<img  src="fig/2_analysis.bmp" alt="drawing" width="600" />
+</p>
+
+
+Analysis progress output
+
+
+<p align="center">
+<img  src="fig/8.1.bmp" alt="drawing" width="1000" />
+</p>
+
+
+Final files -> projects/'project_name'/results
+
+<p align="center">
+<img  src="fig/12.bmp" alt="drawing" width="500" />
+</p>
+
+***Structure:***
+
+```
+.
+├── Log.final.out
+├── QC_RAPORT.html
+├── Report.html
+├── STAR_mapping.out
+├── STAR_process.log.out
+├── bam
+│   └── Completed.bam
+├── figures
+│   ├── Cells.svg
+│   ├── DropletQC.svg
+│   ├── DropletQC_hist.svg
+│   ├── Elbow.svg
+│   ├── JackStrawPlot.svg
+│   ├── PCA_DimPlot_subclasses.svg
+│   ├── Ribo~Mito.svg
+│   ├── UMAP_DimPlot_subclasses.svg
+│   ├── UMAP_clusters.svg
+│   ├── UMAP_subtypes.html
+│   ├── UMAP_subtypes.svg
+│   ├── counts~genes.svg
+│   ├── counts~genes_QC.svg
+│   ├── expect_whitelist_cell_barcode_counts.png
+│   ├── expect_whitelist_cell_barcode_knee.png
+│   ├── heatmap_cells_subclasses.svg
+│   ├── heatmap_cells_subclasses_scaled.svg
+│   ├── heatmap_cells_subtypes.svg
+│   ├── heatmap_cells_subtypes_scaled.svg
+│   ├── scRNAmetrics.jpeg
+│   ├── scRNAmetrics.pdf
+│   ├── subclasses_composition.svg
+│   ├── subtypes_composition.svg
+│   └── variable_genes.svg
+├── manual_analysis.R
+├── markers
+│   ├── CSSG_marker.csv
+│   ├── markers_subclasses.csv
+│   └── markers_subtypes.csv
+├── matrices
+│   ├── sparse
+│   │   ├── barcodes.tsv
+│   │   ├── genes.tsv
+│   │   └── matrix.mtx
+│   ├── subclasses_average_expression.csv
+│   └── sybtypes_average_expression.csv
+├── metadata
+│   ├── metadata.csv
+│   └── scRNAmetrics.txt
+├── process.log.out
+├── rds
+│   └── Results.rds
+└── report_manual.Rmd
+```
+***Output:***
+
+* ***QC_RAPORT.html*** – quality control report for Read 1 and Read 2 sequencing data
+* ***Report.html*** – comprehensive report containing the full analysis results
+* ***STAR_mapping.out / STAR_process.log.out*** – logs from the STAR mapping analysis
+* ***bam/*** – directory containing BAM mapping results
+* ***figures/*** – graphs of specific analysis results (*.svg | *.png | *.pdf)
+* ***manual_analysis.R*** – script to perform manual analysis
+* ***markers/*** – directory containing markers for individual cell subclasses/subtypes (CSSG)
+* ***matrices/*** – directories with tabular gene expression results per cell
+* ***metadata/*** – metadata containing cell information at different stages of the analysis
+* ***process.log.out*** – log containing information about the entire analysis process
+* ***rds/*** – directory containing analysis results in Seurat .rds format
+* ***report_manual.Rmd*** – scripts for generating a report from the manual analysis
+
+Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Report_example1.html) 
+
+
+
+
+<br/>
+
+
+#### 3.3.3 Raw data analysis - (FASTQ -> Final Report) [#3] <a id="anal1.3"></a>
+
+Select the set number to be analyzed
+
+<p align="center">
+<img  src="fig/3_analysis.bmp" alt="drawing" width="600" />
 </p>
 
 
@@ -541,12 +752,176 @@ Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Repor
 
 <br/>
 
-#### 3.3.2 Pre-analysed (expression) data analysis [#2] <a id="anal2"></a>
+
+
+#### 3.3.4 Raw data analysis - multi-sample - (FASTQ -> Final Report) [#3] <a id="anal1.4"></a>
 
 Select the set number to be analyzed
 
 <p align="center">
-<img  src="fig/11.bmp" alt="drawing" width="1000" />
+<img  src="fig/3_analysis.bmp" alt="drawing" width="600" />
+</p>
+
+
+Analysis progress output
+
+<p align="center">
+<img  src="fig/1_analysis_multi.bmp" alt="drawing" width="1000" />
+</p>
+
+Final files -> projects/'project_name'/
+
+<p align="center">
+<img  src="fig/dir_fq.bmp" alt="drawing" width="500" />
+</p>
+
+
+<div align="center">&darr;</div>
+<br/>
+
+
+<p align="center">
+<img  src="fig/dir_fq_in.bmp" alt="drawing" width="500" />
+</p>
+
+<p align="center">
+<img  src="fig/resout.bmp" alt="drawing" width="500" />
+</p>
+
+
+<div align="center">&darr;</div>
+<br/>
+
+
+<p align="center">
+<img  src="fig/res_in.bmp" alt="drawing" width="500" />
+</p>
+
+***Structure:***
+
+```
+.
+├── config
+├── results
+│   ├── Log.final.out
+│   ├── Report.html
+│   ├── figures
+│   │   ├── Cells.svg
+│   │   ├── DropletQC.svg
+│   │   ├── DropletQC_hist.svg
+│   │   ├── Elbow.svg
+│   │   ├── JackStrawPlot.svg
+│   │   ├── PCA_DimPlot_subclasses.svg
+│   │   ├── Ribo~Mito.svg
+│   │   ├── UMAP_DimPlot_subclasses.svg
+│   │   ├── UMAP_clusters.svg
+│   │   ├── UMAP_clusters_harmony.svg
+│   │   ├── UMAP_samples.svg
+│   │   ├── UMAP_samples_harmony.svg
+│   │   ├── UMAP_subtypes.html
+│   │   ├── UMAP_subtypes.svg
+│   │   ├── counts~genes.svg
+│   │   ├── counts~genes_QC.svg
+│   │   ├── heatmap_cells_subclasses.svg
+│   │   ├── heatmap_cells_subclasses_scaled.svg
+│   │   ├── heatmap_cells_subtypes.svg
+│   │   ├── heatmap_cells_subtypes_scaled.svg
+│   │   ├── subclasses_composition.svg
+│   │   ├── subtypes_composition.svg
+│   │   └── variable_genes.svg
+│   ├── manual_analysis.R
+│   ├── markers
+│   │   ├── CSSG_marker.csv
+│   │   ├── markers_subclasses.csv
+│   │   └── markers_subtypes.csv
+│   ├── matrices
+│   │   ├── sparse
+│   │   │   ├── barcodes.tsv
+│   │   │   ├── genes.tsv
+│   │   │   └── matrix.mtx
+│   │   ├── subclasses_average_expression.csv
+│   │   └── sybtypes_average_expression.csv
+│   ├── metadata
+│   │   └── metadata.csv
+│   ├── process.log.out
+│   ├── rds
+│   │   └── Results.rds
+│   └── report_manual.Rmd
+├── sample_1
+│   ├── fast_data
+│   │   ├── R2_out.fastq.gz
+│   │   ├── R2_out_extracted.fastq
+│   │   ├── fastp.json
+│   │   ├── input_R1.fastq.gz
+│   │   └── input_R2.fastq.gz
+│   ├── results
+│   │   ├── Log.final.out
+│   │   ├── QC_RAPORT.html
+│   │   ├── STAR_mapping.out
+│   │   ├── STAR_process.log.out
+│   │   ├── bam
+│   │   │   └── Completed.bam
+│   │   ├── expect_whitelist_cell_barcode_counts.png
+│   │   ├── expect_whitelist_cell_barcode_knee.png
+│   │   ├── scRNAmetrics.jpeg
+│   │   ├── scRNAmetrics.pdf
+│   │   └── scRNAmetrics.txt
+│   └── sc_data
+│       ├── barcodes.tsv
+│       ├── genes.tsv
+│       └── matrix.mtx
+└── sample_2
+    ├── fast_data
+    │   ├── R2_out.fastq.gz
+    │   ├── R2_out_extracted.fastq
+    │   ├── fastp.json
+    │   ├── input_R1.fastq.gz
+    │   └── input_R2.fastq.gz
+    ├── results
+    │   ├── Log.final.out
+    │   ├── QC_RAPORT.html
+    │   ├── STAR_mapping.out
+    │   ├── STAR_process.log.out
+    │   ├── bam
+    │   │   └── Completed.bam
+    │   ├── expect_whitelist_cell_barcode_counts.png
+    │   ├── expect_whitelist_cell_barcode_knee.png
+    │   ├── scRNAmetrics.jpeg
+    │   ├── scRNAmetrics.pdf
+    │   └── scRNAmetrics.txt
+    └── sc_data
+        ├── barcodes.tsv
+        ├── genes.tsv
+        └── matrix.mtx
+```
+***Output:***
+
+* ***QC_RAPORT.html*** – quality control report for Read 1 and Read 2 sequencing data
+* ***Report.html*** – comprehensive report containing the full analysis results
+* ***STAR_mapping.out / STAR_process.log.out*** – logs from the STAR mapping analysis
+* ***bam/*** – directory containing BAM mapping results
+* ***figures/*** – graphs of specific analysis results (*.svg | *.png | *.pdf)
+* ***manual_analysis.R*** – script to perform manual analysis
+* ***markers/*** – directory containing markers for individual cell subclasses/subtypes (CSSG)
+* ***matrices/*** – directories with tabular gene expression results per cell
+* ***metadata/*** – metadata containing cell information at different stages of the analysis
+* ***process.log.out*** – log containing information about the entire analysis process
+* ***rds/*** – directory containing analysis results in Seurat .rds format
+* ***report_manual.Rmd*** – scripts for generating a report from the manual analysis
+
+Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Report_example3.html) 
+
+
+
+
+<br/>
+
+#### 3.3.5 Pre-analysed (expression/count) data analysis (Matrix -> Final Report) [#4] <a id="anal2"></a>
+
+Select the set number to be analyzed
+
+<p align="center">
+<img  src="fig/4_analysis.bmp" alt="drawing" width="600" />
 </p>
 
 
@@ -614,7 +989,6 @@ Final files -> projects/'project_name'/results
 
 
 * ***Report.html*** – comprehensive report containing the full analysis results
-* ***bam/*** – directory containing BAM mapping results
 * ***figures/*** – graphs of specific analysis results (*.svg | *.png | *.pdf)
 * ***manual_analysis.R*** – script to perform manual analysis
 * ***markers/*** – directory containing markers for individual cell subclasses/subtypes (CSSG)
@@ -628,9 +1002,147 @@ Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Repor
 
 
 <br>
+
+#### 3.3.6 Pre-analysed (expression/count) data analysis - multi-sample (Matrix -> Final Report) [#4] <a id="anal2.1"></a>
+
+Select the set number to be analyzed
+
+<p align="center">
+<img  src="fig/2_analysis.bmp" alt="drawing" width="600" />
+</p>
+
+
+Analysis progress output
+
+<p align="center">
+<img  src="fig/8.1.bmp" alt="drawing" width="1000" />
+</p>
+
+Final files -> projects/'project_name'/
+
+<p align="center">
+<img  src="fig/dir_fq.bmp" alt="drawing" width="500" />
+</p>
+
+
+<div align="center">&darr;</div>
+<br/>
+
+
+<p align="center">
+<img  src="fig/dir_exp_in.bmp" alt="drawing" width="500" />
+</p>
+
+<p align="center">
+<img  src="fig/resout.bmp" alt="drawing" width="500" />
+</p>
+
+
+<div align="center">&darr;</div>
+<br/>
+
+
+<p align="center">
+<img  src="fig/res_in.bmp" alt="drawing" width="500" />
+</p>
+
+
+***Structure:***
+
+```
+.
+├── config
+├── results
+│   ├── Report.html
+│   ├── figures
+│   │   ├── Cells.svg
+│   │   ├── DropletQC.svg
+│   │   ├── DropletQC_hist.svg
+│   │   ├── Elbow.svg
+│   │   ├── JackStrawPlot.svg
+│   │   ├── PCA_DimPlot_subclasses.svg
+│   │   ├── Ribo~Mito.svg
+│   │   ├── UMAP_DimPlot_subclasses.svg
+│   │   ├── UMAP_clusters.svg
+│   │   ├── UMAP_clusters_harmony.svg
+│   │   ├── UMAP_samples.svg
+│   │   ├── UMAP_samples_harmony.svg
+│   │   ├── UMAP_subtypes.html
+│   │   ├── UMAP_subtypes.svg
+│   │   ├── counts~genes.svg
+│   │   ├── counts~genes_QC.svg
+│   │   ├── heatmap_cells_subclasses.svg
+│   │   ├── heatmap_cells_subclasses_scaled.svg
+│   │   ├── heatmap_cells_subtypes.svg
+│   │   ├── heatmap_cells_subtypes_scaled.svg
+│   │   ├── subclasses_composition.svg
+│   │   ├── subtypes_composition.svg
+│   │   └── variable_genes.svg
+│   ├── manual_analysis.R
+│   │   ├── markers
+│   │   │   ├── CSSG_marker.csv
+│   │   │   ├── markers_subclasses.csv
+│   │   │   └── markers_subtypes.csv
+│   │   ├── matrices
+│   │   │   ├── sparse
+│   │   │   │   ├── barcodes.tsv
+│   │   │   │   ├── genes.tsv
+│   │   │   │   └── matrix.mtx
+│   │   │   ├── subclasses_average_expression.csv
+│   │   │   └── sybtypes_average_expression.csv
+│   │   ├── metadata
+│   │   │   └── metadata.csv
+│   │   └── rds
+│   │       └── Results.rds
+│   ├── markers
+│   │   ├── CSSG_marker.csv
+│   │   ├── markers_subclasses.csv
+│   │   └── markers_subtypes.csv
+│   ├── matrices
+│   │   ├── sparse
+│   │   │   ├── barcodes.tsv
+│   │   │   ├── genes.tsv
+│   │   │   └── matrix.mtx
+│   │   ├── subclasses_average_expression.csv
+│   │   └── sybtypes_average_expression.csv
+│   ├── metadata
+│   │   └── metadata.csv
+│   ├── process.log.out
+│   ├── rds
+│   │   └── Results.rds
+│   └── report_manual.Rmd
+├── sample_1
+│   └── sc_data
+│       ├── barcodes.tsv
+│       ├── genes.tsv
+│       └── matrix.mtx
+└── sample_2
+    └── sc_data
+        ├── barcodes.tsv
+        ├── genes.tsv
+        └── matrix.mtx
+```
+***Output:***
+
+
+* ***Report.html*** – comprehensive report containing the full analysis results
+* ***figures/*** – graphs of specific analysis results (*.svg | *.png | *.pdf)
+* ***manual_analysis.R*** – script to perform manual analysis
+* ***markers/*** – directory containing markers for individual cell subclasses/subtypes (CSSG)
+* ***matrices/*** – directories with tabular gene expression results per cell
+* ***metadata/*** – metadata containing cell information at different stages of the analysis
+* ***process.log.out*** – log containing information about the entire analysis process
+* ***rds/*** – directory containing analysis results in Seurat .rds format
+* ***report_manual.Rmd*** – scripts for generating a report from the manual analysis
+
+Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Report_example4.html) 
+
+
 <br>
 
-#### 3.3.3 Manual analysis <a id="anal3"></a>
+<br>
+
+#### 3.3.7 Manual analysis <a id="anal3"></a>
 
 If manual analysis of results is neede, got ot the project directory.
 
@@ -646,7 +1158,7 @@ There is R script manual_analysis.R
 Run this script and perform analysis on your own.
 
 <p align="center">
-<img  src="fig/17.bmp" alt="drawing" width="1000" />
+<img  src="fig/manual.bmp" alt="drawing" width="1000" />
 </p>
 
 At the end of analysis you can also generate Report. All results will be save inside project directory in manual_results directory.
@@ -657,8 +1169,64 @@ At the end of analysis you can also generate Report. All results will be save in
 
 
 <p align="center">
-<img  src="fig/15.bmp" alt="drawing" width="500" />
+<img  src="fig/13.bmp" alt="drawing" width="500" />
 </p>
+
+<div align="center">&darr;</div>
+<br/>
+
+
+<p align="center">
+<img  src="fig/manual_out.bmp" alt="drawing" width="500" />
+</p>
+
+
+***Structure:***
+
+```
+.
+├── Report.html
+├── figures
+│   ├── Cells.svg
+│   ├── DropletQC.svg
+│   ├── DropletQC_hist.svg
+│   ├── Elbow.svg
+│   ├── JackStrawPlot.svg
+│   ├── PCA_DimPlot_subclasses.svg
+│   ├── Ribo~Mito.svg
+│   ├── UMAP_DimPlot_subclasses.svg
+│   ├── UMAP_clusters.svg
+│   ├── UMAP_clusters_harmony.svg
+│   ├── UMAP_samples.svg
+│   ├── UMAP_samples_harmony.svg
+│   ├── UMAP_subtypes.svg
+│   ├── counts~genes.svg
+│   ├── counts~genes_QC.svg
+│   ├── heatmap_cells_subclasses.svg
+│   ├── heatmap_cells_subclasses_scaled.svg
+│   ├── heatmap_cells_subtypes.svg
+│   ├── heatmap_cells_subtypes_scaled.svg
+│   ├── subclasses_composition.svg
+│   ├── subtypes_composition.svg
+│   └── variable_genes.svg
+├── markers
+│   ├── CSSG_marker.csv
+│   ├── markers_subclasses.csv
+│   └── markers_subtypes.csv
+├── matrices
+│   ├── sparse
+│   │   ├── barcodes.tsv
+│   │   ├── genes.tsv
+│   │   └── matrix.mtx
+│   ├── subclasses_average_expression.csv
+│   └── sybtypes_average_expression.csv
+├── metadata
+│   └── metadata.csv
+└── rds
+    └── Results.rds
+```
+
+
 <br/>
 <br/>
 
