@@ -547,8 +547,6 @@ Final files $\rightarrow$ projects/'project_name'/results
 .
 ├── config
 ├── fast_data
-│   ├── R2_out.fastq.gz
-│   ├── R2_out_extracted.fastq
 │   ├── fastp.json
 │   ├── input_R1.fastq.gz
 │   └── input_R2.fastq.gz
@@ -563,7 +561,6 @@ Final files $\rightarrow$ projects/'project_name'/results
 │   ├── expect_whitelist_cell_barcode_knee.png
 │   ├── process.log.out
 │   ├── scRNAmetrics.jpeg
-│   ├── scRNAmetrics.pdf
 │   └── scRNAmetrics.txt
 └── sc_data
     ├── barcodes.tsv
@@ -641,7 +638,6 @@ Final files $\rightarrow$ projects/'project_name'/results
 │   ├── heatmap_cells_subtypes.svg
 │   ├── heatmap_cells_subtypes_scaled.svg
 │   ├── scRNAmetrics.jpeg
-│   ├── scRNAmetrics.pdf
 │   ├── subclasses_composition.svg
 │   ├── subtypes_composition.svg
 │   └── variable_genes.svg
@@ -741,7 +737,6 @@ Final files $\rightarrow$ projects/'project_name'/results
 │   ├── heatmap_cells_subtypes.svg
 │   ├── heatmap_cells_subtypes_scaled.svg
 │   ├── scRNAmetrics.jpeg
-│   ├── scRNAmetrics.pdf
 │   ├── subclasses_composition.svg
 │   ├── subtypes_composition.svg
 │   └── variable_genes.svg
@@ -884,8 +879,6 @@ Final files $\rightarrow$ projects/'project_name'/
 │   └── report_manual.Rmd
 ├── sample_1
 │   ├── fast_data
-│   │   ├── R2_out.fastq.gz
-│   │   ├── R2_out_extracted.fastq
 │   │   ├── fastp.json
 │   │   ├── input_R1.fastq.gz
 │   │   └── input_R2.fastq.gz
@@ -899,7 +892,6 @@ Final files $\rightarrow$ projects/'project_name'/
 │   │   ├── expect_whitelist_cell_barcode_counts.png
 │   │   ├── expect_whitelist_cell_barcode_knee.png
 │   │   ├── scRNAmetrics.jpeg
-│   │   ├── scRNAmetrics.pdf
 │   │   └── scRNAmetrics.txt
 │   └── sc_data
 │       ├── barcodes.tsv
@@ -907,8 +899,6 @@ Final files $\rightarrow$ projects/'project_name'/
 │       └── matrix.mtx
 └── sample_2
     ├── fast_data
-    │   ├── R2_out.fastq.gz
-    │   ├── R2_out_extracted.fastq
     │   ├── fastp.json
     │   ├── input_R1.fastq.gz
     │   └── input_R2.fastq.gz
@@ -922,7 +912,6 @@ Final files $\rightarrow$ projects/'project_name'/
     │   ├── expect_whitelist_cell_barcode_counts.png
     │   ├── expect_whitelist_cell_barcode_knee.png
     │   ├── scRNAmetrics.jpeg
-    │   ├── scRNAmetrics.pdf
     │   └── scRNAmetrics.txt
     └── sc_data
         ├── barcodes.tsv

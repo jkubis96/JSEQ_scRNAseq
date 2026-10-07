@@ -3,8 +3,6 @@
 #ref fiile generate
 
 function create_ref {
-	cpu=$(grep -c ^processor /proc/cpuinfo)
-	cpu=$cpu-2
 
 	samtools dict $(pwd)/genome/$species/genome.fa >$(pwd)/genome/$species/genome.dict
 
@@ -238,7 +236,7 @@ function INDEXING {
 
 		mkdir -p genome/$species/index/$READS_LENGHT
 		cpu=$(grep -c ^processor /proc/cpuinfo)
-		cpu=$cpu-2
+		cpu=$(($cpu - 2))
 		DIR=$(pwd)/genome/$species/index/$READS_LENGHT
 		GENOME=$(pwd)/genome/$species
 		lenght=$READS_LENGHT
@@ -247,6 +245,9 @@ function INDEXING {
 		mem=$(($mem * 1000000))
 
 		STAR --runThreadN $cpu --runMode genomeGenerate --genomeDir $DIR --genomeFastaFiles $GENOME/*.fa --sjdbGTFfile $GENOME/correct_annotation.gtf --limitGenomeGenerateRAM $mem --sjdbOverhang $lenght
+		if [ -f "Log.out" ]; then
+       		mv "Log.out" "$DIR/"
+    	fi
 
 		echo -e "\033[0;32m $(date) Genome indexing done"
 

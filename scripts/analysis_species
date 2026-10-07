@@ -96,12 +96,14 @@ function whitelist {
 			gunzip R2_out_extracted.fastq.gz
 			rm R1_out_extracted.fastq.gz
 
+
 		elif [[ $BU_READ == *"2"* ]]; then
 
 			umi_tools whitelist --stdin $R2_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --error-correct-threshold=$error_threshold --ed-above-threshold=discard --plot-prefix=$RESULT/expect_whitelist --log2stderr >$tmp/whitelist.csv
 			umi_tools extract --bc-pattern=$barcode --extract-method=regex --stdin=$R2_NAME_out --stdout=R2_out_extracted.fastq.gz --read2-in=$R1_NAME_out --read2-out=R1_out_extracted.fastq.gz --error-correct-cell --reconcile-pairs --whitelist=$tmp/whitelist.csv
 			gunzip R1_out_extracted.fastq.gz
 			rm R2_out_extracted.fastq.gz
+
 
 		fi
 
@@ -112,6 +114,8 @@ function whitelist {
 		echo 'Cells detected - ' $cell
 
 		rm R1_out.fastq.gz
+		rm R2_out.fastq.gz
+
 
 		if ((samples > 1)); then
 			cd ..
@@ -161,13 +165,13 @@ function STAR_MAPPING {
 
 			R2_FILE=$INFASTP'/'$R2_NAME_map
 			STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread --runThreadN $cpu --genomeDir $DIR --readFilesIn $R2_FILE --outFileNamePrefix $tmp/ --outStd Log >$RESULT/Log.final.out 2>&1
-			rm R2_FILE
+			rm $R2_FILE
 
 		elif [[ $BU_READ == *"2"* ]]; then
 
 			R1_FILE=$INFASTP'/'$R1_NAME_map
 			STAR --outReadsUnmapped Fastx --outFilterMismatchNmax $outFilterMismatchNmax --outSAMtype BAM Unsorted --outFilterMultimapNmax $outFilterMultimapNmax --outFilterMismatchNoverLmax $outFilterMismatchNoverLmax --outFilterMismatchNoverReadLmax $outFilterMismatchNoverReadLmax --outFilterMatchNmin $outFilterMatchNmin --outFilterScoreMinOverLread $outFilterScoreMinOverLread --outFilterMatchNminOverLread $outFilterMatchNminOverLread --runThreadN $cpu --genomeDir $DIR --readFilesIn $R1_FILE --outFileNamePrefix $tmp/ --outStd Log >$RESULT/Log.final.out 2>&1
-			rm R1_FILE
+			rm $R1_FILE
 
 		fi
 
@@ -388,10 +392,10 @@ function convert_mtx_umi {
 
 	fi
 
-	if [[ -f $CHECK/sc_data/matrix.mtx ]]; then
+	if ((samples == 1)); then
 
 		if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" ]; then
-			mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_counts.png"
+				mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_counts.png"
 		fi
 
 		if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_knee.png" ]; then
@@ -414,11 +418,12 @@ function convert_mtx_umi {
 			mkdir -p "$PATH_PROJECT/results/bam"
 			mv "$PATH_PROJECT/results/Completed.bam" "$PATH_PROJECT/results/bam/Completed.bam"
 		fi
+	
+	fi
 
-		if [ -f "$PATH_PROJECT/tmp" ]; then
-			rm -rf $PATH_PROJECT/tmp
-		fi
-
+	
+	if [ -f "$PATH_PROJECT/tmp" ]; then
+		rm -rf $PATH_PROJECT/tmp
 	fi
 
 }
@@ -426,6 +431,7 @@ function convert_mtx_umi {
 function seurat {
 
 	echo 'Data analysis'
+
 
 	PATH_PROJECT=$(pwd)/projects/$project_name_mode
 	MARKERS=$marker_path
