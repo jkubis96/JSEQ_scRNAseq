@@ -1,4 +1,5 @@
-## JSEQ_scRNAseq - single cell sequencing analysis tool
+## JSEQ_scRNAseq - single cell sequencing analysis workflow
+
 
 
 
@@ -13,7 +14,6 @@
 <div align="left">
  Institute of Bioorganic Chemistry<br />
  Polish Academy of Sciences<br />
- Department of Molecular Neurobiology<br />
 </div>
 
 
@@ -21,6 +21,41 @@
 
 <div align="justify">
 
+---
+
+**JSEQ_scRNAseq v.3** is an upgraded, fully automated pipeline for single-cell RNA sequencing (scRNA-seq) analysis. Version 3 introduces integrated data harmonization directly within a single analytical step while retaining all features and configurations from previous releases.
+
+
+### Key Features & Improvements
+
+* **Enhanced Platform Flexibility:** Expanded support for diverse single-cell technologies, including **10x Genomics**, **Drop-seq**, **Nadia (Dolomite Bio)**, **SeekGene**, and others.
+* **Custom Barcode & UMI Configurations:** Flexible specification of UMI and Cell Barcode spatial locations (Read 1 vs Read 2).
+* **Modular Pipeline Architecture:** The pipeline is split into modular execution entry points:
+  * **FASTQ $\rightarrow$ Count Matrix:** Sequence processing, cell barcode extraction, and alignment.
+  * **FASTQ $\rightarrow$ Final Report:** End-to-end processing from raw reads to fully integrated analytical reports.
+  * **Custom Expression Matrix $\rightarrow$ Final Report:** Direct import of user-supplied count matrices while unlocking all downstream analytical features.
+* **Comprehensive Downstream Analysis:** Automated data integration, cell subtype selection via **CSSG**, cell type annotation, and report generation.
+* **Manual & Interactive Analysis:** Supports custom manual exploratory workflows while preserving all analytical benefits of the `JSEQ_scRNAseq` workflow.
+
+
+## Complementary JBioSystem Ecosystem
+
+Enhance your single-cell workflow using complementary packages designed for seamless interaction with `JSEQ_scRNAseq` outputs:
+
+1. **[CellMaNam](https://github.com/jkubis96/CellMaNam):** Alternative approaches for cell naming and annotation.
+2. **[JDtI](https://github.com/jkubis96/JDtI):** Advanced data integration and relational analysis.
+3. **[GEDSpy](https://github.com/jkubis96/GEDSpy):** Gene enrichment and drug discovery for analyzing global dynamic changes.
+4. **[CFI](https://github.com/jkubis96/CFI):** Cell functionality enrichment and interactome/cell-cell communication study.
+
+
+## Standalone Tools
+
+The following modules can also be used as independent utilities outside the main pipeline:
+
+1. **[CSSG.tool](https://github.com/jkubis96/CSSG):** Cell Subclass Selection & Identification.
+2. **[GTF-tool](https://github.com/jkubis96/GTF-tool):** Utility for processing and filtering GTF genome annotation files.
+
+---
 ## Description
 JSEQ_scRNAseq is a comprehensive pipeline designed for advanced and fully integrated analysis of single-cell sequencing data generated using the Drop-seq technique, supporting various UMI + barcode configurations embedded in either Read 1 or Read 2.
 
@@ -60,12 +95,12 @@ The pipeline was developed and tested on more than one million cells from multip
 3.2.1 [Raw data analysis](#project1) \
 3.2.2 [Pre-analysed (expression) data analysis](#project2) \
 3.3 [Perform analysis](#anal) \
-3.3.1 [Raw data analysis - (FASTQ -> Count Matrix)](#anal1) \
-3.3.2 [Raw data analysis - (Count Matrix -> Final Report)](#anal1.1) \
-3.3.3 [Raw data analysis - (FASTQ -> Final Report)](#anal1.3) \
-3.3.4 [Raw data analysis - multi-sample - (FASTQ -> Final Report)](#anal1.4) \
-3.3.5 [Pre-analysed (expression/count) data analysis (Matrix -> Final Report)](#anal2) \
-3.3.6 [Pre-analysed (expression/count) data analysis - multi-sample (Matrix -> Final Report)](#anal2.1) \
+3.3.1 [Raw data analysis - (FASTQ $\rightarrow$ Count Matrix)](#anal1) \
+3.3.2 [Raw data analysis - (Count Matrix $\rightarrow$ Final Report)](#anal1.1) \
+3.3.3 [Raw data analysis - (FASTQ $\rightarrow$ Final Report)](#anal1.3) \
+3.3.4 [Raw data analysis - multi-sample - (FASTQ $\rightarrow$ Final Report)](#anal1.4) \
+3.3.5 [Pre-analysed (expression/count) data analysis (Matrix $\rightarrow$ Final Report)](#anal2) \
+3.3.6 [Pre-analysed (expression/count) data analysis - multi-sample (Matrix $\rightarrow$ Final Report)](#anal2.1) \
 3.3.7 [Manual analysis](#anal3) \
 3.4 [Analysis parameters](#analpar) \
 3.4.1 [Smart Primer](#analpar1) \
@@ -234,7 +269,7 @@ mouse
 custom
 ```
 
-Users can define different genomes to download and prepare by modifying the genome links in the configuration file -> [genome.conf](requirements_file/genome.conf)
+Users can define different genomes to download and prepare by modifying the genome links in the configuration file $\rightarrow$ [genome.conf](requirements_file/genome.conf)
 
 <br />
 
@@ -485,7 +520,7 @@ In current version of JSEQ_scRNAseq user can run four (4) types on analusis.
 <img  src="fig/analysis.bmp" alt="drawing" width="600" />
 </p>
 
-#### 3.3.1 Raw data analysis - (FASTQ -> Count Matrix) [#1] <a id="anal1"></a>
+#### 3.3.1 Raw data analysis - (FASTQ $\rightarrow$ Count Matrix) [#1] <a id="anal1"></a>
 
 Select the set number to be analyzed
 
@@ -500,7 +535,7 @@ Analysis progress output
 <img  src="fig/analysis_1.bmp" alt="drawing" width="1000" />
 </p>
 
-Final files -> projects/'project_name'/results
+Final files $\rightarrow$ projects/'project_name'/results
 
 <p align="center">
 <img  src="fig/res1.bmp" alt="drawing" width="500" />
@@ -543,7 +578,7 @@ Final files -> projects/'project_name'/results
 * ***process.log.out*** – log containing information about the entire analysis process
 
 
-QC report example -> [Report.html](https://jkubis96.github.io/example_reports/QC_report_example.html) 
+QC report example $\rightarrow$ [Report.html](https://jkubis96.github.io/example_reports/QC_report_example.html) 
 
 
 
@@ -551,7 +586,7 @@ QC report example -> [Report.html](https://jkubis96.github.io/example_reports/QC
 <br/>
 
 
-#### 3.3.2 Raw data analysis - (Count Matrix -> Final Report) [#2] <a id="anal1.1"></a>
+#### 3.3.2 Raw data analysis - (Count Matrix $\rightarrow$ Final Report) [#2] <a id="anal1.1"></a>
 
 Select the set number to be analyzed
 
@@ -568,7 +603,7 @@ Analysis progress output
 </p>
 
 
-Final files -> projects/'project_name'/results
+Final files $\rightarrow$ projects/'project_name'/results
 
 <p align="center">
 <img  src="fig/12.bmp" alt="drawing" width="500" />
@@ -645,7 +680,7 @@ Final files -> projects/'project_name'/results
 * ***rds/*** – directory containing analysis results in Seurat .rds format
 * ***report_manual.Rmd*** – scripts for generating a report from the manual analysis
 
-Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Report_example1.html) 
+Raport example $\rightarrow$ [Report.html](https://jkubis96.github.io/example_reports/Report_example1.html) 
 
 
 
@@ -653,7 +688,7 @@ Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Repor
 <br/>
 
 
-#### 3.3.3 Raw data analysis - (FASTQ -> Final Report) [#3] <a id="anal1.3"></a>
+#### 3.3.3 Raw data analysis - (FASTQ $\rightarrow$ Final Report) [#3] <a id="anal1.3"></a>
 
 Select the set number to be analyzed
 
@@ -668,7 +703,7 @@ Analysis progress output
 <img  src="fig/7.1.bmp" alt="drawing" width="1000" />
 </p>
 
-Final files -> projects/'project_name'/results
+Final files $\rightarrow$ projects/'project_name'/results
 
 <p align="center">
 <img  src="fig/12.bmp" alt="drawing" width="500" />
@@ -745,7 +780,7 @@ Final files -> projects/'project_name'/results
 * ***rds/*** – directory containing analysis results in Seurat .rds format
 * ***report_manual.Rmd*** – scripts for generating a report from the manual analysis
 
-Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Report_example1.html) 
+Raport example $\rightarrow$ [Report.html](https://jkubis96.github.io/example_reports/Report_example1.html) 
 
 
 
@@ -754,7 +789,7 @@ Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Repor
 
 
 
-#### 3.3.4 Raw data analysis - multi-sample - (FASTQ -> Final Report) [#3] <a id="anal1.4"></a>
+#### 3.3.4 Raw data analysis - multi-sample - (FASTQ $\rightarrow$ Final Report) [#3] <a id="anal1.4"></a>
 
 Select the set number to be analyzed
 
@@ -769,7 +804,7 @@ Analysis progress output
 <img  src="fig/1_analysis_multi.bmp" alt="drawing" width="1000" />
 </p>
 
-Final files -> projects/'project_name'/
+Final files $\rightarrow$ projects/'project_name'/
 
 <p align="center">
 <img  src="fig/dir_fq.bmp" alt="drawing" width="500" />
@@ -909,14 +944,14 @@ Final files -> projects/'project_name'/
 * ***rds/*** – directory containing analysis results in Seurat .rds format
 * ***report_manual.Rmd*** – scripts for generating a report from the manual analysis
 
-Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Report_example3.html) 
+Raport example $\rightarrow$ [Report.html](https://jkubis96.github.io/example_reports/Report_example3.html) 
 
 
 
 
 <br/>
 
-#### 3.3.5 Pre-analysed (expression/count) data analysis (Matrix -> Final Report) [#4] <a id="anal2"></a>
+#### 3.3.5 Pre-analysed (expression/count) data analysis (Matrix $\rightarrow$ Final Report) [#4] <a id="anal2"></a>
 
 Select the set number to be analyzed
 
@@ -931,7 +966,7 @@ Analysis progress output
 <img  src="fig/8.1.bmp" alt="drawing" width="1000" />
 </p>
 
-Final files -> projects/'project_name'/results
+Final files $\rightarrow$ projects/'project_name'/results
 
 <p align="center">
 <img  src="fig/15.bmp" alt="drawing" width="500" />
@@ -998,12 +1033,12 @@ Final files -> projects/'project_name'/results
 * ***rds/*** – directory containing analysis results in Seurat .rds format
 * ***report_manual.Rmd*** – scripts for generating a report from the manual analysis
 
-Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Report_example2.html) 
+Raport example $\rightarrow$ [Report.html](https://jkubis96.github.io/example_reports/Report_example2.html) 
 
 
 <br>
 
-#### 3.3.6 Pre-analysed (expression/count) data analysis - multi-sample (Matrix -> Final Report) [#4] <a id="anal2.1"></a>
+#### 3.3.6 Pre-analysed (expression/count) data analysis - multi-sample (Matrix $\rightarrow$ Final Report) [#4] <a id="anal2.1"></a>
 
 Select the set number to be analyzed
 
@@ -1018,7 +1053,7 @@ Analysis progress output
 <img  src="fig/8.1.bmp" alt="drawing" width="1000" />
 </p>
 
-Final files -> projects/'project_name'/
+Final files $\rightarrow$ projects/'project_name'/
 
 <p align="center">
 <img  src="fig/dir_fq.bmp" alt="drawing" width="500" />
@@ -1135,7 +1170,7 @@ Final files -> projects/'project_name'/
 * ***rds/*** – directory containing analysis results in Seurat .rds format
 * ***report_manual.Rmd*** – scripts for generating a report from the manual analysis
 
-Raport example -> [Report.html](https://jkubis96.github.io/example_reports/Report_example4.html) 
+Raport example $\rightarrow$ [Report.html](https://jkubis96.github.io/example_reports/Report_example4.html) 
 
 
 <br>
@@ -1234,6 +1269,8 @@ At the end of analysis you can also generate Report. All results will be save in
 
 #### 3.4.1 Smart Primer <a id="analpar1"></a>
 
+File $\rightarrow$ [smart_primer](requirements_file/smart_primer)
+
  ```
 cd requirements_file
 nano smart_primer
@@ -1249,6 +1286,9 @@ If your single-cell protocol uses different SMART primers, adjust accordingly; o
 <br/>
 
 #### 3.4.2 Configuration file <a id="analpar2"></a>
+
+File $\rightarrow$ [config_file.conf](requirements_file/config_file.conf)
+
 
  ```
 cd requirements_file
@@ -1278,16 +1318,16 @@ scale_factor:1000000
 
 ## Number of variable features to find
 
-n_features:2000
+n_features:1500
 
 ## Clustering resolution
 
 c_res:0.5
 
 #Subtypes markers selection [CSSG]
-## Cluster heterogeneity: within-cluster variance or deregulated gene profiles (var / deg) [default deg]
+## Cluster heterogeneity: within-cluster variance or deregulated gene profiles (var / deg) [default var]
 
-heterogeneity:deg
+heterogeneity:var
 
 ## Mitochondrial genes in subtype creation (FALSE, TRUE) [default FALSE]
 
@@ -1297,11 +1337,9 @@ mt_cssg:FALSE
 
 m_val:0.05
 
-
 ## Top markers for naming [default 50]
 
 top_m:50
-
 
 ## Maximum amount of input genes for cluster [default 1000]
 
@@ -1317,11 +1355,11 @@ loss_val:0.05
 
 ## Split factor  (0.2-1) [default 0.8]
 
-s_factor:0.8
+s_factor:0.7
 
 ## Cell content binary test p-value [default 0.05 - set 0.1 in case of rare subpopulations]
 
-p_bin:0.05
+p_bin:0.1
 
 ## Drop non-significant subtypes [default TRUE]
 
@@ -1330,12 +1368,19 @@ drop:TRUE
 ## Cell content - min cells per subtype
 
 min_c:10
+
+## Harmonize data analysis; if multiple samples exist [default: TRUE]
+
+harmonize:TRUE
 ```
 The config_file.conf includes parameters necessary for the analysis, allowing users to control threshold settings, explain heterogeneity using the CSSG cell subtypes algorithm, and assess marker importance. It also allows adjustment of hardware usage depending on computational capacity.
 
 <br/> 
 
 #### 3.4.3 Configuration file - tools <a id="analpar2.1"></a>
+
+File $\rightarrow$ [config_tools.conf](requirements_file/config_tools.conf)
+
 
  ```
 cd requirements_file
@@ -1384,6 +1429,9 @@ The config_tools.conf file contains parameters required for the STAR mapping pro
 
 #### 3.4.4 Barcodes & UMI <a id="analpar3"></a>
 
+File $\rightarrow$ [barcodes](requirements_file/barcodes)
+
+
 Example of UMI/BARCODE scheme for DropSeq technology:
 
 <p align="center">
@@ -1413,6 +1461,7 @@ umi_start=13
 umi_end=20
 
 
+
 ##################################################################################################
 
 ## 10x v3 library barcodes
@@ -1435,6 +1484,16 @@ umi_end=20
 
 ##################################################################################################
 
+## SeekOne
+
+# barcode_start=1
+# barcode_end=17
+# umi_start=18
+# umi_end=29
+
+
+##################################################################################################
+
 # RUN:
 
 barcode_length=$[$barcode_end-$barcode_start+1]
@@ -1449,6 +1508,8 @@ Adjust the UMI/BARCODE layout for your analysis based on the technology used e.g
 <br/> 
 
 #### 3.4.5 Adapters <a id="analpar4"></a>
+
+File $\rightarrow$ [Adapters.fa](requirements_file/Adapters.fa)
 
  ```
 cd requirements_file
@@ -1626,7 +1687,7 @@ Details in [CSSG.toolkit](https://github.com/jkubis96/CSSG)
 <br />
 
 <p align="center">
-<img  src="fig/cssg_comp.jpg" alt="drawing" width="1000" />
+<img  src="fig/example.svg" alt="drawing" width="1000" />
 </p>
 
 <br />
@@ -1668,6 +1729,7 @@ Canonical approach is based on three types of markers: class markers, subclass m
 
 User markers are in the excel file in JSEQ_scRNAseq/requirements_file/markers_.xlsx. We have two types of markers: the first type is in the first sheet (cell class), and the second is in the second sheet (cell subclass).
 
+
 <br>
 
 ***Cell class markers:***
@@ -1702,9 +1764,11 @@ cd requirements_file
 
 Currently available datasets are for:
 
-* mature brain structures
-* developing brain structures
-* non-canonical - for non-canonical naming approaches
+* Adult Brain Markers $\rightarrow$ [markers_brain.xlsx](requirements_file/markers_brain.xlsx)
+* Developing Brain Markers $\rightarrow$ [markers_developing_brain.xlsx](requirements_file/markers_developing_brain.xlsx)
+* Developing Brain Markers for Organoids $\rightarrow$ [markers_developing_dorsal_ventral_organoids.xlsx](requirements_file/markers_developing_dorsal_ventral_organoids.xlsx)
+* Non-canonical option
+
 
 Users can define their own marker sets in an Excel file and use them during analysis.
 
