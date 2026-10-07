@@ -89,45 +89,45 @@ The pipeline was developed and tested on more than one million cells from multip
 
 1. [Installation](#installation)
 2. [Start application](#start)
-3. [Actions in the application](#action) \
-3.1 [Genome preparing](#genome) \
-3.2 [Project creating ](#project) \
-3.2.1 [Raw data analysis](#project1) \
-3.2.2 [Pre-analysed (expression) data analysis](#project2) \
+3. [Actions in the application](#action) 
+3.1 [Genome preparing](#genome) 
+3.2 [Project creating ](#project) 
+3.2.1 [Raw data analysis](#project1) 
+3.2.2 [Pre-analysed (expression) data analysis](#project2) 
 3.3 [Perform analysis](#anal) \
-3.3.1 [Raw data analysis - (FASTQ $\rightarrow$ Count Matrix)](#anal1) \
-3.3.2 [Raw data analysis - (Count Matrix $\rightarrow$ Final Report)](#anal1.1) \
-3.3.3 [Raw data analysis - (FASTQ $\rightarrow$ Final Report)](#anal1.3) \
-3.3.4 [Raw data analysis - multi-sample - (FASTQ $\rightarrow$ Final Report)](#anal1.4) \
-3.3.5 [Pre-analysed (expression/count) data analysis (Matrix $\rightarrow$ Final Report)](#anal2) \
-3.3.6 [Pre-analysed (expression/count) data analysis - multi-sample (Matrix $\rightarrow$ Final Report)](#anal2.1) \
-3.3.7 [Manual analysis](#anal3) \
-3.4 [Analysis parameters](#analpar) \
-3.4.1 [Smart Primer](#analpar1) \
-3.4.2 [Configuration file](#analpar2) \
-3.4.3 [Configuration file - tools](#analpar2.1) \
-3.4.4 [Barcodes & UMI](#analpar3) \
-3.4.5 [Adapters](#analpar4) \
+3.3.1 [Raw data analysis - (FASTQ $\rightarrow$ Count Matrix)](#anal1) 
+3.3.2 [Raw data analysis - (Count Matrix $\rightarrow$ Final Report)](#anal1.1) 
+3.3.3 [Raw data analysis - (FASTQ $\rightarrow$ Final Report)](#anal1.3) 
+3.3.4 [Raw data analysis - multi-sample - (FASTQ $\rightarrow$ Final Report)](#anal1.4) 
+3.3.5 [Pre-analysed (expression/count) data analysis (Matrix $\rightarrow$ Final Report)](#anal2) 
+3.3.6 [Pre-analysed (expression/count) data analysis - multi-sample (Matrix $\rightarrow$ Final Report)](#anal2.1) 
+3.3.7 [Manual analysis](#anal3) 
+3.4 [Analysis parameters](#analpar) 
+3.4.1 [Smart Primer](#analpar1) 
+3.4.2 [Configuration file](#analpar2) 
+3.4.3 [Configuration file - tools](#analpar2.1) 
+3.4.4 [Barcodes & UMI](#analpar3) 
+3.4.5 [Adapters](#analpar4) 
 3.5 [Testing mode](#test) 
-4. [Additional algorithms](#aa) \
-4.1 [GTFtool](#aagtf) \
-4.2 [Genes per cell - range estimation algorithm](#gout) \
-4.3 [Component selection algorithm](#pca) \
-4.4 [CSSG (Cell Subtypes Selection by Gene) algorithm](#aaCSSG) \
-4.5 [Cell naming algorithm](#aacn) \
+4. [Additional algorithms](#aa) 
+4.1 [GTFtool](#aagtf) 
+4.2 [Genes per cell - range estimation algorithm](#gout) 
+4.3 [Component selection algorithm](#pca) 
+4.4 [CSSG (Cell Subtypes Selection by Gene) algorithm](#aaCSSG) 
+4.5 [Cell naming algorithm](#aacn) 
 4.6 [Removing outlier results - algorithms](#out) 
-5. [Used techniques](#used) \
-5.1 [Ribosomal & mitochondrial gene thresholds](#used1) \
-5.2 [Data normalization](#used2) \
-5.3 [Variable features](#used3) \
-5.4 [Dimensionality reduction (PCA)](#used4) \
-5.5 [Data clustering](#used5) \
+5. [Used techniques](#used) 
+5.1 [Ribosomal & mitochondrial gene thresholds](#used1) 
+5.2 [Data normalization](#used2) 
+5.3 [Variable features](#used3) 
+5.4 [Dimensionality reduction (PCA)](#used4) 
+5.5 [Data clustering](#used5) 
 5.6 [Cluster visualization (UMAP)](#used6) 
-6. [Performance testing](#perform) \
-6.1 [Raw data analysis](#perform1) \
+6. [Performance testing](#perform) 
+6.1 [Raw data analysis](#perform1) 
 6.2 [Pre-analysed (expression) data analysis](#perform2) 
-7. [References tools](#ref) \
-7.1 [Tools and algorithms](#ref1) \
+7. [References tools](#ref) 
+7.1 [Tools and algorithms](#ref1) 
 7.2 [Publications](#ref2) 
 
 
