@@ -181,7 +181,7 @@ params_df %>%
 if (chceck_fq) {
   if (length(sample_dirs) > 0) {
     for (s in sample_dirs) {
-      show_image(file.path(project_path, paste0(s, "/results/scRNAmetrics.jpeg")), paste0("## Read distribution across genomic features - ", s))
+      show_image(file.path(project_path, paste0(s, "/results/figures/scRNAmetrics.jpeg")), paste0("## Read distribution across genomic features - ", s))
     }
   } else {
     show_image(file.path(project_path, "results/figures/scRNAmetrics.jpeg"), "## Read distribution across genomic features")
@@ -193,7 +193,7 @@ if (chceck_fq) {
 if (chceck_fq) {
   if (length(sample_dirs) > 0) {
     for (s in sample_dirs) {
-      show_image(file.path(project_path, paste0(s, "/results/expect_whitelist_cell_barcode_counts.png")), paste0("## Count (UMI) per barcode (cell) - ", s))
+      show_image(file.path(project_path, paste0(s, "/results/figures/expect_whitelist_cell_barcode_counts.png")), paste0("## Count (UMI) per barcode (cell) - ", s))
     }
   } else {
     show_image(file.path(project_path, "results/figures/expect_whitelist_cell_barcode_counts.png"), "## Count (UMI) per barcode (cell)")

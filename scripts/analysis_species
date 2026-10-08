@@ -96,14 +96,12 @@ function whitelist {
 			gunzip R2_out_extracted.fastq.gz
 			rm R1_out_extracted.fastq.gz
 
-
 		elif [[ $BU_READ == *"2"* ]]; then
 
 			umi_tools whitelist --stdin $R2_NAME_out --bc-pattern=$barcode --extract-method=regex --set-cell-number=$cell --error-correct-threshold=$error_threshold --ed-above-threshold=discard --plot-prefix=$RESULT/expect_whitelist --log2stderr >$tmp/whitelist.csv
 			umi_tools extract --bc-pattern=$barcode --extract-method=regex --stdin=$R2_NAME_out --stdout=R2_out_extracted.fastq.gz --read2-in=$R1_NAME_out --read2-out=R1_out_extracted.fastq.gz --error-correct-cell --reconcile-pairs --whitelist=$tmp/whitelist.csv
 			gunzip R1_out_extracted.fastq.gz
 			rm R2_out_extracted.fastq.gz
-
 
 		fi
 
@@ -115,7 +113,6 @@ function whitelist {
 
 		rm R1_out.fastq.gz
 		rm R2_out.fastq.gz
-
 
 		if ((samples > 1)); then
 			cd ..
@@ -392,36 +389,35 @@ function convert_mtx_umi {
 
 	fi
 
-	if ((samples == 1)); then
-
-		if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" ]; then
-				mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_counts.png"
-		fi
-
-		if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_knee.png" ]; then
-			mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_knee.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_knee.png"
-		fi
-
-		if [ -f "$PATH_PROJECT/results/scRNAmetrics.jpeg" ]; then
-			mv "$PATH_PROJECT/results/scRNAmetrics.jpeg" "$PATH_PROJECT/results/figures/scRNAmetrics.jpeg"
-		fi
-
-		if [ -f "$PATH_PROJECT/results/scRNAmetrics.pdf" ]; then
-			mv "$PATH_PROJECT/results/scRNAmetrics.pdf" "$PATH_PROJECT/results/figures/scRNAmetrics.pdf"
-		fi
-
-		if [ -f "$PATH_PROJECT/results/scRNAmetrics.txt" ]; then
-			mv "$PATH_PROJECT/results/scRNAmetrics.txt" "$PATH_PROJECT/results/metadata/scRNAmetrics.txt"
-		fi
-
-		if [ -f "$PATH_PROJECT/results/Completed.bam" ]; then
-			mkdir -p "$PATH_PROJECT/results/bam"
-			mv "$PATH_PROJECT/results/Completed.bam" "$PATH_PROJECT/results/bam/Completed.bam"
-		fi
-	
+	if ! [[ -f "$PATH_PROJECT/results/figures" ]]; then
+		mkdir -p "$PATH_PROJECT/results/figures"
 	fi
 
-	
+	if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" ]; then
+		mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_counts.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_counts.png"
+	fi
+
+	if [ -f "$PATH_PROJECT/results/expect_whitelist_cell_barcode_knee.png" ]; then
+		mv "$PATH_PROJECT/results/expect_whitelist_cell_barcode_knee.png" "$PATH_PROJECT/results/figures/expect_whitelist_cell_barcode_knee.png"
+	fi
+
+	if [ -f "$PATH_PROJECT/results/scRNAmetrics.jpeg" ]; then
+		mv "$PATH_PROJECT/results/scRNAmetrics.jpeg" "$PATH_PROJECT/results/figures/scRNAmetrics.jpeg"
+	fi
+
+	if [ -f "$PATH_PROJECT/results/scRNAmetrics.pdf" ]; then
+		mv "$PATH_PROJECT/results/scRNAmetrics.pdf" "$PATH_PROJECT/results/figures/scRNAmetrics.pdf"
+	fi
+
+	if [ -f "$PATH_PROJECT/results/scRNAmetrics.txt" ]; then
+		mv "$PATH_PROJECT/results/scRNAmetrics.txt" "$PATH_PROJECT/results/metadata/scRNAmetrics.txt"
+	fi
+
+	if [ -f "$PATH_PROJECT/results/Completed.bam" ]; then
+		mkdir -p "$PATH_PROJECT/results/bam"
+		mv "$PATH_PROJECT/results/Completed.bam" "$PATH_PROJECT/results/bam/Completed.bam"
+	fi
+
 	if [ -f "$PATH_PROJECT/tmp" ]; then
 		rm -rf $PATH_PROJECT/tmp
 	fi
@@ -432,6 +428,9 @@ function seurat {
 
 	echo 'Data analysis'
 
+	if ! [[ -f "$PATH_PROJECT/results/figures" ]]; then
+		mkdir -p "$PATH_PROJECT/results/figures"
+	fi
 
 	PATH_PROJECT=$(pwd)/projects/$project_name_mode
 	MARKERS=$marker_path

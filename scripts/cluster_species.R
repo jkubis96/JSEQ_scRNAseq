@@ -27,7 +27,6 @@ args <- commandArgs()
 
   dir.create(path = file.path(OUTPUT, "matrices"))
   dir.create(path = file.path(OUTPUT, "matrices/sparse"))
-  dir.create(path = file.path(OUTPUT, "figures"))
   dir.create(path = file.path(OUTPUT, "markers"))
   dir.create(path = file.path(OUTPUT, "rds"))
   dir.create(path = file.path(OUTPUT, "metadata"))

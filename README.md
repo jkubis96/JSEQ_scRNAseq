@@ -557,10 +557,11 @@ Final files $\rightarrow$ projects/'project_name'/results
 │   ├── STAR_process.log.out
 │   ├── bam
 │   │   └── Completed.bam
-│   ├── expect_whitelist_cell_barcode_counts.png
-│   ├── expect_whitelist_cell_barcode_knee.png
+│   ├── figures
+│   │   ├── expect_whitelist_cell_barcode_counts.png
+│   │   ├── expect_whitelist_cell_barcode_knee.png
+│   │   └── scRNAmetrics.jpeg
 │   ├── process.log.out
-│   ├── scRNAmetrics.jpeg
 │   └── scRNAmetrics.txt
 └── sc_data
     ├── barcodes.tsv
@@ -889,9 +890,10 @@ Final files $\rightarrow$ projects/'project_name'/
 │   │   ├── STAR_process.log.out
 │   │   ├── bam
 │   │   │   └── Completed.bam
-│   │   ├── expect_whitelist_cell_barcode_counts.png
-│   │   ├── expect_whitelist_cell_barcode_knee.png
-│   │   ├── scRNAmetrics.jpeg
+│   │   ├── figures
+│   │   │   ├── expect_whitelist_cell_barcode_counts.png
+│   │   │   ├── expect_whitelist_cell_barcode_knee.png
+│   │   │   └── scRNAmetrics.jpeg
 │   │   └── scRNAmetrics.txt
 │   └── sc_data
 │       ├── barcodes.tsv
@@ -909,9 +911,10 @@ Final files $\rightarrow$ projects/'project_name'/
     │   ├── STAR_process.log.out
     │   ├── bam
     │   │   └── Completed.bam
-    │   ├── expect_whitelist_cell_barcode_counts.png
-    │   ├── expect_whitelist_cell_barcode_knee.png
-    │   ├── scRNAmetrics.jpeg
+    │   ├── figures
+    │   │   ├── expect_whitelist_cell_barcode_counts.png
+    │   │   ├── expect_whitelist_cell_barcode_knee.png
+    │   │   └── scRNAmetrics.jpeg
     │   └── scRNAmetrics.txt
     └── sc_data
         ├── barcodes.tsv

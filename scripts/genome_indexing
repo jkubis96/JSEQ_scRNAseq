@@ -244,10 +244,11 @@ function INDEXING {
 		mem=$(($(getconf _PHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))
 		mem=$(($mem * 1000000))
 
-		STAR --runThreadN $cpu --runMode genomeGenerate --genomeDir $DIR --genomeFastaFiles $GENOME/*.fa --sjdbGTFfile $GENOME/correct_annotation.gtf --limitGenomeGenerateRAM $mem --sjdbOverhang $lenght
-		if [ -f "Log.out" ]; then
-       		mv "Log.out" "$DIR/"
-    	fi
+		STAR --runThreadN $cpu --runMode genomeGenerate --genomeDir $DIR --genomeFastaFiles $GENOME/*.fa --sjdbGTFfile $GENOME/correct_annotation.gtf --limitGenomeGenerateRAM $mem --sjdbOverhang $lenght --outStd Log >"$DIR/STAR_stdout.log" 2>&1
+
+		if [[ -f "Log.out" ]]; then
+			mv "Log.out" "$DIR/Log.out"
+		fi
 
 		echo -e "\033[0;32m $(date) Genome indexing done"
 
