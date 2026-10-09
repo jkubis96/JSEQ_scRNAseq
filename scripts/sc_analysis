@@ -3,6 +3,8 @@
 function seurat_start {
 	echo -e "\033[1;36m $(date) Start counts / expression analysis"
 
+	mkdir -p "$PATH_PROJECT/results/figures"
+
 	PATH_PROJECT=$(pwd)/projects/$project_name_mode
 	MARKERS=$marker_path
 
