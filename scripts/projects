@@ -113,6 +113,8 @@ function checkfq {
 
 			if [[ "$r" == *"R1"* ]] && [[ "$r" == *"R2"* ]]; then
 				decision=true
+				echo -e "\033[0;31m Sample_$i data correct!"
+
 			else
 				decision=false
 				echo -e "\033[0;31m Missing R1 or R2 file in Sample_$i"
@@ -200,6 +202,7 @@ function checkseurat_1 {
 
 			fast=$(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/*'
 
+			r=""
 			for i in $fast; do
 				r+=$i
 			done
@@ -214,6 +217,8 @@ function checkseurat_1 {
 				converter=$(pwd)/scripts/converter.R
 				Rscript $converter $format $(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/' $(basename $r) $null $con
 
+				echo -e "\033[0;31m Sample_$g data correct!"
+
 			elif [[ $r == *".csv"* ]]; then
 				echo -e "\033[1;36m $(date) Data converting"
 
@@ -223,10 +228,7 @@ function checkseurat_1 {
 				converter=$(pwd)/scripts/converter.R
 				Rscript $converter $format $(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/' $(basename $r) $null $con
 
-				echo ''
-				echo -e "\033[0;32m Project done"
-				echo -e "\033[0;32m Start analysis"
-				echo ''
+				echo -e "\033[0;31m Sample_$g data correct!"
 
 			elif [[ $r == *".txt"* ]]; then
 
@@ -238,10 +240,7 @@ function checkseurat_1 {
 				converter=$(pwd)/scripts/converter.R
 				Rscript $converter $format $(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/' $(basename $r) $null $con
 
-				echo ''
-				echo -e "\033[0;32m Project done"
-				echo -e "\033[0;32m Start analysis"
-				echo ''
+				echo -e "\033[0;31m Sample_$g data correct!"
 
 			else
 				all_decision=false
@@ -255,6 +254,7 @@ function checkseurat_1 {
 
 		fast=$(pwd)/projects/$project_name_mod/sc_data/*
 
+		r=""
 		for i in $fast; do
 			r+=$i
 		done
@@ -278,11 +278,6 @@ function checkseurat_1 {
 			converter=$(pwd)/scripts/converter.R
 			Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
 
-			echo ''
-			echo -e "\033[0;32m Project done"
-			echo -e "\033[0;32m Start analysis"
-			echo ''
-
 		elif [[ $r == *".txt"* ]]; then
 
 			echo -e "\033[1;36m $(date) Data converting"
@@ -292,11 +287,6 @@ function checkseurat_1 {
 			null=NULL
 			converter=$(pwd)/scripts/converter.R
 			Rscript $converter $format $(pwd)/projects/$project_name_mod/sc_data/ $(basename $r) $null $con
-
-			echo ''
-			echo -e "\033[0;32m Project done"
-			echo -e "\033[0;32m Start analysis"
-			echo ''
 
 		else
 			all_decision=false
@@ -352,6 +342,8 @@ function checkseurat_3 {
 
 		for ((g = 1; g <= samples; g++)); do
 
+			r=""
+
 			fast=$(pwd)'/projects/'$project_name_mod'/sample_'$g'/sc_data/*'
 
 			for i in $fast; do
@@ -360,12 +352,7 @@ function checkseurat_3 {
 
 			if [[ $r == *"matrix"* ]] && [[ $r == *"genes"* ]] && [[ $r == *"barcodes"* ]]; then
 
-				echo ''
-				echo -e "\033[0;32m Project done"
-				echo -e "\033[0;32m Start analysis"
-				echo ''
-
-				start
+				echo -e "\033[0;31m Sample_$g data correct!"
 
 			else
 
@@ -380,6 +367,7 @@ function checkseurat_3 {
 
 		fast=$(pwd)/projects/$project_name_mod/sc_data/*
 
+		r=""
 		for i in $fast; do
 			r+=$i
 		done
