@@ -1829,8 +1829,9 @@ Depending on the analysis type: single-cell or single-nuclei; the amount of mito
 The Seurata Normalize data function with "Log Normalize" normalization, and the scale factor "1e6" (CPM) was used to normalize the data.
 
 ***Formula:***
+
 $$
-CPM = \frac{\text{count of genes}}{\text{sum of counts per cell}} \times 1000000
+CPM = \frac{\text{count of gene}}{\text{sum of counts per cell}} \times 1000000
 $$
 
 $$
